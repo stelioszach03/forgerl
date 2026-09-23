@@ -100,6 +100,8 @@ with Store().transaction() as connection:
     )
 ```
 
+Provider HTTP 401/402/403 responses also pause new reservations with a `provider_access` reason. After resolving the credential, credit or permission issue, an operator may remove that specific reason while preserving the spending ledger, then perform a bounded smoke check. Do not remove a different discrepancy flag.
+
 Investigate an accounting-discrepancy pause separately; do not clear it with an unrestricted delete. A code change is required to authorize a larger application budget, and should be reviewed as a spending change.
 
 ## Release, rollback and backup

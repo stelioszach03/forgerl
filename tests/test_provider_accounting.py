@@ -3,6 +3,7 @@
 All HTTP clients and sandbox execution are replaced by deterministic fixtures.
 No key, network request, Docker invocation or paid inference is used.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -14,7 +15,7 @@ from unittest.mock import patch
 import httpx
 
 from forgerl.orchestrator import Episode
-from forgerl.provider import ProviderError, RunpodProvider
+from forgerl.provider import BudgetExceeded, ProviderError, RunpodProvider
 from forgerl.store import Store
 from forgerl.tasks import list_tasks
 
@@ -57,13 +58,32 @@ def sandbox_fixture(*args, **kwargs):
 
 
 class ProviderAccountingTests(unittest.IsolatedAsyncioTestCase):
+    async def test_rejected_provider_access_pauses_followup_requests(self):
+        OfflineClient.behavior, OfflineClient.calls = {}, 0
+        with tempfile.TemporaryDirectory() as directory:
+            store = Store(Path(directory) / "ledger.sqlite3")
+            provider = RunpodProvider(store, "offline-fixture-no-credential")
+            task = list_tasks()[0]
+            with patch("forgerl.provider.httpx.AsyncClient", OfflineClient), patch.object(
+                Response, "status_code", 401
+            ):
+                with self.assertRaises(ProviderError):
+                    await provider.generate(task, task.source, {}, "fast")
+                with self.assertRaises(BudgetExceeded):
+                    await provider.generate(task, task.source, {}, "fast")
+            self.assertEqual(OfflineClient.calls, 1)
+            self.assertTrue(store.budget("research")["disabled"])
+
     async def exercise(self, response_or_error, exception):
         OfflineClient.behavior, OfflineClient.calls = response_or_error, 0
         with tempfile.TemporaryDirectory() as directory:
             store = Store(Path(directory) / "ledger.sqlite3")
             provider = RunpodProvider(store, "offline-fixture-no-credential")
             episode = Episode(list_tasks()[0], provider)
-            with patch("forgerl.provider.httpx.AsyncClient", OfflineClient), patch("forgerl.orchestrator.sandbox.evaluate", sandbox_fixture):
+            with (
+                patch("forgerl.provider.httpx.AsyncClient", OfflineClient),
+                patch("forgerl.orchestrator.sandbox.evaluate", sandbox_fixture),
+            ):
                 await episode.start()
                 with self.assertRaises(exception):
                     await episode.step("fast")
@@ -86,10 +106,19 @@ class ProviderAccountingTests(unittest.IsolatedAsyncioTestCase):
                 self.assertEqual(charge["charged"], charge["reserved"])
                 self.assertFalse(result["solved"])
 
-    async def test_bad_choice_after_usage_retains_settled_cost_not_zero_or_reservation(self):
+    async def test_bad_choice_after_usage_retains_settled_cost_not_zero_or_reservation(
+        self,
+    ):
         for malformed in ({"choices": []}, {"choices": [{"message": []}]}):
             with self.subTest(payload=malformed):
-                payload = {"usage": {"prompt_tokens": 100, "completion_tokens": 50, "total_tokens": 150}, **malformed}
+                payload = {
+                    "usage": {
+                        "prompt_tokens": 100,
+                        "completion_tokens": 50,
+                        "total_tokens": 150,
+                    },
+                    **malformed,
+                }
                 charge, result = await self.exercise(payload, ProviderError)
                 self.assertEqual(charge["status"], "estimated")
                 self.assertEqual(charge["charged"], 1500)

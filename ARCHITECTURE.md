@@ -1,6 +1,6 @@
 # ForgeRL implementation contract
 
-Status: implementation in progress; no experiment results or deployment claimed.
+Status: implementation and the predeclared three-seed pilot are complete. See README, the benchmark artifact and deployment evidence for the release status and measured scope.
 
 ## Scope and evidence
 An actual bounded Python repair agent: curated authored regression tasks, LLM-generated code edits, isolated execution, visible test outcomes, exported unified patches and traceable model/token/cost events. A finite adaptive controller chooses a short-budget model call, deliberate model call, replan or stop. Train the controller using real collected transitions; never claim the language models were fine-tuned or trained with GRPO. Frozen policies are evaluated prospectively on held-out task families. Negative results are published with their limits. This is not SWE-bench or arbitrary GitHub execution.

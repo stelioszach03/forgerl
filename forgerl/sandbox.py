@@ -4,6 +4,7 @@ Production API workers use FORGERL_EXECUTOR_SOCKET and receive no Docker access.
 The dedicated broker is started with ``python -m forgerl.sandbox --serve PATH``.
 Expected outputs remain in the caller's process, outside the execution payload.
 """
+
 from __future__ import annotations
 import argparse
 import ast
@@ -29,11 +30,46 @@ MAX_OUTPUT_BYTES = 65536
 MAX_CASES = 24
 EXECUTION_TIMEOUT = 8.0
 DEFAULT_IMAGE = "forgerl-sandbox:v1"
-ALLOWED_MODULES = {"math", "re", "collections", "itertools", "functools", "heapq", "bisect", "statistics", "datetime", "decimal", "fractions", "json", "string"}
-FORBIDDEN_NAMES = {"eval", "exec", "compile", "open", "input", "breakpoint", "globals", "locals", "vars", "getattr", "setattr", "delattr", "dir", "help", "exit", "quit", "memoryview", "print"}
+ALLOWED_MODULES = {
+    "math",
+    "re",
+    "collections",
+    "itertools",
+    "functools",
+    "heapq",
+    "bisect",
+    "statistics",
+    "datetime",
+    "decimal",
+    "fractions",
+    "json",
+    "string",
+}
+FORBIDDEN_NAMES = {
+    "eval",
+    "exec",
+    "compile",
+    "open",
+    "input",
+    "breakpoint",
+    "globals",
+    "locals",
+    "vars",
+    "getattr",
+    "setattr",
+    "delattr",
+    "dir",
+    "help",
+    "exit",
+    "quit",
+    "memoryview",
+    "print",
+}
+
 
 class SandboxUnavailable(RuntimeError):
     pass
+
 
 class SandboxRejected(ValueError):
     pass
@@ -48,21 +84,41 @@ def validate_source(source: str, function_name: str) -> None:
         tree = ast.parse(source)
     except (SyntaxError, ValueError, RecursionError) as exc:
         raise SandboxRejected("Source is not valid supported Python") from exc
-    if not any(isinstance(n, ast.FunctionDef) and n.name == function_name for n in tree.body):
+    if not any(
+        isinstance(n, ast.FunctionDef) and n.name == function_name for n in tree.body
+    ):
         raise SandboxRejected("Required function definition is missing")
     for node in ast.walk(tree):
-        if isinstance(node, (ast.ClassDef, ast.AsyncFunctionDef, ast.Await, ast.Global, ast.Nonlocal)):
+        if isinstance(
+            node,
+            (ast.ClassDef, ast.AsyncFunctionDef, ast.Await, ast.Global, ast.Nonlocal),
+        ):
             raise SandboxRejected("Unsupported Python construct")
         if isinstance(node, (ast.Name, ast.Attribute)):
             name = node.id if isinstance(node, ast.Name) else node.attr
-            if '__' in name or (isinstance(node, ast.Attribute) and name.startswith('_')) or name in FORBIDDEN_NAMES:
-                raise SandboxRejected("Runtime introspection and host access are unavailable")
+            if (
+                "__" in name
+                or (isinstance(node, ast.Attribute) and name.startswith("_"))
+                or name in FORBIDDEN_NAMES
+            ):
+                raise SandboxRejected(
+                    "Runtime introspection and host access are unavailable"
+                )
         if isinstance(node, ast.Import):
-            if any(a.name.split('.')[0] not in ALLOWED_MODULES for a in node.names):
-                raise SandboxRejected("Import outside the supported standard-library allowlist")
+            if any(a.name.split(".")[0] not in ALLOWED_MODULES for a in node.names):
+                raise SandboxRejected(
+                    "Import outside the supported standard-library allowlist"
+                )
         if isinstance(node, ast.ImportFrom):
-            if node.level or not node.module or node.module.split('.')[0] not in ALLOWED_MODULES or any(a.name.startswith('_') or a.name == '*' for a in node.names):
-                raise SandboxRejected("Import outside the supported standard-library allowlist")
+            if (
+                node.level
+                or not node.module
+                or node.module.split(".")[0] not in ALLOWED_MODULES
+                or any(a.name.startswith("_") or a.name == "*" for a in node.names)
+            ):
+                raise SandboxRejected(
+                    "Import outside the supported standard-library allowlist"
+                )
 
 
 def _payload(source, function_name, cases):
@@ -71,9 +127,16 @@ def _payload(source, function_name, cases):
         raise SandboxRejected("Invalid case collection")
     clean = []
     for row in cases:
-        if not isinstance(row, dict) or not isinstance(row.get("name"), str) or not isinstance(row.get("args"), list) or not isinstance(row.get("kwargs", {}), dict):
+        if (
+            not isinstance(row, dict)
+            or not isinstance(row.get("name"), str)
+            or not isinstance(row.get("args"), list)
+            or not isinstance(row.get("kwargs", {}), dict)
+        ):
             raise SandboxRejected("Invalid input case")
-        clean.append({"name": row["name"], "args": row["args"], "kwargs": row.get("kwargs", {})})
+        clean.append(
+            {"name": row["name"], "args": row["args"], "kwargs": row.get("kwargs", {})}
+        )
     result = {"source": source, "function_name": function_name, "cases": clean}
     encoded = json.dumps(result, allow_nan=False, separators=(",", ":")).encode()
     if len(encoded) > MAX_PAYLOAD_BYTES:
@@ -84,23 +147,57 @@ def _payload(source, function_name, cases):
 def docker_command(image: str, name: str) -> list[str]:
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_./:@-]{0,200}", image):
         raise SandboxUnavailable("Invalid sandbox image configuration")
-    return ["docker", "run", "--rm", "--interactive", "--name", name,
-            "--network", "none", "--user", "65534:65534", "--read-only",
-            "--cap-drop", "ALL", "--security-opt", "no-new-privileges:true",
-            "--pids-limit", "32", "--memory", "128m", "--memory-swap", "128m",
-            "--cpus", "0.5", "--ulimit", "nofile=64:64", "--ulimit", "fsize=1048576:1048576",
-            "--log-driver", "none", image]
+    return [
+        "docker",
+        "run",
+        "--rm",
+        "--interactive",
+        "--name",
+        name,
+        "--network",
+        "none",
+        "--user",
+        "65534:65534",
+        "--read-only",
+        "--cap-drop",
+        "ALL",
+        "--security-opt",
+        "no-new-privileges:true",
+        "--pids-limit",
+        "32",
+        "--memory",
+        "128m",
+        "--memory-swap",
+        "128m",
+        "--cpus",
+        "0.5",
+        "--ulimit",
+        "nofile=64:64",
+        "--ulimit",
+        "fsize=1048576:1048576",
+        "--log-driver",
+        "none",
+        image,
+    ]
 
 
-def _bounded_process(command: list[str], payload: bytes, timeout: float) -> tuple[int, bytes, bool]:
+def _bounded_process(
+    command: list[str], payload: bytes, timeout: float
+) -> tuple[int, bytes, bool]:
     """Drain bounded pipe output; do not use unbounded communicate()."""
     try:
-        process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT, shell=False)
+        process = subprocess.Popen(
+            command,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            shell=False,
+        )
     except (OSError, ValueError) as exc:
         raise SandboxUnavailable("Docker executor is unavailable") from exc
     chunks: list[bytes] = []
     cap_reached = threading.Event()
+
     def drain():
         count = 0
         while True:
@@ -113,14 +210,17 @@ def _bounded_process(command: list[str], payload: bytes, timeout: float) -> tupl
                 process.kill()
                 break
             chunks.append(chunk)
+
     reader = threading.Thread(target=drain, daemon=True)
     reader.start()
+
     def send_input():
         try:
             process.stdin.write(payload)
             process.stdin.close()
         except (BrokenPipeError, OSError):
             pass
+
     writer = threading.Thread(target=send_input, daemon=True)
     writer.start()
     try:
@@ -138,17 +238,26 @@ def _bounded_process(command: list[str], payload: bytes, timeout: float) -> tupl
 
 
 def execute_docker(payload: dict, image: str | None = None) -> dict:
-    clean, encoded = _payload(payload["source"], payload["function_name"], payload["cases"])
+    clean, encoded = _payload(
+        payload["source"], payload["function_name"], payload["cases"]
+    )
     name = "forgerl-" + uuid.uuid4().hex
     selected_image = image or os.environ.get("FORGERL_SANDBOX_IMAGE", DEFAULT_IMAGE)
     try:
-        returncode, output, limited = _bounded_process(docker_command(selected_image, name), encoded, EXECUTION_TIMEOUT)
+        returncode, output, limited = _bounded_process(
+            docker_command(selected_image, name), encoded, EXECUTION_TIMEOUT
+        )
     finally:
         # Killing the Docker client alone does not reliably stop its container.
         # The explicit bounded cleanup also covers timeout and output-limit exits.
         try:
-            subprocess.run(["docker", "rm", "--force", name], stdout=subprocess.DEVNULL,
-                           stderr=subprocess.DEVNULL, timeout=3, check=False)
+            subprocess.run(
+                ["docker", "rm", "--force", name],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=3,
+                check=False,
+            )
         except (OSError, subprocess.TimeoutExpired):
             pass
     if limited:
@@ -168,7 +277,9 @@ def execute_docker(payload: dict, image: str | None = None) -> dict:
         )
         if any(pattern in diagnostic for pattern in infrastructure_errors):
             raise SandboxUnavailable("Docker executor connection is unavailable")
-        return {"execution_error": "Isolated runner failed or exceeded its resource limits"}
+        return {
+            "execution_error": "Isolated runner failed or exceeded its resource limits"
+        }
     try:
         result = json.loads(output)
     except (ValueError, UnicodeDecodeError):
@@ -185,13 +296,21 @@ def _validate_result(result: dict, cases: list[dict]) -> dict:
     if not isinstance(rows, list) or len(rows) != len(cases):
         return {"execution_error": "Runner result count mismatch"}
     for expected, row in zip(cases, rows):
-        if not isinstance(row, dict) or row.get("name") != expected["name"] or "actual" not in row or not isinstance(row.get("input_mutated"), bool) or not isinstance(row.get("error"), (str, type(None))):
+        if (
+            not isinstance(row, dict)
+            or row.get("name") != expected["name"]
+            or "actual" not in row
+            or not isinstance(row.get("input_mutated"), bool)
+            or not isinstance(row.get("error"), (str, type(None)))
+        ):
             return {"execution_error": "Runner result identity mismatch"}
     return {"cases": rows}
 
 
 def execute_broker(payload: dict, path: str) -> dict:
-    clean, encoded = _payload(payload["source"], payload["function_name"], payload["cases"])
+    clean, encoded = _payload(
+        payload["source"], payload["function_name"], payload["cases"]
+    )
     data = bytearray()
     try:
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
@@ -205,7 +324,9 @@ def execute_broker(payload: dict, path: str) -> dict:
                     break
                 data.extend(chunk)
     except (OSError, TimeoutError) as exc:
-        raise SandboxUnavailable("Isolated executor is temporarily unavailable") from exc
+        raise SandboxUnavailable(
+            "Isolated executor is temporarily unavailable"
+        ) from exc
     if len(data) > MAX_OUTPUT_BYTES:
         raise SandboxUnavailable("Executor response exceeded transport limit")
     try:
@@ -221,25 +342,52 @@ def _same(actual: Any, expected: Any) -> bool:
     if isinstance(expected, bool) or expected is None:
         return actual is expected
     if isinstance(expected, (int, float)):
-        return not isinstance(actual, bool) and isinstance(actual, (int, float)) and math.isfinite(actual) and math.isclose(actual, expected, rel_tol=1e-9, abs_tol=1e-9)
+        return (
+            not isinstance(actual, bool)
+            and isinstance(actual, (int, float))
+            and math.isfinite(actual)
+            and math.isclose(actual, expected, rel_tol=1e-9, abs_tol=1e-9)
+        )
     if isinstance(expected, list):
-        return isinstance(actual, list) and len(actual) == len(expected) and all(_same(a, b) for a, b in zip(actual, expected))
+        return (
+            isinstance(actual, list)
+            and len(actual) == len(expected)
+            and all(_same(a, b) for a, b in zip(actual, expected))
+        )
     if isinstance(expected, dict):
-        return isinstance(actual, dict) and actual.keys() == expected.keys() and all(_same(actual[k], value) for k, value in expected.items())
+        return (
+            isinstance(actual, dict)
+            and actual.keys() == expected.keys()
+            and all(_same(actual[k], value) for k, value in expected.items())
+        )
     return type(actual) is type(expected) and actual == expected
 
 
 def evaluate(task: Task, source: str, hidden: bool = False) -> dict:
     started = time.monotonic()
     cases = list(task.hidden_cases if hidden else task.public_cases)
-    security = {"backend": "docker", "network": "none", "non_root": True, "read_only": True,
-                "host_mounts": False, "capabilities": [], "expected_outputs_in_container": False,
-                "timeout_s": EXECUTION_TIMEOUT, "memory_mb": 128, "cpu_limit": 0.5,
-                "pids_limit": 32, "output_limit_bytes": MAX_OUTPUT_BYTES}
+    security = {
+        "backend": "docker",
+        "network": "none",
+        "non_root": True,
+        "read_only": True,
+        "host_mounts": False,
+        "capabilities": [],
+        "expected_outputs_in_container": False,
+        "timeout_s": EXECUTION_TIMEOUT,
+        "memory_mb": 128,
+        "cpu_limit": 0.5,
+        "pids_limit": 32,
+        "output_limit_bytes": MAX_OUTPUT_BYTES,
+    }
     try:
         payload, _ = _payload(source, task.function_name, cases)
         socket_path = os.environ.get("FORGERL_EXECUTOR_SOCKET")
-        result = execute_broker(payload, socket_path) if socket_path else execute_docker(payload)
+        result = (
+            execute_broker(payload, socket_path)
+            if socket_path
+            else execute_docker(payload)
+        )
     except SandboxRejected as exc:
         result = {"execution_error": str(exc)}
     rows = result.get("cases", [])
@@ -248,7 +396,10 @@ def evaluate(task: Task, source: str, hidden: bool = False) -> dict:
         row = rows[index] if index < len(rows) else {}
         actual, error = row.get("actual"), row.get("error")
         expected_error = case.get("expected_error")
-        mutation_violation = bool(row.get("input_mutated")) and any(phrase in task.description.lower() for phrase in ("do not modify", "do not mutate", "must remain unchanged"))
+        mutation_violation = bool(row.get("input_mutated")) and any(
+            phrase in task.description.lower()
+            for phrase in ("do not modify", "do not mutate", "must remain unchanged")
+        )
         if result.get("execution_error"):
             passed = False
             error = result["execution_error"]
@@ -260,10 +411,23 @@ def evaluate(task: Task, source: str, hidden: bool = False) -> dict:
             passed = error is None and _same(actual, case["expected"])
         # Hidden grading exports only labels/counts; no hidden inputs, actuals or
         # expected answers flow into model prompts or public traces.
-        results.append({"name": case["name"], "passed": bool(passed), "actual": None if hidden else actual,
-                        "error": ("Held-out case failed" if not passed else None) if hidden else error})
-    return {"passed": sum(row["passed"] for row in results), "total": len(results), "cases": results,
-            "elapsed_s": round(time.monotonic() - started, 6), "security": security}
+        results.append(
+            {
+                "name": case["name"],
+                "passed": bool(passed),
+                "actual": None if hidden else actual,
+                "error": ("Held-out case failed" if not passed else None)
+                if hidden
+                else error,
+            }
+        )
+    return {
+        "passed": sum(row["passed"] for row in results),
+        "total": len(results),
+        "cases": results,
+        "elapsed_s": round(time.monotonic() - started, 6),
+        "security": security,
+    }
 
 
 class ExecutorServer(socketserver.ThreadingMixIn, socketserver.UnixStreamServer):
@@ -279,8 +443,13 @@ class ExecutorHandler(socketserver.StreamRequestHandler):
         if permitted:
             if not hasattr(socket, "SO_PEERCRED"):
                 return
-            _, uid, _ = struct.unpack("3i", self.connection.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize("3i")))
-            if str(uid) not in {part.strip() for part in permitted.split(',')}:
+            _, uid, _ = struct.unpack(
+                "3i",
+                self.connection.getsockopt(
+                    socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize("3i")
+                ),
+            )
+            if str(uid) not in {part.strip() for part in permitted.split(",")}:
                 return
         if not self.server.slots.acquire(blocking=False):
             self.wfile.write(b'{"unavailable":true}')
@@ -324,7 +493,9 @@ def serve(path: str) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="ForgeRL dedicated Docker executor broker")
+    parser = argparse.ArgumentParser(
+        description="ForgeRL dedicated Docker executor broker"
+    )
     parser.add_argument("--serve", required=True, help="Private Unix socket path")
     args = parser.parse_args()
     serve(args.serve)

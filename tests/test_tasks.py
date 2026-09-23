@@ -3,9 +3,9 @@
 Optional Docker checks use these reference sources inside the same isolated
 runner. They are excluded from application task serialization and prompts.
 """
+
 import copy
 import inspect
-import json
 import os
 import re
 from collections import Counter, deque
@@ -33,16 +33,16 @@ def rotate(values, k):
 def window_sums(values, k):
     if not isinstance(k, int) or isinstance(k, bool) or k <= 0:
         raise ValueError("positive integer width required")
-    return [sum(values[i:i + k]) for i in range(len(values) - k + 1)]
+    return [sum(values[i : i + k]) for i in range(len(values) - k + 1)]
 
 
 def parse_settings(text):
     out = {}
     for line in text.splitlines():
         line = line.strip()
-        if not line or line.startswith('#'):
+        if not line or line.startswith("#"):
             continue
-        key, sep, value = line.partition('=')
+        key, sep, value = line.partition("=")
         if not sep or not key.strip():
             raise ValueError("malformed setting")
         out[key.strip()] = value.strip()
@@ -50,20 +50,23 @@ def parse_settings(text):
 
 
 def duration_seconds(text):
-    pattern = r'(\d+)([hms])'
-    remaining = re.sub(pattern, '', text)
+    pattern = r"(\d+)([hms])"
+    remaining = re.sub(pattern, "", text)
     matches = re.findall(pattern, text)
     if not matches or remaining.strip():
         raise ValueError("invalid duration")
-    return sum(int(number) * {'h': 3600, 'm': 60, 's': 1}[unit] for number, unit in matches)
+    return sum(
+        int(number) * {"h": 3600, "m": 60, "s": 1}[unit] for number, unit in matches
+    )
 
 
 def compare_versions(left, right):
     def parts(text):
-        values = text.split('.')
+        values = text.split(".")
         if not all(value and value.isascii() and value.isdigit() for value in values):
             raise ValueError("invalid version")
         return [int(value) for value in values]
+
     a, b = parts(left), parts(right)
     n = max(len(a), len(b))
     a += [0] * (n - len(a))
@@ -74,7 +77,7 @@ def compare_versions(left, right):
 def aggregate_counts(records):
     out = {}
     for row in records:
-        out[row['item']] = out.get(row['item'], 0) + row['quantity']
+        out[row["item"]] = out.get(row["item"], 0) + row["quantity"]
     return out
 
 
@@ -134,7 +137,12 @@ def merge_intervals(intervals):
 
 
 def intersect_intervals(left, right):
-    return [[max(a, c), min(b, d)] for a, b in left for c, d in right if max(a, c) < min(b, d)]
+    return [
+        [max(a, c), min(b, d)]
+        for a, b in left
+        for c, d in right
+        if max(a, c) < min(b, d)
+    ]
 
 
 def subtract_intervals(interval, blackouts):
@@ -169,23 +177,28 @@ def rle_decode(runs):
         if not isinstance(run, list) or len(run) != 2:
             raise ValueError("bad shape")
         char, count = run
-        if not isinstance(char, str) or len(char) != 1 or type(count) is not int or count < 0:
+        if (
+            not isinstance(char, str)
+            or len(char) != 1
+            or type(count) is not int
+            or count < 0
+        ):
             raise ValueError("invalid run")
         pieces.append(char * count)
-    return ''.join(pieces)
+    return "".join(pieces)
 
 
 def split_escaped(text):
-    fields = ['']
+    fields = [""]
     escaped = False
     for char in text:
         if escaped:
             fields[-1] += char
             escaped = False
-        elif char == '\\':
+        elif char == "\\":
             escaped = True
-        elif char == '|':
-            fields.append('')
+        elif char == "|":
+            fields.append("")
         else:
             fields[-1] += char
     if escaped:
@@ -284,59 +297,104 @@ def business_days(start, end):
     return count
 
 
-REFERENCES = {function.__name__: function for function in (
-    compact_runs, rotate, window_sums, parse_settings, duration_seconds, compare_versions,
-    aggregate_counts, invert_multimap, deep_merge, minimum_coins, weighted_mean, quantile,
-    merge_intervals, intersect_intervals, subtract_intervals, rle_encode, rle_decode, split_escaped,
-    shortest_path, topological_order, connected_components, days_in_month, add_months, business_days)}
-REFERENCE_IMPORTS = 'import re\nfrom collections import deque\nfrom datetime import date, timedelta\nfrom heapq import heapify, heappop, heappush\n'
+REFERENCES = {
+    function.__name__: function
+    for function in (
+        compact_runs,
+        rotate,
+        window_sums,
+        parse_settings,
+        duration_seconds,
+        compare_versions,
+        aggregate_counts,
+        invert_multimap,
+        deep_merge,
+        minimum_coins,
+        weighted_mean,
+        quantile,
+        merge_intervals,
+        intersect_intervals,
+        subtract_intervals,
+        rle_encode,
+        rle_decode,
+        split_escaped,
+        shortest_path,
+        topological_order,
+        connected_components,
+        days_in_month,
+        add_months,
+        business_days,
+    )
+}
+REFERENCE_IMPORTS = "import re\nfrom collections import deque\nfrom datetime import date, timedelta\nfrom heapq import heapify, heappop, heappush\n"
 
 
 def test_catalog_has_exact_family_disjoint_splits():
     tasks = list_tasks()
     assert len(tasks) == len({task.id for task in tasks}) == 24
-    assert Counter(task.split for task in tasks) == {'train': 12, 'validation': 6, 'test': 6}
+    assert Counter(task.split for task in tasks) == {
+        "train": 12,
+        "validation": 6,
+        "test": 6,
+    }
     families = {}
     for task in tasks:
         assert task.split == families.setdefault(task.family, task.split)
         assert len(task.public_cases) >= 2 and len(task.hidden_cases) >= 3
-        assert len({row['name'] for row in task.public_cases + task.hidden_cases}) == len(task.public_cases) + len(task.hidden_cases)
+        assert len(
+            {row["name"] for row in task.public_cases + task.hidden_cases}
+        ) == len(task.public_cases) + len(task.hidden_cases)
 
 
-@pytest.mark.parametrize('task', list_tasks(), ids=lambda task: task.id)
+@pytest.mark.parametrize("task", list_tasks(), ids=lambda task: task.id)
 def test_trusted_reference_validates_all_authored_expected_outputs(task):
     function = REFERENCES[task.function_name]
     for row in task.public_cases + task.hidden_cases:
-        args, kwargs = copy.deepcopy(row['args']), copy.deepcopy(row['kwargs'])
-        if row.get('expected_error'):
+        args, kwargs = copy.deepcopy(row["args"]), copy.deepcopy(row["kwargs"])
+        if row.get("expected_error"):
             with pytest.raises(Exception) as caught:
                 function(*args, **kwargs)
-            assert type(caught.value).__name__ == row['expected_error']
+            assert type(caught.value).__name__ == row["expected_error"]
         else:
-            assert function(*args, **kwargs) == pytest.approx(row['expected']) if isinstance(row['expected'], float) else function(*args, **kwargs) == row['expected']
-        if any(phrase in task.description.lower() for phrase in ('do not modify', 'do not mutate', 'must remain unchanged')):
-            assert args == row['args'] and kwargs == row['kwargs']
+            assert (
+                function(*args, **kwargs) == pytest.approx(row["expected"])
+                if isinstance(row["expected"], float)
+                else function(*args, **kwargs) == row["expected"]
+            )
+        if any(
+            phrase in task.description.lower()
+            for phrase in ("do not modify", "do not mutate", "must remain unchanged")
+        ):
+            assert args == row["args"] and kwargs == row["kwargs"]
 
 
 def test_public_serialization_cannot_leak_hidden_cases():
-    task = get_task('graph-topological')
+    task = get_task("graph-topological")
     public = public_task(task, True)
-    assert 'hidden_cases' not in public
-    assert public['public_tests'] == list(task.public_cases)
-    public['public_tests'][0]['name'] = 'mutated client copy'
-    assert task.public_cases[0]['name'] != 'mutated client copy'
-    assert len(task_manifest_hash()) == 64 and task_manifest_hash() == task_manifest_hash()
+    assert "hidden_cases" not in public
+    assert public["public_tests"] == list(task.public_cases)
+    public["public_tests"][0]["name"] = "mutated client copy"
+    assert task.public_cases[0]["name"] != "mutated client copy"
+    assert (
+        len(task_manifest_hash()) == 64 and task_manifest_hash() == task_manifest_hash()
+    )
     with pytest.raises(KeyError):
-        get_task('../untrusted')
+        get_task("../untrusted")
 
 
-@pytest.mark.skipif(os.environ.get('FORGERL_RUN_DOCKER_TESTS') != '1', reason='requires explicitly enabled isolated Docker runtime')
-@pytest.mark.parametrize('task', list_tasks(), ids=lambda task: task.id)
+@pytest.mark.skipif(
+    os.environ.get("FORGERL_RUN_DOCKER_TESTS") != "1",
+    reason="requires explicitly enabled isolated Docker runtime",
+)
+@pytest.mark.parametrize("task", list_tasks(), ids=lambda task: task.id)
 def test_initial_regression_fails_and_reference_passes_in_docker(task):
     from forgerl.sandbox import evaluate
+
     baseline = evaluate(task, task.source)
-    assert baseline['passed'] < baseline['total'], f'No visible regression for {task.id}'
+    assert baseline["passed"] < baseline["total"], (
+        f"No visible regression for {task.id}"
+    )
     repaired = REFERENCE_IMPORTS + inspect.getsource(REFERENCES[task.function_name])
     for hidden in (False, True):
         result = evaluate(task, repaired, hidden=hidden)
-        assert result['passed'] == result['total'], (task.id, hidden, result)
+        assert result["passed"] == result["total"], (task.id, hidden, result)

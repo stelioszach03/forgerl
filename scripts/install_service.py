@@ -1,4 +1,5 @@
 """Install ForgeRL services on loopback only; public Nginx activation is separate."""
+
 import json
 import os
 import pwd
@@ -7,28 +8,78 @@ import subprocess
 from pathlib import Path
 
 
-def run(args,**kw):return subprocess.run(args,check=True,**kw)
+def run(args, **kw):
+    return subprocess.run(args, check=True, **kw)
 
 
 def main():
-    assert os.geteuid()==0
-    base=Path('/srv/forgerl/app');assert (base/'forgerl/app.py').is_file()
-    api=pwd.getpwnam('forgerl-api');exe=pwd.getpwnam('forgerl-executor')
-    keydir=Path('/etc/forgerl');keydir.mkdir(mode=0o700,exist_ok=True);keydir.chmod(0o700)
-    session=keydir/'session.key'
-    if not session.exists():session.write_text(secrets.token_hex(32));session.chmod(0o600)
-    assert (keydir/'runpod.key').is_file()
-    (keydir/'runpod.key').chmod(0o600)
-    data=Path('/var/lib/forgerl');data.mkdir(mode=0o700,exist_ok=True)
-    data.chmod(0o700);os.chown(data,api.pw_uid,api.pw_gid)
-    run(['python3','-m','venv',str(base/'.venv')])
-    run([str(base/'.venv/bin/pip'),'install','--disable-pip-version-check','-r',str(base/'requirements.lock')])
-    env=['env',f'DOCKER_HOST=unix:///run/user/{exe.pw_uid}/docker.sock',f'XDG_RUNTIME_DIR=/run/user/{exe.pw_uid}']
-    run(['runuser','-u','forgerl-executor','--',*env,'docker','build','--pull','-t','forgerl-sandbox:v1',str(base/'sandbox')])
-    image=subprocess.check_output(['runuser','-u','forgerl-executor','--',*env,'docker','image','inspect','forgerl-sandbox:v1','--format','{{.Id}}'],text=True).strip()
-    assert image.startswith('sha256:')
-    (keydir/'sandbox-image').write_text(image+'\n')
-    broker=f'''[Unit]
+    assert os.geteuid() == 0
+    base = Path("/srv/forgerl/app")
+    assert (base / "forgerl/app.py").is_file()
+    api = pwd.getpwnam("forgerl-api")
+    exe = pwd.getpwnam("forgerl-executor")
+    keydir = Path("/etc/forgerl")
+    keydir.mkdir(mode=0o700, exist_ok=True)
+    keydir.chmod(0o700)
+    session = keydir / "session.key"
+    if not session.exists():
+        session.write_text(secrets.token_hex(32))
+        session.chmod(0o600)
+    assert (keydir / "runpod.key").is_file()
+    (keydir / "runpod.key").chmod(0o600)
+    data = Path("/var/lib/forgerl")
+    data.mkdir(mode=0o700, exist_ok=True)
+    data.chmod(0o700)
+    os.chown(data, api.pw_uid, api.pw_gid)
+    run(["python3", "-m", "venv", str(base / ".venv")])
+    run(
+        [
+            str(base / ".venv/bin/pip"),
+            "install",
+            "--disable-pip-version-check",
+            "-r",
+            str(base / "requirements.lock"),
+        ]
+    )
+    env = [
+        "env",
+        f"DOCKER_HOST=unix:///run/user/{exe.pw_uid}/docker.sock",
+        f"XDG_RUNTIME_DIR=/run/user/{exe.pw_uid}",
+    ]
+    run(
+        [
+            "runuser",
+            "-u",
+            "forgerl-executor",
+            "--",
+            *env,
+            "docker",
+            "build",
+            "--pull",
+            "-t",
+            "forgerl-sandbox:v1",
+            str(base / "sandbox"),
+        ]
+    )
+    image = subprocess.check_output(
+        [
+            "runuser",
+            "-u",
+            "forgerl-executor",
+            "--",
+            *env,
+            "docker",
+            "image",
+            "inspect",
+            "forgerl-sandbox:v1",
+            "--format",
+            "{{.Id}}",
+        ],
+        text=True,
+    ).strip()
+    assert image.startswith("sha256:")
+    (keydir / "sandbox-image").write_text(image + "\n")
+    broker = f"""[Unit]
 Description=ForgeRL restricted sandbox broker (rootless Docker)
 After=user@{exe.pw_uid}.service
 Requires=user@{exe.pw_uid}.service
@@ -60,8 +111,8 @@ TasksMax=64
 
 [Install]
 WantedBy=multi-user.target
-'''
-    web=f'''[Unit]
+"""
+    web = f"""[Unit]
 Description=ForgeRL evidence workbench
 After=network-online.target forgerl-executor.service
 Requires=forgerl-executor.service
@@ -101,12 +152,30 @@ TasksMax=64
 
 [Install]
 WantedBy=multi-user.target
-'''
-    for name,value in [('forgerl-executor',broker),('forgerl-api',web)]:
-        (Path('/etc/systemd/system')/(name+'.service')).write_text(value)
-    run(['systemctl','daemon-reload'])
-    run(['systemctl','enable','--now','forgerl-executor.service','forgerl-api.service'])
-    print(json.dumps({'installed':True,'bind':'127.0.0.1:18405','sandbox_image':image,'nginx_changed':False}))
+"""
+    for name, value in [("forgerl-executor", broker), ("forgerl-api", web)]:
+        (Path("/etc/systemd/system") / (name + ".service")).write_text(value)
+    run(["systemctl", "daemon-reload"])
+    run(
+        [
+            "systemctl",
+            "enable",
+            "--now",
+            "forgerl-executor.service",
+            "forgerl-api.service",
+        ]
+    )
+    print(
+        json.dumps(
+            {
+                "installed": True,
+                "bind": "127.0.0.1:18405",
+                "sandbox_image": image,
+                "nginx_changed": False,
+            }
+        )
+    )
 
 
-if __name__=='__main__':main()
+if __name__ == "__main__":
+    main()

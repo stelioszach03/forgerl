@@ -293,18 +293,31 @@ if (typeof document !== 'undefined') (() => {
 
   function renderBenchmark(benchmark) {
     state.benchmark = benchmark;
-    const complete = benchmark.status === 'complete'; text('benchmark-status', complete ? 'Recorded evaluation' : 'Not run');
-    text('benchmark-description', complete ? (benchmark.methodology?.description || 'Recorded policy outcomes on the authored task suite. See provenance and limitations before interpreting the comparison.') : 'No completed benchmark has been published. Solve rates, costs and policy improvements are not claimed.');
+    const complete = benchmark.status === 'complete';
+    const partial = benchmark.status === 'partial';
+    const summary = Array.isArray(benchmark.summary) ? benchmark.summary : [];
+    text('benchmark-status', complete ? 'Recorded evaluation' : partial ? 'Partial evaluation' : summary.length ? 'Recorded measurements' : 'Not run');
+    text('benchmark-description', benchmark.methodology?.description || (partial ? 'Only part of the planned evaluation is available. The table reports the recorded outcomes; missing runs are not treated as successes.' : complete || summary.length ? 'Recorded policy outcomes on the authored task suite. See provenance and limitations before interpreting the comparison.' : 'No completed benchmark has been published. Solve rates, costs and policy improvements are not claimed.'));
+    const coverage = [];
+    if (partial) coverage.push('Partial coverage. Missing runs are not counted as solved.');
+    const seedList = value => Array.isArray(value) ? value.filter(seed => typeof seed === 'number' || typeof seed === 'string').map(String).join(', ') : '';
+    const missingSeeds = seedList(benchmark.provenance?.missing_seeds);
+    const partialSeeds = seedList(benchmark.provenance?.partial_seeds);
+    if (missingSeeds) coverage.push(`Missing seeds: ${missingSeeds}.`);
+    if (partialSeeds) coverage.push(`Incomplete seeds: ${partialSeeds}.`);
+    text('benchmark-coverage', coverage.join(' ')); $('benchmark-coverage').hidden = coverage.length === 0;
     const table = $('benchmark-body'); table.replaceChildren();
-    if (complete && benchmark.summary?.length) for (const row of benchmark.summary) { const tr = element('tr'); [label(row.policy), count(row.n), count(row.solved), percentage(row.solve_rate), ForgeUI.number(row.mean_steps) === null ? '—' : row.mean_steps.toFixed(2), ForgeUI.number(row.mean_tokens) === null ? '—' : row.mean_tokens.toLocaleString('en-US', {maximumFractionDigits: 1}), cost(row.mean_cost_usd), duration(row.mean_latency_s)].forEach(value => tr.append(element('td', '', value))); table.append(tr); }
-    else { const row = element('tr'); const cell = element('td', '', 'No benchmark measurements available. This table will show actual recorded outcomes when an evaluation is complete.'); cell.colSpan = 8; row.append(cell); table.append(row); }
+    if (summary.length) for (const row of summary) { const tr = element('tr'); const measuredCoverage = ForgeUI.number(row.planned_n) === null ? count(row.n) : `${count(row.n)} / ${count(row.planned_n)}`; [label(row.policy), measuredCoverage, count(row.solved), percentage(row.solve_rate), ForgeUI.number(row.mean_steps) === null ? '—' : row.mean_steps.toFixed(2), ForgeUI.number(row.mean_tokens) === null ? '—' : row.mean_tokens.toLocaleString('en-US', {maximumFractionDigits: 1}), cost(row.mean_cost_usd), duration(row.mean_latency_s)].forEach(value => tr.append(element('td', '', value))); table.append(tr); }
+    else { const row = element('tr'); const cell = element('td', '', partial ? 'No benchmark measurements are available in this partial artifact. Missing outcomes are not assigned a solve rate or cost.' : 'No benchmark measurements available. This table will show actual recorded outcomes when an evaluation is available.'); cell.colSpan = 8; row.append(cell); table.append(row); }
     const pairs = $('paired-runs'); pairs.replaceChildren();
     if (!benchmark.paired_runs?.length) pairs.append(element('p', 'empty-copy', 'No paired evaluation runs are available yet. Individual public runs can be inspected in the workbench.'));
     else for (const task of benchmark.paired_runs) { const section = element('section', 'paired-task'); section.append(element('h3', '', task.task_title || task.task_id)); for (const run of task.runs || []) { const button = element('button', 'paired-run'); button.type = 'button'; button.append(element('strong', '', label(run.policy)), element('small', '', `${stateOf(run).text} · ${cost(run.cost_usd)} · ${count(run.tokens)} tokens`)); if (isRunId(run.id)) button.addEventListener('click', () => { inspectRun(run.id); window.scrollTo({top: 0, behavior: 'auto'}); }); else button.disabled = true; section.append(button); } pairs.append(section); }
     if (benchmark.limitations?.length) $('benchmark-limitations').replaceChildren(...benchmark.limitations.map(limit => element('li', '', typeof limit === 'string' ? limit : limit.description || JSON.stringify(limit))));
     const provenance = $('benchmark-provenance'); provenance.replaceChildren();
     const entries = Object.entries(benchmark.provenance || {}).filter(([, value]) => ['string', 'number', 'boolean'].includes(typeof value));
-    if (!entries.length) entries.push(['status', complete ? 'No additional provenance provided.' : 'No evaluation artifact published.']);
+    if (missingSeeds) entries.push(['missing_seeds', missingSeeds]);
+    if (partialSeeds) entries.push(['partial_seeds', partialSeeds]);
+    if (!entries.length) entries.push(['status', partial ? 'Partial evaluation artifact.' : complete || summary.length ? 'No additional provenance provided.' : 'No evaluation artifact published.']);
     for (const [key, value] of entries) { const row = element('div'); row.append(element('dt', '', label(key)), element('dd', '', String(value))); provenance.append(row); }
   }
 

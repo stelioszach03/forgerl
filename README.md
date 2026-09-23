@@ -4,7 +4,7 @@
 
 ForgeRL is a research workbench for bounded Python repair. A visitor selects an authored regression task, follows real model-generated edits and isolated test execution, and inspects the final patch, held-out checks and request accounting. A separately trained controller chooses between request configurations or stops; the hosted language-model weights stay unchanged.
 
-[Open the demo](https://stelioszach.com/demos/forgerl/) · [Methodology](docs/METHODOLOGY.md) · [Operations](docs/OPERATIONS.md) · [Benchmark artifact](artifacts/benchmark.json)
+[Open the demo](https://stelioszach.com/demos/forgerl/) · [Methodology](docs/METHODOLOGY.md) · [Pilot findings](docs/PILOT_FINDINGS.md) · [Operations](docs/OPERATIONS.md) · [Benchmark artifact](artifacts/benchmark.json)
 
 ## What is implemented
 
@@ -22,7 +22,9 @@ The suite contains **24 authored tasks**, separated by family into **12 training
 
 Three predeclared seeds—**17, 29 and 43**—repeat the study. Full coverage produces **18 evaluation episodes per policy on six unique held-out tasks from two families**. Seed repetitions are not additional independent tasks. Each seed trains its own controller; the production artifact is fixed to seed 17 before evaluating results. Hosted-model sampling is not guaranteed to be deterministic.
 
-The [benchmark artifact](artifacts/benchmark.json) is the result source of record. Read its `status`, coverage, failures, per-task/seed rows and manifest hashes before comparing means. Missing work remains partial. No performance gains are asserted here without a completed evidence report. The [methodology](docs/METHODOLOGY.md) explains training rewards, hidden-test separation, prospective evaluation and the limits of this small sample.
+The [benchmark artifact](artifacts/benchmark.json) is the result source of record. Read its `status`, coverage, failures, per-task/seed rows and manifest hashes before comparing means. Missing work remains partial. The completed pilot recorded **11/18 held-out successes for the learned controller and 18/18 for deliberate-only**, across the same six tasks and three seeds; it did not establish an improvement over that baseline. See [pilot findings](docs/PILOT_FINDINGS.md) for the full comparison and failure analysis. The [methodology](docs/METHODOLOGY.md) explains training rewards, hidden-test separation, prospective evaluation and the limits of this small sample.
+
+Cost estimates use a conservative common $10/million-token rate because the provider’s published Granite prices conflicted. Economic comparisons are conditional on that rate, not verified invoice savings.
 
 Live inference uses a finite prepaid allowance. Recorded evidence remains useful when new model requests are paused or the allowance is exhausted; replay is labeled separately from fresh inference.
 

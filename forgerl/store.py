@@ -3,6 +3,7 @@
 SQLite WAL is sufficient for one bounded VPS worker. Transactions, not process
 memory, enforce the public budget and queue admission across restarts.
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -71,109 +72,260 @@ class Store:
         if bucket not in self.CAPS:
             raise ValueError("Unknown budget bucket")
         with self.connect() as c:
-            total = c.execute("SELECT COALESCE(SUM(charged),0) FROM charges").fetchone()[0]
-            amount = c.execute("SELECT COALESCE(SUM(charged),0) FROM charges WHERE bucket=?", (bucket,)).fetchone()[0]
-            stopped = c.execute("SELECT value FROM settings WHERE name='provider_disabled'").fetchone()
+            total = c.execute(
+                "SELECT COALESCE(SUM(charged),0) FROM charges"
+            ).fetchone()[0]
+            amount = c.execute(
+                "SELECT COALESCE(SUM(charged),0) FROM charges WHERE bucket=?", (bucket,)
+            ).fetchone()[0]
+            stopped = c.execute(
+                "SELECT value FROM settings WHERE name='provider_disabled'"
+            ).fetchone()
         remaining = max(0, min(self.CAPS[bucket] - amount, self.TOTAL_CAP - total))
-        return {"bucket": bucket, "charged_usd": amount/1e6, "remaining_usd": remaining/1e6,
-                "total_charged_usd": total/1e6, "cap_usd": self.CAPS[bucket]/1e6,
-                "disabled": bool(stopped), "accounting": "Conservative token-rate estimates; uncertain calls retain their full reservation."}
+        return {
+            "bucket": bucket,
+            "charged_usd": amount / 1e6,
+            "remaining_usd": remaining / 1e6,
+            "total_charged_usd": total / 1e6,
+            "cap_usd": self.CAPS[bucket] / 1e6,
+            "disabled": bool(stopped),
+            "accounting": "Conservative token-rate estimates; uncertain calls retain their full reservation.",
+        }
 
-    def reserve(self, bucket: str, model: str, micro_usd: int, run_id: str | None = None) -> str:
+    def reserve(
+        self, bucket: str, model: str, micro_usd: int, run_id: str | None = None
+    ) -> str:
         if bucket not in self.CAPS or not 0 < micro_usd <= 500_000:
             raise ValueError("Invalid reservation")
         ident = uuid.uuid4().hex
         now = time.time()
         with self.transaction() as c:
-            if c.execute("SELECT 1 FROM settings WHERE name='provider_disabled'").fetchone():
+            if c.execute(
+                "SELECT 1 FROM settings WHERE name='provider_disabled'"
+            ).fetchone():
                 raise BudgetExceeded("Inference paused after an accounting discrepancy")
-            total = c.execute("SELECT COALESCE(SUM(charged),0) FROM charges").fetchone()[0]
-            current = c.execute("SELECT COALESCE(SUM(charged),0) FROM charges WHERE bucket=?", (bucket,)).fetchone()[0]
-            if total + micro_usd > self.TOTAL_CAP or current + micro_usd > self.CAPS[bucket]:
+            total = c.execute(
+                "SELECT COALESCE(SUM(charged),0) FROM charges"
+            ).fetchone()[0]
+            current = c.execute(
+                "SELECT COALESCE(SUM(charged),0) FROM charges WHERE bucket=?", (bucket,)
+            ).fetchone()[0]
+            if (
+                total + micro_usd > self.TOTAL_CAP
+                or current + micro_usd > self.CAPS[bucket]
+            ):
                 raise BudgetExceeded("The project inference allowance is exhausted")
             if bucket == "public":
-                daily = c.execute("SELECT COALESCE(SUM(charged),0) FROM charges WHERE bucket='public' AND created>?", (now-86400,)).fetchone()[0]
+                daily = c.execute(
+                    "SELECT COALESCE(SUM(charged),0) FROM charges WHERE bucket='public' AND created>?",
+                    (now - 86400,),
+                ).fetchone()[0]
                 if daily + micro_usd > 1_000_000:
-                    raise BudgetExceeded("Today's shared live allowance has been reached")
-            c.execute("INSERT INTO charges VALUES (?,?,?,?,?,?,?,?,?)",
-                      (ident,bucket,model,micro_usd,micro_usd,"reserved",now,None,run_id))
+                    raise BudgetExceeded(
+                        "Today's shared live allowance has been reached"
+                    )
+            c.execute(
+                "INSERT INTO charges VALUES (?,?,?,?,?,?,?,?,?)",
+                (
+                    ident,
+                    bucket,
+                    model,
+                    micro_usd,
+                    micro_usd,
+                    "reserved",
+                    now,
+                    None,
+                    run_id,
+                ),
+            )
         return ident
 
     def settle(self, ident: str, micro_usd: int | None, usage: dict | None = None):
         with self.transaction() as c:
             row = c.execute("SELECT * FROM charges WHERE id=?", (ident,)).fetchone()
-            if row is None or row['status'] != 'reserved':
+            if row is None or row["status"] != "reserved":
                 raise ValueError("Unknown or already settled reservation")
-            amount = row['reserved'] if micro_usd is None else max(0, int(micro_usd))
-            if amount > row['reserved']:
-                c.execute("INSERT OR REPLACE INTO settings VALUES ('provider_disabled','reservation_exceeded')")
-            c.execute("UPDATE charges SET charged=?,status=?,usage_json=? WHERE id=?",
-                      (amount,"uncertain" if micro_usd is None else "estimated",json.dumps(usage),ident))
+            amount = row["reserved"] if micro_usd is None else max(0, int(micro_usd))
+            if amount > row["reserved"]:
+                c.execute(
+                    "INSERT OR REPLACE INTO settings VALUES ('provider_disabled','reservation_exceeded')"
+                )
+            c.execute(
+                "UPDATE charges SET charged=?,status=?,usage_json=? WHERE id=?",
+                (
+                    amount,
+                    "uncertain" if micro_usd is None else "estimated",
+                    json.dumps(usage),
+                    ident,
+                ),
+            )
 
     def import_calibration(self, micro_usd=770):
         with self.transaction() as c:
-            c.execute("INSERT OR IGNORE INTO charges VALUES (?,?,?,?,?,?,?,?,?)",
-                      ('initial-provider-calibration','research','granite-4-0-h-small',micro_usd,micro_usd,'estimated',time.time(),'{"total_tokens":77}',None))
+            c.execute(
+                "INSERT OR IGNORE INTO charges VALUES (?,?,?,?,?,?,?,?,?)",
+                (
+                    "initial-provider-calibration",
+                    "research",
+                    "granite-4-0-h-small",
+                    micro_usd,
+                    micro_usd,
+                    "estimated",
+                    time.time(),
+                    '{"total_tokens":77}',
+                    None,
+                ),
+            )
 
     def admit(self, task_id, policy, session_hash, ip_hash) -> str:
         now, ident = time.time(), uuid.uuid4().hex
         with self.transaction() as c:
-            active = c.execute("SELECT COUNT(*) FROM runs WHERE status IN ('queued','running')").fetchone()[0]
+            active = c.execute(
+                "SELECT COUNT(*) FROM runs WHERE status IN ('queued','running')"
+            ).fetchone()[0]
             if active >= 3:
-                raise AdmissionError("The live queue is full. Explore a recorded run while it clears.")
-            for field,value,limit in [('session_hash',session_hash,2),('ip_hash',ip_hash,3)]:
-                count = c.execute(f"SELECT COUNT(*) FROM runs WHERE {field}=? AND created>? AND mode='live'", (value,now-86400)).fetchone()[0]
+                raise AdmissionError(
+                    "The live queue is full. Explore a recorded run while it clears."
+                )
+            for field, value, limit in [
+                ("session_hash", session_hash, 2),
+                ("ip_hash", ip_hash, 3),
+            ]:
+                count = c.execute(
+                    f"SELECT COUNT(*) FROM runs WHERE {field}=? AND created>? AND mode='live'",
+                    (value, now - 86400),
+                ).fetchone()[0]
                 if count >= limit:
-                    raise AdmissionError("Your daily live-run allowance has been used. Recorded runs remain available.")
-            c.execute("INSERT INTO runs(id,task_id,policy,status,created,session_hash,ip_hash) VALUES (?,?,?,'queued',?,?,?)",
-                      (ident,task_id,policy,now,session_hash,ip_hash))
+                    raise AdmissionError(
+                        "Your daily live-run allowance has been used. Recorded runs remain available."
+                    )
+            c.execute(
+                "INSERT INTO runs(id,task_id,policy,status,created,session_hash,ip_hash) VALUES (?,?,?,'queued',?,?,?)",
+                (ident, task_id, policy, now, session_hash, ip_hash),
+            )
         return ident
 
     def claim(self):
         with self.transaction() as c:
-            row = c.execute("SELECT * FROM runs WHERE status='queued' ORDER BY created LIMIT 1").fetchone()
+            row = c.execute(
+                "SELECT * FROM runs WHERE status='queued' ORDER BY created LIMIT 1"
+            ).fetchone()
             if row:
-                c.execute("UPDATE runs SET status='running' WHERE id=?", (row['id'],))
+                c.execute("UPDATE runs SET status='running' WHERE id=?", (row["id"],))
                 return dict(row)
         return None
 
     def recover(self):
         with self.transaction() as c:
-            c.execute("UPDATE runs SET status='interrupted',result_json=? WHERE status='running'",
-                      (json.dumps({"error":"The worker restarted; this run was not silently replayed.","stop_reason":"worker_restart"}),))
+            for row in c.execute(
+                "SELECT id,result_json FROM runs WHERE status='running'"
+            ).fetchall():
+                result = json.loads(row["result_json"])
+                charges = c.execute(
+                    "SELECT charged,status,usage_json FROM charges WHERE run_id=?",
+                    (row["id"],),
+                ).fetchall()
+                if charges:
+                    result["cost_usd"] = sum(r["charged"] for r in charges) / 1e6
+                    result["tokens"] = None
+                    result["tokens_complete"] = False
+                result.update(
+                    error="The worker restarted; outstanding reservations are retained and this run was not replayed.",
+                    stop_reason="worker_restart",
+                    solved=False,
+                )
+                c.execute(
+                    "UPDATE runs SET status='interrupted',result_json=? WHERE id=?",
+                    (json.dumps(result), row["id"]),
+                )
+            # Network/session identifiers are essential quota data, not analytics.
+            c.execute(
+                "UPDATE runs SET session_hash=NULL,ip_hash=NULL WHERE created<?",
+                (time.time() - 172800,),
+            )
+
+    def expire_identifiers(self):
+        with self.transaction() as c:
+            c.execute(
+                "UPDATE runs SET session_hash=NULL,ip_hash=NULL WHERE created<? AND (session_hash IS NOT NULL OR ip_hash IS NOT NULL)",
+                (time.time() - 172800,),
+            )
 
     def add_event(self, ident, event):
         with self.transaction() as c:
-            seq = c.execute("SELECT COALESCE(MAX(seq),0)+1 FROM events WHERE run_id=?", (ident,)).fetchone()[0]
-            event = {**event,"seq":seq}
-            c.execute("INSERT INTO events VALUES (?,?,?)", (ident,seq,json.dumps(event)))
+            seq = c.execute(
+                "SELECT COALESCE(MAX(seq),0)+1 FROM events WHERE run_id=?", (ident,)
+            ).fetchone()[0]
+            event = {**event, "seq": seq}
+            c.execute(
+                "INSERT INTO events VALUES (?,?,?)", (ident, seq, json.dumps(event))
+            )
         return event
 
     def events(self, ident, after=0):
         with self.connect() as c:
-            return [json.loads(r[0]) for r in c.execute("SELECT payload FROM events WHERE run_id=? AND seq>? ORDER BY seq LIMIT 250", (ident,after))]
+            return [
+                json.loads(r[0])
+                for r in c.execute(
+                    "SELECT payload FROM events WHERE run_id=? AND seq>? ORDER BY seq LIMIT 250",
+                    (ident, after),
+                )
+            ]
 
     def finish_run(self, ident, result):
         with self.transaction() as c:
-            c.execute("UPDATE runs SET status=?,result_json=? WHERE id=?", (result['status'],json.dumps(result),ident))
+            c.execute(
+                "UPDATE runs SET status=?,result_json=? WHERE id=?",
+                (result["status"], json.dumps(result), ident),
+            )
 
     def run(self, ident):
         with self.connect() as c:
-            r=c.execute("SELECT * FROM runs WHERE id=?", (ident,)).fetchone()
-        if not r:return None
-        result=json.loads(r['result_json'])
-        return {**result,"id":r['id'],"task_id":r['task_id'],"policy":r['policy'],"status":r['status'],"created_at":r['created'],"mode":r['mode'],"events":self.events(ident)}
+            r = c.execute("SELECT * FROM runs WHERE id=?", (ident,)).fetchone()
+        if not r:
+            return None
+        result = json.loads(r["result_json"])
+        return {
+            **result,
+            "id": r["id"],
+            "task_id": r["task_id"],
+            "policy": r["policy"],
+            "status": r["status"],
+            "created_at": r["created"],
+            "mode": r["mode"],
+            "events": self.events(ident),
+        }
 
     def runs(self, limit=20):
         with self.connect() as c:
-            ids=[r[0] for r in c.execute("SELECT id FROM runs ORDER BY created DESC LIMIT ?", (min(100,max(1,limit)),))]
+            ids = [
+                r[0]
+                for r in c.execute(
+                    "SELECT id FROM runs ORDER BY created DESC LIMIT ?",
+                    (min(100, max(1, limit)),),
+                )
+            ]
         return [self.run(i) for i in ids]
 
     def add_recorded(self, result):
-        ident=result['id']
+        ident = result["id"]
         with self.transaction() as c:
-            c.execute("INSERT OR REPLACE INTO runs VALUES (?,?,?,?,?,?,?,?,'recorded')",
-                      (ident,result['task_id'],result['policy'],result['status'],result.get('created_at',time.time()),None,None,json.dumps(result)))
+            c.execute(
+                "INSERT OR REPLACE INTO runs VALUES (?,?,?,?,?,?,?,?,'recorded')",
+                (
+                    ident,
+                    result["task_id"],
+                    result["policy"],
+                    result["status"],
+                    result.get("created_at", time.time()),
+                    None,
+                    None,
+                    json.dumps(result),
+                ),
+            )
             c.execute("DELETE FROM events WHERE run_id=?", (ident,))
-            for n,event in enumerate(result.get('events',[]),1):
-                c.execute("INSERT INTO events VALUES (?,?,?)", (ident,n,json.dumps({**event,'seq':n})))
+            for n, event in enumerate(result.get("events", []), 1):
+                c.execute(
+                    "INSERT INTO events VALUES (?,?,?)",
+                    (ident, n, json.dumps({**event, "seq": n})),
+                )

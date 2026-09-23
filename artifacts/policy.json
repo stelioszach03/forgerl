@@ -1,0 +1,80 @@
+{
+  "action_counts": {
+    "1|none|0|3|high|0|none|0": {
+      "deliberate": 7,
+      "fast": 7,
+      "stop": 7
+    },
+    "1|none|1|2|high|0|deliberate|0": {
+      "deliberate": 1,
+      "fast": 1,
+      "stop": 1
+    },
+    "1|none|2|1|high|0|deliberate|0": {
+      "deliberate": 1,
+      "fast": 1,
+      "stop": 1
+    },
+    "1|none|2|1|high|0|fast|0": {
+      "deliberate": 1,
+      "fast": 1,
+      "stop": 1
+    },
+    "1|some|0|3|high|0|none|0": {
+      "deliberate": 5,
+      "fast": 5,
+      "stop": 5
+    }
+  },
+  "algorithm": "batch_tabular_fitted_q_iteration",
+  "diagnostics": {
+    "evaluation_used_for_fit": false,
+    "fallback": "heuristic for unseen states or untrained artifact",
+    "iterations": 2,
+    "last_max_update": 4.2865710980777294e-13,
+    "minimum_samples": 12,
+    "state_action_pairs": 15,
+    "states": 5,
+    "tasks": 12,
+    "transitions": 45
+  },
+  "feature_version": 1,
+  "gamma": 0.9,
+  "limitations": [
+    "Fits routing actions, not language-model weights.",
+    "Finite authored tasks and sparse state coverage limit generalization.",
+    "Offline actions without observed support are not selected.",
+    "Public-test success is not a guarantee of held-out correctness."
+  ],
+  "q_values": {
+    "1|none|0|3|high|0|none|0": {
+      "deliberate": 0.820721428571,
+      "fast": 0.83745,
+      "stop": 0.0
+    },
+    "1|none|1|2|high|0|deliberate|0": {
+      "deliberate": -0.07185,
+      "fast": -0.0536,
+      "stop": 0.0
+    },
+    "1|none|2|1|high|0|deliberate|0": {
+      "deliberate": -0.052,
+      "fast": -0.04145,
+      "stop": 0.0
+    },
+    "1|none|2|1|high|0|fast|0": {
+      "deliberate": -0.0667,
+      "fast": -0.05485,
+      "stop": 0.0
+    },
+    "1|some|0|3|high|0|none|0": {
+      "deliberate": 0.97052,
+      "fast": 0.78259,
+      "stop": 0.0
+    }
+  },
+  "schema_version": 1,
+  "seed": 17,
+  "trained": true,
+  "training_digest": "da6784fee43616609fbb258dcc06358e53606246992ee2bf2544fc6f9905f2c5"
+}

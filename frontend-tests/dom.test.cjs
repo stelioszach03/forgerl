@@ -105,3 +105,38 @@ test('section navigation resets scroll immediately rather than inheriting smooth
     assert.deepEqual(scrolls.at(-1), {top: 0, left: 0, behavior: 'instant'});
   } finally { dom.window.close(); }
 });
+
+test('a partial benchmark exposes measured episodes and missing seeds without fabricating coverage or accounting', async () => {
+  const benchmark = {
+    status: 'partial',
+    methodology: {description: 'Three predeclared seeds on six unique held-out tasks. Full coverage is 18 episodes per policy, not 18 independent tasks.'},
+    summary: [{policy: 'adaptive', n: 12, planned_n: 18, solved: 7, solve_rate: 7 / 12, mean_steps: 1.25, mean_tokens: null, mean_cost_usd: null, mean_latency_s: 4.5}],
+    paired_runs: [],
+    provenance: {missing_seeds: [43], partial_seeds: []}
+  };
+  const dom = page(async url => new URL(url).pathname.endsWith('/benchmark') ? response(benchmark) : baseHandler(url));
+  try {
+    await settle(); const d = dom.window.document;
+    assert.equal(d.getElementById('benchmark-status').textContent, 'Partial evaluation');
+    assert.equal(d.getElementById('benchmark-description').textContent, benchmark.methodology.description);
+    const rows = d.getElementById('benchmark-body').querySelectorAll('tr');
+    assert.equal(rows.length, 1, 'absent policy rows must not be invented');
+    assert.deepEqual([...rows[0].children].map(cell => cell.textContent), ['Adaptive', '12 / 18', '7', '58.3%', '1.25', '—', '—', '4.5s']);
+    assert.equal(d.getElementById('benchmark-coverage').hidden, false);
+    assert.match(d.getElementById('benchmark-coverage').textContent, /Missing seeds: 43/);
+    assert.match(d.getElementById('benchmark-coverage').textContent, /Missing runs are not counted as solved/);
+    assert.match(d.getElementById('benchmark-provenance').textContent, /Missing seeds43/);
+    assert.doesNotMatch(d.getElementById('benchmark-body').textContent, /No benchmark measurements|\$0\.0000/);
+  } finally { dom.window.close(); }
+});
+
+test('a partial artifact without outcome rows remains partial and does not manufacture an evaluation', async () => {
+  const dom = page(async url => new URL(url).pathname.endsWith('/benchmark') ? response({status: 'partial', summary: [], paired_runs: [], provenance: {partial_seeds: [17]}}) : baseHandler(url));
+  try {
+    await settle(); const d = dom.window.document;
+    assert.equal(d.getElementById('benchmark-status').textContent, 'Partial evaluation');
+    assert.match(d.getElementById('benchmark-body').textContent, /No benchmark measurements are available in this partial artifact/);
+    assert.match(d.getElementById('benchmark-coverage').textContent, /Incomplete seeds: 17/);
+    assert.equal(d.getElementById('benchmark-body').querySelectorAll('td').length, 1);
+  } finally { dom.window.close(); }
+});

@@ -11,7 +11,7 @@
   "no_new_privs": "1",
   "seccomp": "2",
   "rootless": true,
-  "image": "sha256:ca9bdfd10bab17a0dd6e28d9734fea3ea5ef278f966495856144bd29ff349c84",
+  "image": "sha256:f12752e9787c9adca42f5bd48da4e33cabba66acccfef30e7ed1c1f88c7e2d21",
   "host_mounts": false,
   "verified": true
 }
