@@ -5,6 +5,7 @@ The operator must create a standalone backup in DELETE journal mode and publish
 it read-only; an active WAL database is not a valid immutable archive. Opening a
 missing snapshot never creates a database or its parent directory.
 """
+
 from __future__ import annotations
 
 from contextlib import closing
@@ -21,7 +22,9 @@ class ReadOnlyArchive:
         if not self._path.exists():
             return None
         if any(Path(str(self._path) + suffix).exists() for suffix in ("-wal", "-shm")):
-            raise sqlite3.OperationalError("The published archive is not a sealed snapshot")
+            raise sqlite3.OperationalError(
+                "The published archive is not a sealed snapshot"
+            )
         # as_uri escapes filenames before adding SQLite connection parameters.
         # immutable disables journal/lock side effects; mode=ro forbids writes.
         connection = sqlite3.connect(

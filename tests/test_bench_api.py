@@ -82,7 +82,11 @@ def public_bench(tmp_path, monkeypatch):
     api.read_json.cache_clear()
     with TestClient(module.app) as client:
         yield SimpleNamespace(
-            client=client, module=module, artifacts=artifacts, task=task, api=api,
+            client=client,
+            module=module,
+            artifacts=artifacts,
+            task=task,
+            api=api,
             archive_path=tmp_path / "api.sqlite3",
         )
     api.read_json.cache_clear()
@@ -347,3 +351,25 @@ def test_public_home_is_current_benchmark_with_archive_access_and_no_post_endpoi
         "/api/forgebench/runs/new",
     ):
         assert client.post(path, json={"task_id": "catalog-fixture"}).status_code == 405
+
+
+def test_download_allowlist_missing_files_and_symlinks(public_bench):
+    client = public_bench.client
+    path = public_bench.artifacts / "results.csv"
+    assert client.get("/api/forgebench/download/results.csv").status_code == 404
+    path.write_text("policy,cost\ncheap_only,0.001\n")
+    response = client.get("/api/forgebench/download/results.csv")
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/csv")
+    assert "attachment" in response.headers["content-disposition"]
+    assert client.get("/api/forgebench/download/controller.json").status_code == 404
+    pdf = public_bench.artifacts / "technical-report.pdf"
+    pdf.symlink_to(path)
+    assert (
+        client.get("/api/forgebench/download/technical-report.pdf").status_code == 404
+    )
+    write_artifact(
+        public_bench.artifacts / "benchmark.json",
+        {"status": "partial", "summary": [], "runs": []},
+    )
+    assert client.get("/api/forgebench").json()["downloads"] == ["results.csv"]

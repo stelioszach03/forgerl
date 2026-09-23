@@ -9,7 +9,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import FileResponse, PlainTextResponse
 
 from .tasks import get_task, list_tasks, public_task, task_manifest_hash
 
@@ -22,6 +22,14 @@ POLICIES = [
     {"id": "static_router", "label": "Hand-written router"},
     {"id": "adaptive", "label": "ForgeRL adaptive"},
 ]
+DOWNLOADS = {
+    "technical-report.pdf": "application/pdf",
+    "technical-report.md": "text/markdown",
+    "results.csv": "text/csv",
+    "failure_analysis.csv": "text/csv",
+    "bootstrap_results.json": "application/json",
+    "trajectories.jsonl": "application/x-ndjson",
+}
 
 
 def artifact_root():
@@ -92,6 +100,12 @@ def benchmark():
         result = dict(load(path))
         result["catalog"] = catalog_metadata
         result.setdefault("policies", POLICIES)
+        result["downloads"] = [
+            name
+            for name in DOWNLOADS
+            if (artifact_root() / name).is_file()
+            and not (artifact_root() / name).is_symlink()
+        ]
         return result
     return {
         "version": "0.2",
@@ -145,3 +159,21 @@ def run(ident: str):
 def patch(ident: str):
     result = load(run_file(ident))
     return result.get("diff", "")
+
+
+@router.get("/download/{name}")
+def download(name: str):
+    if name not in DOWNLOADS:
+        raise unavailable("download", "Published download not found.")
+    path = artifact_root() / name
+    if not path.is_file() or path.is_symlink():
+        raise unavailable("download", "Published download not found.")
+    if name == "technical-report.pdf":
+        return FileResponse(
+            path,
+            media_type=DOWNLOADS[name],
+            headers={
+                "Content-Disposition": 'inline; filename="forgebench-v0.2-technical-report.pdf"'
+            },
+        )
+    return FileResponse(path, media_type=DOWNLOADS[name], filename=name)

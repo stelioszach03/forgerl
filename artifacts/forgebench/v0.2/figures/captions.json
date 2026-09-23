@@ -1,0 +1,6 @@
+{
+  "success-vs-cost": "Observed policy means; attempted runs retained. No uncertainty interval with only two held-out families.",
+  "failure-proxies": "Nonexclusive labels describe observable events; they do not identify causal planning or localization failures.",
+  "routing-decisions": "Counts come from recorded decision events. A zero is an observed absence, not proof that an action is unnecessary.",
+  "task-categories": "Cells show solved/attempted episodes. 'long horizon' is a multi-requirement stress label, not demonstrated autonomy."
+}

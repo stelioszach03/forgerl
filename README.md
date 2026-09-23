@@ -6,15 +6,17 @@
 
 | Research status | Evidence |
 | --- | --- |
-| Last completed benchmark | September 2026 · v0.1 pilot |
+| Last completed benchmark | September 23, 2026 · ForgeBench v0.2 |
 | Current catalog | ForgeBench v0.2 · 50 authored scenarios / 10 miniature repository families |
-| Current evaluation | Three seeds predeclared: 17, 29, 43; v0.2 collection in progress |
+| Current evaluation | Complete · 300/300 evaluation episodes and 180/180 training episodes |
 | Models in the v0.2 protocol | GPT-OSS-20B and GPT-OSS-120B through a pinned OpenRouter provider |
 | Latest published release | [v0.1.0](https://github.com/stelioszach03/forgerl/releases/tag/v0.1.0) |
 
 ForgeRL asks when a bounded coding agent should retry, repair, escalate to another model, roll back an edit, or stop. ForgeBench is its versioned task suite. The research pipeline collects actual model proposals and isolated test results; the public product lets readers inspect the stored evidence without spending API credits.
 
 This is a research engineering project, not a claim of a new state-of-the-art routing algorithm or proven long-horizon autonomy. The hosted language-model weights remain unchanged. A separate tabular fitted-Q controller learns from training trajectories.
+
+The completed v0.2 held-out test summary recorded 24/30 strong-only successes, 27/30 cheap-only, 26/30 escalate-on-failure, 27/30 hand-written-router and 25/30 adaptive-router successes. These are descriptive results from two held-out families; provider failures and related task variants remain in the denominator, and the report makes no broad superiority claim.
 
 ## What runs
 

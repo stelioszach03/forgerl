@@ -40,7 +40,9 @@
       ? value.toLocaleString("en-US", { maximumFractionDigits: 2 })
       : "—";
   const money = (value) =>
-    numeric(value) && value >= 0 ? `$${value.toFixed(value < 1 ? 4 : 2)}` : "—";
+    numeric(value) && value >= 0
+      ? `$${value.toFixed(value > 0 && value < 0.001 ? 6 : value < 1 ? 4 : 2)}`
+      : "—";
   const percent = (value) =>
     numeric(value) && value >= 0 && value <= 1
       ? `${(value * 100).toFixed(1)}%`
@@ -236,10 +238,21 @@
     setText(
       "episode-count",
       numeric(coverage.completed)
-        ? `${count(coverage.completed)} eval${numeric(coverage.training_completed) ? ` / ${count(coverage.training_completed)} train` : ""}`
+        ? count(
+            coverage.completed +
+              (numeric(coverage.training_completed)
+                ? coverage.training_completed
+                : 0),
+          )
         : list(benchmark.runs).length
           ? count(benchmark.runs.length)
           : "—",
+    );
+    setText(
+      "episode-split",
+      numeric(coverage.training_completed)
+        ? `${count(coverage.completed)} evaluation · ${count(coverage.training_completed)} training`
+        : "",
     );
     const coverageParts = [];
     if (numeric(coverage.training_completed))
@@ -306,18 +319,44 @@
       $("study-limitations").replaceChildren(
         ...limits.map((item) => node("li", item)),
       );
-    const provenanceEntries = Object.entries(provenance)
-      .filter(([key]) => key !== "cost_basis")
-      .map(([key, value]) => [
-        readable(key),
-        typeof value === "string" ? value : serialize(value),
-      ]);
+    const provenanceEntries = [
+      ["Protocol", provenance.protocol],
+      ["Requested seeds", list(provenance.requested_seeds).join(", ") || null],
+      ["Provider profile", record(provenance.provider).provider],
+      [
+        "Task manifest",
+        provenance.task_manifest_sha256 || provenance.task_manifest_hash,
+      ],
+      [
+        "Evaluated source",
+        provenance.runtime_source_sha256 ||
+          record(provenance.source_manifest).sha256,
+      ],
+      ["Controller", provenance.controller_selection],
+    ].filter(([, value]) => typeof value === "string" && value);
     definition(
       "study-provenance",
       provenanceEntries.length
         ? provenanceEntries
         : [["Status", "No provenance artifact published for this version."]],
     );
+    setText("full-provenance", serialize(provenance));
+    let availableDownloads = 0;
+    for (const [id, name] of [
+      ["report-download", "technical-report.pdf"],
+      ["results-download", "results.csv"],
+      ["trajectories-download", "trajectories.jsonl"],
+    ]) {
+      const available = list(benchmark.downloads).includes(name);
+      $(id).hidden = !available;
+      if (available) {
+        $(id).href = apiURL(`/download/${encodeURIComponent(name)}`);
+        $(id).target = "_blank";
+        $(id).rel = "noopener";
+        availableDownloads++;
+      } else $(id).removeAttribute("href");
+    }
+    $("artifact-downloads").hidden = availableDownloads === 0;
   }
   function renderPolicies(summary) {
     const body = $("policy-table");
@@ -351,7 +390,14 @@
             percent(row.escalation_frequency),
           ]
         : Array(11).fill("—");
-      for (const value of values) tr.append(node("td", value));
+      for (const [index, value] of values.entries()) {
+        const cell = node("td", value);
+        if (measured && index === 2 && numeric(row.graded_runs))
+          cell.append(
+            node("small", `${count(row.graded_runs)} / ${count(row.n)} graded`),
+          );
+        tr.append(cell);
+      }
       body.append(tr);
     }
   }
@@ -537,7 +583,9 @@
     const query = new URL(window.location.href).searchParams,
       requested = query.get("task");
     const initial =
-      state.tasks.find((task) => task.id === requested) || state.tasks[0];
+      state.tasks.find((task) => task.id === requested) ||
+      state.tasks.find((task) => task.split === "test" && task.category === "long_horizon") ||
+      state.tasks.find((task) => task.split === "test") || state.tasks[0];
     if (initial) selectTask(initial.id, query.get("run"));
     else setText("task-title", "No task catalog is available");
   }
@@ -707,7 +755,7 @@
         ),
       ),
     );
-    const selected = runs.find((run) => run.id === requestedRun) || runs[0];
+    const selected = runs.find((run) => run.id === requestedRun) || runs.find((run) => run.policy === "adaptive") || runs[0];
     select.value = selected.id;
     selectRun(selected.id);
   }
@@ -783,7 +831,7 @@
     );
     setText(
       "run-caption",
-      `Stored artifact ${id}${numeric(run.seed) ? ` · Seed ${run.seed}` : ""} · ${date(run.created_at || run.started_at)}${run.stop_reason ? ` · ${readable(run.stop_reason)}` : ""}`,
+      `${run.split === "train" ? "Training rollout; excluded from leaderboard. " : ""}Stored artifact ${id}${numeric(run.seed) ? ` · Seed ${run.seed}` : ""} · ${date(run.created_at || run.started_at)}${run.stop_reason ? ` · ${readable(run.stop_reason)}` : ""}`,
     );
     definition("run-metrics", [
       [

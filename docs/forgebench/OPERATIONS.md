@@ -6,7 +6,7 @@ The public site serves stored artifacts. `FORGERL_PUBLIC_INFERENCE=0` is the def
 
 The deployment definition in `deploy/forgerl-public.service` uses its own `forgerl-viewer` Unix identity, no `LoadCredential`, no executor socket setting, and a derived v0.1 archive database. The authoritative research ledger remains `/var/lib/forgerl/forgerl.sqlite3`; the sealed archive contains only public runs and events, has no ledger tables or write methods, and is never used for spending. Published v0.2 JSON files are root-owned, readable evidence. The public identity has no access to private research data, credential directories or broker group permissions.
 
-Nginx serves TLS and routes `/demos/forgerl/` to the loopback public service. A vanity subdomain may route to the same service once DNS and a valid certificate are configured. Public serving does not depend on a research job or GPU allocation.
+Nginx serves TLS and routes `/demos/forgerl/` to the loopback public service. The vanity domain https://forge.stelioszach.com routes to the same service with a valid certificate and renewal reload hook; the original portfolio URL remains available. Public serving does not depend on a research job or GPU allocation.
 
 ## Operator-run research
 

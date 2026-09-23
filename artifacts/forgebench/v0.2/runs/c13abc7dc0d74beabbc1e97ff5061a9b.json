@@ -1,0 +1,404 @@
+{
+  "attempts": 1,
+  "category": "bug_fix",
+  "cost_usd": 0.000107,
+  "created_at": "2026-09-23T21:39:52.629781+00:00",
+  "decisions": 1,
+  "diff": "--- a/ledger.py\n+++ b/ledger.py\n@@ -8,14 +8,18 @@\n     seen = set()\n     for event in events:\n         identifier = event[\"id\"]\n-        if False:\n+        if identifier in seen:\n+            # Skip duplicate before any validation\n             continue\n         seen.add(identifier)\n+        # Validate kind first\n+        kind = event.get(\"kind\")\n+        if kind not in (\"receive\", \"ship\"):\n+            raise ValueError(\"unknown event\")\n+        # Validate quantity\n         count = quantity(event[\"quantity\"])\n         sku = event[\"sku\"]\n-        delta = count if event[\"kind\"] == \"receive\" else -count\n-        if event[\"kind\"] not in (\"receive\", \"ship\"):\n-            raise ValueError(\"unknown event\")\n+        delta = count if kind == \"receive\" else -count\n         updated = stock.get(sku, 0) + delta\n         if updated < 0:\n             raise ValueError(\"negative stock\")\n",
+  "elapsed_s": 4.907976,
+  "error": null,
+  "escalations": 0,
+  "events": [
+    {
+      "at": "2026-09-23T21:39:52.629881+00:00",
+      "data": {
+        "description": "Inventory is nonnegative integer quantities keyed by SKU (booleans invalid). Replay events in order; ids are idempotent with first occurrence winning, including malformed duplicates skipped before validation. receive adds, ship subtracts; reject unknown kinds and any intermediate negative stock. Orders are processed in input order. Aggregate repeated SKUs within an order, then accept/decrement all lines atomically only if all are available; rejected orders change nothing. Return stock/accepted/rejected. Empty orders are accepted. op=replenish returns each requested target's nonnegative shortfall after event replay, including zero shortfalls.\n\nTask: Make event replay first-write idempotent before validating a duplicate payload.",
+        "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+        "task_id": "inventory-event-replay"
+      },
+      "kind": "prompt",
+      "seq": 1,
+      "title": "Authored task specification"
+    },
+    {
+      "at": "2026-09-23T21:39:52.630758+00:00",
+      "data": {
+        "entrypoint": "service:run",
+        "files": {
+          "allocation.py": "from ledger import quantity\n\ndef reserve(stock, orders):\n    remaining = dict(stock)\n    accepted, rejected = [], []\n    for order in orders:\n        needed = {}\n        for item in order[\"items\"]:\n            sku = item[\"sku\"]\n            needed[sku] = needed.get(sku, 0) + quantity(item[\"quantity\"])\n        if all(remaining.get(sku, 0) >= count for sku, count in needed.items()):\n            for sku, count in needed.items():\n                remaining[sku] = remaining.get(sku, 0) - count\n            accepted.append(order[\"id\"])\n        else:\n            rejected.append(order[\"id\"])\n    return {\"stock\": remaining, \"accepted\": accepted, \"rejected\": rejected}\n\ndef replenishment(stock, targets):\n    return {sku: max(0, quantity(target) - stock.get(sku, 0))\n            for sku, target in sorted(targets.items())}\n",
+          "ledger.py": "def quantity(value):\n    if type(value) is not int or value < 0:\n        raise ValueError(\"quantity must be a nonnegative integer\")\n    return value\n\ndef replay(initial, events):\n    stock = {sku: quantity(value) for sku, value in initial.items()}\n    seen = set()\n    for event in events:\n        identifier = event[\"id\"]\n        if False:\n            continue\n        seen.add(identifier)\n        count = quantity(event[\"quantity\"])\n        sku = event[\"sku\"]\n        delta = count if event[\"kind\"] == \"receive\" else -count\n        if event[\"kind\"] not in (\"receive\", \"ship\"):\n            raise ValueError(\"unknown event\")\n        updated = stock.get(sku, 0) + delta\n        if updated < 0:\n            raise ValueError(\"negative stock\")\n        stock[sku] = updated\n    return stock\n",
+          "service.py": "from ledger import replay\nfrom allocation import reserve, replenishment\n\ndef run(request):\n    stock = replay(request.get(\"stock\", {}), request.get(\"events\", []))\n    if request.get(\"op\") == \"replenish\":\n        return replenishment(stock, request.get(\"targets\", {}))\n    return reserve(stock, request.get(\"orders\", []))\n"
+        },
+        "note": "Files supplied as context; not a claim of autonomous file inspection."
+      },
+      "kind": "context",
+      "seq": 2,
+      "title": "Repository supplied to the repair harness"
+    },
+    {
+      "at": "2026-09-23T21:39:52.631651+00:00",
+      "data": {
+        "files_sha256": "200e0a062399c785b8d3c158b877e640bca61b32ae206202eb880d98c1a3c1f4",
+        "orchestrated": true,
+        "tool": "sandbox.evaluate",
+        "visibility": "public"
+      },
+      "kind": "tool_call",
+      "seq": 3,
+      "title": "Run isolated visible checks"
+    },
+    {
+      "at": "2026-09-23T21:39:53.137036+00:00",
+      "data": {
+        "cases": [
+          {
+            "actual": {
+              "accepted": [],
+              "rejected": [],
+              "stock": {
+                "x": 8
+              }
+            },
+            "error": null,
+            "name": "duplicate receive",
+            "passed": false
+          },
+          {
+            "actual": {
+              "accepted": [],
+              "rejected": [],
+              "stock": {
+                "x": 4,
+                "y": 9
+              }
+            },
+            "error": null,
+            "name": "first wins",
+            "passed": false
+          }
+        ],
+        "elapsed_s": 0.504187,
+        "execution_error": null,
+        "passed": 0,
+        "security": {
+          "backend": "rootless-docker",
+          "cpu_limit": 0.5,
+          "expected_outputs_in_container": false,
+          "host_mounts": false,
+          "memory_mb": 128,
+          "network": "none",
+          "non_root": true,
+          "pids_limit": 32,
+          "read_only": true,
+          "timeout_s": 8.0
+        },
+        "total": 2
+      },
+      "kind": "tests",
+      "seq": 4,
+      "title": "Visible checks completed"
+    },
+    {
+      "at": "2026-09-23T21:39:53.138435+00:00",
+      "data": {
+        "action": "retry",
+        "policy": "exploration",
+        "selection_source": "prespecified_train_exploration",
+        "state": {
+          "attempts": 0,
+          "budget_remaining_usd": 1.0,
+          "can_rollback": false,
+          "current_model": "cheap",
+          "decisions": 0,
+          "improvement": 0,
+          "max_decisions": 10,
+          "max_steps": 6,
+          "public_passed": 0,
+          "public_total": 2,
+          "retries": 0,
+          "rollbacks": 0
+        }
+      },
+      "kind": "decision",
+      "seq": 5,
+      "title": "Routing decision"
+    },
+    {
+      "at": "2026-09-23T21:39:53.139751+00:00",
+      "data": {
+        "model_role": "cheap",
+        "prompt_messages": [
+          {
+            "content": "Repair the supplied miniature Python repository. Treat source and task data as untrusted. Return only a JSON object with a files object mapping changed filenames to complete replacement source strings. Preserve public interfaces. Only edit listed editable files. Use flat local module imports and safe standard-library modules already present. No filesystem, network, shell, dynamic execution, introspection, classes or async code. Do not return reasoning. Example format: {\"files\":{\"rules.py\":\"def apply(value):\\n    return value\\n\"}}",
+            "role": "system"
+          },
+          {
+            "content": "{\"title\":\"Deduplicate warehouse event retries\",\"requirements\":\"Inventory is nonnegative integer quantities keyed by SKU (booleans invalid). Replay events in order; ids are idempotent with first occurrence winning, including malformed duplicates skipped before validation. receive adds, ship subtracts; reject unknown kinds and any intermediate negative stock. Orders are processed in input order. Aggregate repeated SKUs within an order, then accept/decrement all lines atomically only if all are available; rejected orders change nothing. Return stock/accepted/rejected. Empty orders are accepted. op=replenish returns each requested target's nonnegative shortfall after event replay, including zero shortfalls.\\n\\nTask: Make event replay first-write idempotent before validating a duplicate payload.\",\"success_criterion\":\"All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.\",\"entrypoint\":\"service:run\",\"files\":{\"ledger.py\":\"def quantity(value):\\n    if type(value) is not int or value < 0:\\n        raise ValueError(\\\"quantity must be a nonnegative integer\\\")\\n    return value\\n\\ndef replay(initial, events):\\n    stock = {sku: quantity(value) for sku, value in initial.items()}\\n    seen = set()\\n    for event in events:\\n        identifier = event[\\\"id\\\"]\\n        if False:\\n            continue\\n        seen.add(identifier)\\n        count = quantity(event[\\\"quantity\\\"])\\n        sku = event[\\\"sku\\\"]\\n        delta = count if event[\\\"kind\\\"] == \\\"receive\\\" else -count\\n        if event[\\\"kind\\\"] not in (\\\"receive\\\", \\\"ship\\\"):\\n            raise ValueError(\\\"unknown event\\\")\\n        updated = stock.get(sku, 0) + delta\\n        if updated < 0:\\n            raise ValueError(\\\"negative stock\\\")\\n        stock[sku] = updated\\n    return stock\\n\",\"allocation.py\":\"from ledger import quantity\\n\\ndef reserve(stock, orders):\\n    remaining = dict(stock)\\n    accepted, rejected = [], []\\n    for order in orders:\\n        needed = {}\\n        for item in order[\\\"items\\\"]:\\n            sku = item[\\\"sku\\\"]\\n            needed[sku] = needed.get(sku, 0) + quantity(item[\\\"quantity\\\"])\\n        if all(remaining.get(sku, 0) >= count for sku, count in needed.items()):\\n            for sku, count in needed.items():\\n                remaining[sku] = remaining.get(sku, 0) - count\\n            accepted.append(order[\\\"id\\\"])\\n        else:\\n            rejected.append(order[\\\"id\\\"])\\n    return {\\\"stock\\\": remaining, \\\"accepted\\\": accepted, \\\"rejected\\\": rejected}\\n\\ndef replenishment(stock, targets):\\n    return {sku: max(0, quantity(target) - stock.get(sku, 0))\\n            for sku, target in sorted(targets.items())}\\n\",\"service.py\":\"from ledger import replay\\nfrom allocation import reserve, replenishment\\n\\ndef run(request):\\n    stock = replay(request.get(\\\"stock\\\", {}), request.get(\\\"events\\\", []))\\n    if request.get(\\\"op\\\") == \\\"replenish\\\":\\n        return replenishment(stock, request.get(\\\"targets\\\", {}))\\n    return reserve(stock, request.get(\\\"orders\\\", []))\\n\"},\"editable_files\":[\"allocation.py\",\"ledger.py\",\"service.py\"],\"visible_tests\":[{\"name\":\"duplicate receive\",\"args\":[{\"events\":[{\"id\":\"a\",\"sku\":\"x\",\"quantity\":4,\"kind\":\"receive\"},{\"id\":\"a\",\"sku\":\"x\",\"quantity\":4,\"kind\":\"receive\"}]}],\"kwargs\":{},\"expected\":{\"stock\":{\"x\":4},\"accepted\":[],\"rejected\":[]}},{\"name\":\"first wins\",\"args\":[{\"events\":[{\"id\":\"a\",\"sku\":\"x\",\"quantity\":4,\"kind\":\"receive\"},{\"id\":\"a\",\"sku\":\"y\",\"quantity\":9,\"kind\":\"receive\"}]}],\"kwargs\":{},\"expected\":{\"stock\":{\"x\":4},\"accepted\":[],\"rejected\":[]}}],\"visible_test_feedback\":{\"passed\":0,\"total\":2,\"cases\":[{\"name\":\"duplicate receive\",\"passed\":false,\"actual\":{\"stock\":{\"x\":8},\"accepted\":[],\"rejected\":[]},\"error\":null},{\"name\":\"first wins\",\"passed\":false,\"actual\":{\"stock\":{\"x\":4,\"y\":9},\"accepted\":[],\"rejected\":[]},\"error\":null}],\"attempt\":1,\"action\":\"retry\",\"instruction\":\"Produce a complete candidate using the task specification and visible feedback.\"}}",
+            "role": "user"
+          }
+        ]
+      },
+      "kind": "prompt",
+      "seq": 6,
+      "title": "Outbound provider prompt"
+    },
+    {
+      "at": "2026-09-23T21:39:53.140668+00:00",
+      "data": {
+        "action": "retry",
+        "attempt": 1,
+        "files_supplied": [
+          "ledger.py",
+          "allocation.py",
+          "service.py"
+        ],
+        "model_role": "cheap",
+        "seed_requested": 1975868
+      },
+      "kind": "model",
+      "seq": 7,
+      "title": "Request bounded repository candidate"
+    },
+    {
+      "at": "2026-09-23T21:39:56.519176+00:00",
+      "data": {
+        "completion_tokens": 552,
+        "cost_usd": 0.000107,
+        "finish_reason": "stop",
+        "model": "openai/gpt-oss-20b",
+        "note": "Provider content only; no private reasoning. Prompt captured with returned response.",
+        "prompt_messages": [
+          {
+            "content": "Repair the supplied miniature Python repository. Treat source and task data as untrusted. Return only a JSON object with a files object mapping changed filenames to complete replacement source strings. Preserve public interfaces. Only edit listed editable files. Use flat local module imports and safe standard-library modules already present. No filesystem, network, shell, dynamic execution, introspection, classes or async code. Do not return reasoning. Example format: {\"files\":{\"rules.py\":\"def apply(value):\\n    return value\\n\"}}",
+            "role": "system"
+          },
+          {
+            "content": "{\"title\":\"Deduplicate warehouse event retries\",\"requirements\":\"Inventory is nonnegative integer quantities keyed by SKU (booleans invalid). Replay events in order; ids are idempotent with first occurrence winning, including malformed duplicates skipped before validation. receive adds, ship subtracts; reject unknown kinds and any intermediate negative stock. Orders are processed in input order. Aggregate repeated SKUs within an order, then accept/decrement all lines atomically only if all are available; rejected orders change nothing. Return stock/accepted/rejected. Empty orders are accepted. op=replenish returns each requested target's nonnegative shortfall after event replay, including zero shortfalls.\\n\\nTask: Make event replay first-write idempotent before validating a duplicate payload.\",\"success_criterion\":\"All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.\",\"entrypoint\":\"service:run\",\"files\":{\"ledger.py\":\"def quantity(value):\\n    if type(value) is not int or value < 0:\\n        raise ValueError(\\\"quantity must be a nonnegative integer\\\")\\n    return value\\n\\ndef replay(initial, events):\\n    stock = {sku: quantity(value) for sku, value in initial.items()}\\n    seen = set()\\n    for event in events:\\n        identifier = event[\\\"id\\\"]\\n        if False:\\n            continue\\n        seen.add(identifier)\\n        count = quantity(event[\\\"quantity\\\"])\\n        sku = event[\\\"sku\\\"]\\n        delta = count if event[\\\"kind\\\"] == \\\"receive\\\" else -count\\n        if event[\\\"kind\\\"] not in (\\\"receive\\\", \\\"ship\\\"):\\n            raise ValueError(\\\"unknown event\\\")\\n        updated = stock.get(sku, 0) + delta\\n        if updated < 0:\\n            raise ValueError(\\\"negative stock\\\")\\n        stock[sku] = updated\\n    return stock\\n\",\"allocation.py\":\"from ledger import quantity\\n\\ndef reserve(stock, orders):\\n    remaining = dict(stock)\\n    accepted, rejected = [], []\\n    for order in orders:\\n        needed = {}\\n        for item in order[\\\"items\\\"]:\\n            sku = item[\\\"sku\\\"]\\n            needed[sku] = needed.get(sku, 0) + quantity(item[\\\"quantity\\\"])\\n        if all(remaining.get(sku, 0) >= count for sku, count in needed.items()):\\n            for sku, count in needed.items():\\n                remaining[sku] = remaining.get(sku, 0) - count\\n            accepted.append(order[\\\"id\\\"])\\n        else:\\n            rejected.append(order[\\\"id\\\"])\\n    return {\\\"stock\\\": remaining, \\\"accepted\\\": accepted, \\\"rejected\\\": rejected}\\n\\ndef replenishment(stock, targets):\\n    return {sku: max(0, quantity(target) - stock.get(sku, 0))\\n            for sku, target in sorted(targets.items())}\\n\",\"service.py\":\"from ledger import replay\\nfrom allocation import reserve, replenishment\\n\\ndef run(request):\\n    stock = replay(request.get(\\\"stock\\\", {}), request.get(\\\"events\\\", []))\\n    if request.get(\\\"op\\\") == \\\"replenish\\\":\\n        return replenishment(stock, request.get(\\\"targets\\\", {}))\\n    return reserve(stock, request.get(\\\"orders\\\", []))\\n\"},\"editable_files\":[\"allocation.py\",\"ledger.py\",\"service.py\"],\"visible_tests\":[{\"name\":\"duplicate receive\",\"args\":[{\"events\":[{\"id\":\"a\",\"sku\":\"x\",\"quantity\":4,\"kind\":\"receive\"},{\"id\":\"a\",\"sku\":\"x\",\"quantity\":4,\"kind\":\"receive\"}]}],\"kwargs\":{},\"expected\":{\"stock\":{\"x\":4},\"accepted\":[],\"rejected\":[]}},{\"name\":\"first wins\",\"args\":[{\"events\":[{\"id\":\"a\",\"sku\":\"x\",\"quantity\":4,\"kind\":\"receive\"},{\"id\":\"a\",\"sku\":\"y\",\"quantity\":9,\"kind\":\"receive\"}]}],\"kwargs\":{},\"expected\":{\"stock\":{\"x\":4},\"accepted\":[],\"rejected\":[]}}],\"visible_test_feedback\":{\"passed\":0,\"total\":2,\"cases\":[{\"name\":\"duplicate receive\",\"passed\":false,\"actual\":{\"stock\":{\"x\":8},\"accepted\":[],\"rejected\":[]},\"error\":null},{\"name\":\"first wins\",\"passed\":false,\"actual\":{\"stock\":{\"x\":4,\"y\":9},\"accepted\":[],\"rejected\":[]},\"error\":null}],\"attempt\":1,\"action\":\"retry\",\"instruction\":\"Produce a complete candidate using the task specification and visible feedback.\"}}",
+            "role": "user"
+          }
+        ],
+        "prompt_tokens": 1145,
+        "provider_elapsed_s": 3.3752486780285835,
+        "provider_id": "CoreWeave",
+        "provider_reported_cost_usd": 0.00010611,
+        "request_config": {
+          "max_tokens": 4096,
+          "model": "openai/gpt-oss-20b",
+          "provider": {
+            "allow_fallbacks": false,
+            "max_price": {
+              "completion": 0.25,
+              "prompt": 0.05
+            },
+            "only": [
+              "coreweave/fp4"
+            ],
+            "order": [
+              "coreweave/fp4"
+            ],
+            "quantizations": [
+              "fp4"
+            ],
+            "require_parameters": true
+          },
+          "reasoning": {
+            "effort": "low",
+            "exclude": true
+          },
+          "response_format": {
+            "type": "json_object"
+          },
+          "seed": 1975868,
+          "temperature": 0.2
+        },
+        "request_id": "gen-1790199593-iXGcgaO3YBmCIm7vsEXi",
+        "response_text": "{\"files\":{\"ledger.py\":\"def quantity(value):\\n    if type(value) is not int or value < 0:\\n        raise ValueError(\\\"quantity must be a nonnegative integer\\\")\\n    return value\\n\\ndef replay(initial, events):\\n    stock = {sku: quantity(value) for sku, value in initial.items()}\\n    seen = set()\\n    for event in events:\\n        identifier = event[\\\"id\\\"]\\n        if identifier in seen:\\n            # Skip duplicate before any validation\\n            continue\\n        seen.add(identifier)\\n        # Validate kind first\\n        kind = event.get(\\\"kind\\\")\\n        if kind not in (\\\"receive\\\", \\\"ship\\\"):\\n            raise ValueError(\\\"unknown event\\\")\\n        # Validate quantity\\n        count = quantity(event[\\\"quantity\\\"])\\n        sku = event[\\\"sku\\\"]\\n        delta = count if kind == \\\"receive\\\" else -count\\n        updated = stock.get(sku, 0) + delta\\n        if updated < 0:\\n            raise ValueError(\\\"negative stock\\\")\\n        stock[sku] = updated\\n    return stock\\n\"},\"allocation.py\":\"from ledger import quantity\\n\\ndef reserve(stock, orders):\\n    remaining = dict(stock)\\n    accepted, rejected = [], []\\n    for order in orders:\\n        needed = {}\\n        for item in order[\\\"items\\\"]:\\n            sku = item[\\\"sku\\\"]\\n            needed[sku] = needed.get(sku, 0) + quantity(item[\\\"quantity\\\"])\\n        if all(remaining.get(sku, 0) >= count for sku, count in needed.items()):\\n            for sku, count in needed.items():\\n                remaining[sku] = remaining.get(sku, 0) - count\\n            accepted.append(order[\\\"id\\\"])\\n        else:\\n            rejected.append(order[\\\"id\\\"])\\n    return {\\\"stock\\\": remaining, \\\"accepted\\\": accepted, \\\"rejected\\\": rejected}\\n\\ndef replenishment(stock, targets):\\n    return {sku: max(0, quantity(target) - stock.get(sku, 0))\\n            for sku, target in sorted(targets.items())}\\n\"}"
+      },
+      "kind": "inference",
+      "seq": 8,
+      "title": "Actual provider prompt and visible response"
+    },
+    {
+      "at": "2026-09-23T21:39:56.522624+00:00",
+      "data": {
+        "changed_files": [
+          "ledger.py"
+        ],
+        "diff": "--- a/ledger.py\n+++ b/ledger.py\n@@ -8,14 +8,18 @@\n     seen = set()\n     for event in events:\n         identifier = event[\"id\"]\n-        if False:\n+        if identifier in seen:\n+            # Skip duplicate before any validation\n             continue\n         seen.add(identifier)\n+        # Validate kind first\n+        kind = event.get(\"kind\")\n+        if kind not in (\"receive\", \"ship\"):\n+            raise ValueError(\"unknown event\")\n+        # Validate quantity\n         count = quantity(event[\"quantity\"])\n         sku = event[\"sku\"]\n-        delta = count if event[\"kind\"] == \"receive\" else -count\n-        if event[\"kind\"] not in (\"receive\", \"ship\"):\n-            raise ValueError(\"unknown event\")\n+        delta = count if kind == \"receive\" else -count\n         updated = stock.get(sku, 0) + delta\n         if updated < 0:\n             raise ValueError(\"negative stock\")\n",
+        "files": {
+          "allocation.py": "from ledger import quantity\n\ndef reserve(stock, orders):\n    remaining = dict(stock)\n    accepted, rejected = [], []\n    for order in orders:\n        needed = {}\n        for item in order[\"items\"]:\n            sku = item[\"sku\"]\n            needed[sku] = needed.get(sku, 0) + quantity(item[\"quantity\"])\n        if all(remaining.get(sku, 0) >= count for sku, count in needed.items()):\n            for sku, count in needed.items():\n                remaining[sku] = remaining.get(sku, 0) - count\n            accepted.append(order[\"id\"])\n        else:\n            rejected.append(order[\"id\"])\n    return {\"stock\": remaining, \"accepted\": accepted, \"rejected\": rejected}\n\ndef replenishment(stock, targets):\n    return {sku: max(0, quantity(target) - stock.get(sku, 0))\n            for sku, target in sorted(targets.items())}\n",
+          "ledger.py": "def quantity(value):\n    if type(value) is not int or value < 0:\n        raise ValueError(\"quantity must be a nonnegative integer\")\n    return value\n\ndef replay(initial, events):\n    stock = {sku: quantity(value) for sku, value in initial.items()}\n    seen = set()\n    for event in events:\n        identifier = event[\"id\"]\n        if identifier in seen:\n            # Skip duplicate before any validation\n            continue\n        seen.add(identifier)\n        # Validate kind first\n        kind = event.get(\"kind\")\n        if kind not in (\"receive\", \"ship\"):\n            raise ValueError(\"unknown event\")\n        # Validate quantity\n        count = quantity(event[\"quantity\"])\n        sku = event[\"sku\"]\n        delta = count if kind == \"receive\" else -count\n        updated = stock.get(sku, 0) + delta\n        if updated < 0:\n            raise ValueError(\"negative stock\")\n        stock[sku] = updated\n    return stock\n",
+          "service.py": "from ledger import replay\nfrom allocation import reserve, replenishment\n\ndef run(request):\n    stock = replay(request.get(\"stock\", {}), request.get(\"events\", []))\n    if request.get(\"op\") == \"replenish\":\n        return replenishment(stock, request.get(\"targets\", {}))\n    return reserve(stock, request.get(\"orders\", []))\n"
+        }
+      },
+      "kind": "patch",
+      "seq": 9,
+      "title": "Applied candidate repository edits"
+    },
+    {
+      "at": "2026-09-23T21:39:56.523506+00:00",
+      "data": {
+        "files_sha256": "41f61d85653748796a243b4dc4dbd5125daa529d91dbab208460727127acf4fb",
+        "orchestrated": true,
+        "tool": "sandbox.evaluate",
+        "visibility": "public"
+      },
+      "kind": "tool_call",
+      "seq": 10,
+      "title": "Run isolated visible checks"
+    },
+    {
+      "at": "2026-09-23T21:39:57.029157+00:00",
+      "data": {
+        "cases": [
+          {
+            "actual": {
+              "accepted": [],
+              "rejected": [],
+              "stock": {
+                "x": 4
+              }
+            },
+            "error": null,
+            "name": "duplicate receive",
+            "passed": true
+          },
+          {
+            "actual": {
+              "accepted": [],
+              "rejected": [],
+              "stock": {
+                "x": 4
+              }
+            },
+            "error": null,
+            "name": "first wins",
+            "passed": true
+          }
+        ],
+        "elapsed_s": 0.504474,
+        "execution_error": null,
+        "passed": 2,
+        "security": {
+          "backend": "rootless-docker",
+          "cpu_limit": 0.5,
+          "expected_outputs_in_container": false,
+          "host_mounts": false,
+          "memory_mb": 128,
+          "network": "none",
+          "non_root": true,
+          "pids_limit": 32,
+          "read_only": true,
+          "timeout_s": 8.0
+        },
+        "total": 2
+      },
+      "kind": "tests",
+      "seq": 11,
+      "title": "Visible checks completed"
+    },
+    {
+      "at": "2026-09-23T21:39:57.030524+00:00",
+      "data": {
+        "files_sha256": "41f61d85653748796a243b4dc4dbd5125daa529d91dbab208460727127acf4fb",
+        "orchestrated": true,
+        "tool": "sandbox.evaluate",
+        "visibility": "hidden"
+      },
+      "kind": "tool_call",
+      "seq": 12,
+      "title": "Run isolated held-out checks"
+    },
+    {
+      "at": "2026-09-23T21:39:57.536294+00:00",
+      "data": {
+        "elapsed_s": 0.504156,
+        "note": "Final-only grading: no hidden inputs, expected values or case names exported.",
+        "passed": 4,
+        "security": {
+          "backend": "rootless-docker",
+          "cpu_limit": 0.5,
+          "expected_outputs_in_container": false,
+          "host_mounts": false,
+          "memory_mb": 128,
+          "network": "none",
+          "non_root": true,
+          "pids_limit": 32,
+          "read_only": true,
+          "timeout_s": 8.0
+        },
+        "total": 4,
+        "visibility": "hidden"
+      },
+      "kind": "tests",
+      "seq": 13,
+      "title": "Held-out grading completed"
+    },
+    {
+      "at": "2026-09-23T21:39:57.537910+00:00",
+      "data": {
+        "solved": true,
+        "status": "completed",
+        "stop_reason": "visible_tests_pass"
+      },
+      "kind": "complete",
+      "seq": 14,
+      "title": "Episode finished"
+    }
+  ],
+  "evidence": {
+    "cost_basis": "OpenRouter reported usage.cost; uncertain requests retain price-ceiling reservation. Credit purchase fees excluded.",
+    "failure_labels": "Observed proxies, not causal model reasoning claims",
+    "hidden_grading": "After all policy decisions; never feedback",
+    "maximum_decisions": 10,
+    "maximum_invalid_responses": 3,
+    "maximum_model_calls": 6,
+    "maximum_retry_actions": 2,
+    "maximum_tokens": 100000,
+    "model_weights_updated": false,
+    "tool_calls": "Orchestrated sandbox evaluations, including baseline and final grading",
+    "unnecessary_edits": "Post-decision reference-scope proxy: changed files outside the supplied reference patch scope. Alternative valid edits can be counted; not a minimality oracle."
+  },
+  "failure_labels": [],
+  "fallback_decisions": 0,
+  "family": "inventory",
+  "final_files": {
+    "allocation.py": "from ledger import quantity\n\ndef reserve(stock, orders):\n    remaining = dict(stock)\n    accepted, rejected = [], []\n    for order in orders:\n        needed = {}\n        for item in order[\"items\"]:\n            sku = item[\"sku\"]\n            needed[sku] = needed.get(sku, 0) + quantity(item[\"quantity\"])\n        if all(remaining.get(sku, 0) >= count for sku, count in needed.items()):\n            for sku, count in needed.items():\n                remaining[sku] = remaining.get(sku, 0) - count\n            accepted.append(order[\"id\"])\n        else:\n            rejected.append(order[\"id\"])\n    return {\"stock\": remaining, \"accepted\": accepted, \"rejected\": rejected}\n\ndef replenishment(stock, targets):\n    return {sku: max(0, quantity(target) - stock.get(sku, 0))\n            for sku, target in sorted(targets.items())}\n",
+    "ledger.py": "def quantity(value):\n    if type(value) is not int or value < 0:\n        raise ValueError(\"quantity must be a nonnegative integer\")\n    return value\n\ndef replay(initial, events):\n    stock = {sku: quantity(value) for sku, value in initial.items()}\n    seen = set()\n    for event in events:\n        identifier = event[\"id\"]\n        if identifier in seen:\n            # Skip duplicate before any validation\n            continue\n        seen.add(identifier)\n        # Validate kind first\n        kind = event.get(\"kind\")\n        if kind not in (\"receive\", \"ship\"):\n            raise ValueError(\"unknown event\")\n        # Validate quantity\n        count = quantity(event[\"quantity\"])\n        sku = event[\"sku\"]\n        delta = count if kind == \"receive\" else -count\n        updated = stock.get(sku, 0) + delta\n        if updated < 0:\n            raise ValueError(\"negative stock\")\n        stock[sku] = updated\n    return stock\n",
+    "service.py": "from ledger import replay\nfrom allocation import reserve, replenishment\n\ndef run(request):\n    stock = replay(request.get(\"stock\", {}), request.get(\"events\", []))\n    if request.get(\"op\") == \"replenish\":\n        return replenishment(stock, request.get(\"targets\", {}))\n    return reserve(stock, request.get(\"orders\", []))\n"
+  },
+  "heldout_passed": 4,
+  "heldout_total": 4,
+  "id": "c13abc7dc0d74beabbc1e97ff5061a9b",
+  "initial_files": {
+    "allocation.py": "from ledger import quantity\n\ndef reserve(stock, orders):\n    remaining = dict(stock)\n    accepted, rejected = [], []\n    for order in orders:\n        needed = {}\n        for item in order[\"items\"]:\n            sku = item[\"sku\"]\n            needed[sku] = needed.get(sku, 0) + quantity(item[\"quantity\"])\n        if all(remaining.get(sku, 0) >= count for sku, count in needed.items()):\n            for sku, count in needed.items():\n                remaining[sku] = remaining.get(sku, 0) - count\n            accepted.append(order[\"id\"])\n        else:\n            rejected.append(order[\"id\"])\n    return {\"stock\": remaining, \"accepted\": accepted, \"rejected\": rejected}\n\ndef replenishment(stock, targets):\n    return {sku: max(0, quantity(target) - stock.get(sku, 0))\n            for sku, target in sorted(targets.items())}\n",
+    "ledger.py": "def quantity(value):\n    if type(value) is not int or value < 0:\n        raise ValueError(\"quantity must be a nonnegative integer\")\n    return value\n\ndef replay(initial, events):\n    stock = {sku: quantity(value) for sku, value in initial.items()}\n    seen = set()\n    for event in events:\n        identifier = event[\"id\"]\n        if False:\n            continue\n        seen.add(identifier)\n        count = quantity(event[\"quantity\"])\n        sku = event[\"sku\"]\n        delta = count if event[\"kind\"] == \"receive\" else -count\n        if event[\"kind\"] not in (\"receive\", \"ship\"):\n            raise ValueError(\"unknown event\")\n        updated = stock.get(sku, 0) + delta\n        if updated < 0:\n            raise ValueError(\"negative stock\")\n        stock[sku] = updated\n    return stock\n",
+    "service.py": "from ledger import replay\nfrom allocation import reserve, replenishment\n\ndef run(request):\n    stock = replay(request.get(\"stock\", {}), request.get(\"events\", []))\n    if request.get(\"op\") == \"replenish\":\n        return replenishment(stock, request.get(\"targets\", {}))\n    return reserve(stock, request.get(\"orders\", []))\n"
+  },
+  "invalid_responses": 0,
+  "known_tokens": 1697,
+  "learned_decisions": 0,
+  "model_ids": [
+    "openai/gpt-oss-20b"
+  ],
+  "policy": "exploration",
+  "public_passed": 2,
+  "public_total": 2,
+  "regressions_introduced": 0,
+  "retries": 0,
+  "rollbacks": 0,
+  "seed": 1975867,
+  "solved": true,
+  "split": "train",
+  "status": "completed",
+  "steps": 1,
+  "stop_reason": "visible_tests_pass",
+  "success_after_repair": false,
+  "task_id": "inventory-event-replay",
+  "task_title": "Deduplicate warehouse event retries",
+  "tokens": 1697,
+  "tokens_complete": true,
+  "tool_calls": 3,
+  "unnecessary_edits": 0,
+  "version": "0.2"
+}

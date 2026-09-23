@@ -116,7 +116,7 @@ def report_sections(benchmark):
         (
             "Benchmark and split",
             "The catalog contains ten domain families with five related variants each. The fixed split is 30 training, 10 validation and 10 test tasks with disjoint families. "
-            "Tasks cover bug fixes, linked-module changes, features, refactoring, failing tests and integrated multi-requirement stress cases. Every task has a visible reproduction, explicit success criterion, hidden checks and a reference implementation. "
+            "Tasks cover bug fixes, linked-module changes, features, refactoring, failing tests and integrated multi-requirement stress cases. Implementation and task construction used AI-assisted development. Every task has a visible reproduction, explicit success criterion, hidden checks and a reference implementation, validated in the isolated executor. "
             "Hidden tests are withheld from the agent during episodes; the reproducible repository publishes the test definitions. This does not provide a private, contamination-resistant holdout. Related variants share interfaces and cannot be treated as fully independent repositories.",
         ),
         (

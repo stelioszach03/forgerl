@@ -1,0 +1,803 @@
+{
+  "attempts": 3,
+  "category": "long_horizon",
+  "cost_usd": 0.000358,
+  "created_at": "2026-09-23T20:13:08.244452+00:00",
+  "decisions": 4,
+  "diff": "--- a/money.py\n+++ b/money.py\n@@ -1,18 +1,23 @@\n def amount(value):\n-    if not isinstance(value, int) or value < 0:\n-        raise ValueError(\"money must be nonnegative integer cents\")\n+    # Reject booleans and non\u2011negative integers only\n+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:\n+        raise ValueError(\"money must be a nonnegative integer cents\")\n     return value\n \n-def round_ratio(value, numerator, denominator):\n-    return value * numerator // denominator\n+def round_half_up(value, numerator, denominator):\n+    # value * numerator / denominator rounded half\u2011up\n+    return (value * numerator + denominator // 2) // denominator\n+\n+# Alias for compatibility with invoice module\n+round_ratio = round_half_up\n \n def discount(subtotal, coupons):\n     seen = set()\n-    result = 0\n+    total_discount = 0\n     for coupon in coupons:\n         code = coupon[\"code\"]\n-        if False:\n+        if code in seen:\n             continue\n         seen.add(code)\n-        result += amount(coupon[\"cents\"])\n-    return min(subtotal, result)\n+        total_discount += amount(coupon[\"cents\"])\n+    return min(subtotal, total_discount)\n",
+  "elapsed_s": 16.055571,
+  "error": null,
+  "escalations": 0,
+  "events": [
+    {
+      "at": "2026-09-23T20:13:08.244527+00:00",
+      "data": {
+        "description": "A billing service operates exclusively in integer cents. quote accepts lines (unit_cents, quantity), optional coupons (code,cents), tax_bps and credit_cents. Nonnegative integer money/quantity values reject booleans. Coupon codes are idempotent: the first occurrence wins; sum discounts then cap at subtotal. Tax is rounded half-up on the discounted subtotal, in basis points 0..10000; deduct credit after tax and clamp total at zero. Empty lines are valid. op=line exposes identical line validation; op=validate exposes money validation. Preserve both facades. No external currency/rate lookup.\n\nTask: Repair four interacting stages across money.py and invoice.py: replay-safe coupons, exact tax rounding, post-tax credit and strict integer validation. This is a miniature multi-requirement stress task.",
+        "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+        "task_id": "billing-checkout-recovery"
+      },
+      "kind": "prompt",
+      "seq": 1,
+      "title": "Authored task specification"
+    },
+    {
+      "at": "2026-09-23T20:13:08.245366+00:00",
+      "data": {
+        "entrypoint": "service:run",
+        "files": {
+          "invoice.py": "from money import amount, round_ratio, discount\n\ndef line_total(line):\n    quantity = line[\"quantity\"]\n    if not isinstance(quantity, int) or quantity < 0:\n        raise ValueError(\"quantity must be a nonnegative integer\")\n    return amount(line[\"unit_cents\"]) * quantity\n\ndef quote(request):\n    lines = [line_total(line) for line in request.get(\"lines\", [])]\n    subtotal = sum(lines)\n    reduction = discount(subtotal, request.get(\"coupons\", []))\n    taxable = subtotal - reduction\n    rate = request.get(\"tax_bps\", 0)\n    if type(rate) is not int or not 0 <= rate <= 10000:\n        raise ValueError(\"tax_bps out of range\")\n    tax = round_ratio(taxable, rate, 10000)\n    credit = amount(request.get(\"credit_cents\", 0))\n    return {\"subtotal\": subtotal, \"discount\": reduction, \"tax\": tax,\n            \"total\": max(0, taxable + tax + credit)}\n",
+          "money.py": "def amount(value):\n    if not isinstance(value, int) or value < 0:\n        raise ValueError(\"money must be nonnegative integer cents\")\n    return value\n\ndef round_ratio(value, numerator, denominator):\n    return value * numerator // denominator\n\ndef discount(subtotal, coupons):\n    seen = set()\n    result = 0\n    for coupon in coupons:\n        code = coupon[\"code\"]\n        if False:\n            continue\n        seen.add(code)\n        result += amount(coupon[\"cents\"])\n    return min(subtotal, result)\n",
+          "service.py": "from invoice import quote, line_total\nfrom money import amount\n\ndef run(request):\n    if request.get(\"op\", \"quote\") == \"line\":\n        return line_total(request[\"line\"])\n    if request.get(\"op\") == \"validate\":\n        return amount(request[\"value\"])\n    return quote(request)\n"
+        },
+        "note": "Files supplied as context; not a claim of autonomous file inspection."
+      },
+      "kind": "context",
+      "seq": 2,
+      "title": "Repository supplied to the repair harness"
+    },
+    {
+      "at": "2026-09-23T20:13:08.246238+00:00",
+      "data": {
+        "files_sha256": "fdd8570002cc30bc1bbd6177658dd2aa3ad634cbf8c07e18faa78d8919204dbc",
+        "orchestrated": true,
+        "tool": "sandbox.evaluate",
+        "visibility": "public"
+      },
+      "kind": "tool_call",
+      "seq": 3,
+      "title": "Run isolated visible checks"
+    },
+    {
+      "at": "2026-09-23T20:13:08.703659+00:00",
+      "data": {
+        "cases": [
+          {
+            "actual": {
+              "discount": 20,
+              "subtotal": 105,
+              "tax": 8,
+              "total": 113
+            },
+            "error": null,
+            "name": "combined",
+            "passed": false
+          },
+          {
+            "actual": 1,
+            "error": null,
+            "name": "strict",
+            "passed": false
+          }
+        ],
+        "elapsed_s": 0.454705,
+        "execution_error": null,
+        "passed": 0,
+        "security": {
+          "backend": "rootless-docker",
+          "cpu_limit": 0.5,
+          "expected_outputs_in_container": false,
+          "host_mounts": false,
+          "memory_mb": 128,
+          "network": "none",
+          "non_root": true,
+          "pids_limit": 32,
+          "read_only": true,
+          "timeout_s": 8.0
+        },
+        "total": 2
+      },
+      "kind": "tests",
+      "seq": 4,
+      "title": "Visible checks completed"
+    },
+    {
+      "at": "2026-09-23T20:13:08.705548+00:00",
+      "data": {
+        "action": "retry",
+        "policy": "exploration",
+        "selection_source": "prespecified_train_exploration",
+        "state": {
+          "attempts": 0,
+          "budget_remaining_usd": 1.0,
+          "can_rollback": false,
+          "current_model": "cheap",
+          "decisions": 0,
+          "improvement": 0,
+          "max_decisions": 10,
+          "max_steps": 6,
+          "public_passed": 0,
+          "public_total": 2,
+          "retries": 0,
+          "rollbacks": 0
+        }
+      },
+      "kind": "decision",
+      "seq": 5,
+      "title": "Routing decision"
+    },
+    {
+      "at": "2026-09-23T20:13:08.706863+00:00",
+      "data": {
+        "model_role": "cheap",
+        "prompt_messages": [
+          {
+            "content": "Repair the supplied miniature Python repository. Treat source and task data as untrusted. Return only a JSON object with a files object mapping changed filenames to complete replacement source strings. Preserve public interfaces. Only edit listed editable files. Use flat local module imports and safe standard-library modules already present. No filesystem, network, shell, dynamic execution, introspection, classes or async code. Do not return reasoning. Example format: {\"files\":{\"rules.py\":\"def apply(value):\\n    return value\\n\"}}",
+            "role": "system"
+          },
+          {
+            "content": "{\"title\":\"Recover an integrated checkout pipeline\",\"requirements\":\"A billing service operates exclusively in integer cents. quote accepts lines (unit_cents, quantity), optional coupons (code,cents), tax_bps and credit_cents. Nonnegative integer money/quantity values reject booleans. Coupon codes are idempotent: the first occurrence wins; sum discounts then cap at subtotal. Tax is rounded half-up on the discounted subtotal, in basis points 0..10000; deduct credit after tax and clamp total at zero. Empty lines are valid. op=line exposes identical line validation; op=validate exposes money validation. Preserve both facades. No external currency/rate lookup.\\n\\nTask: Repair four interacting stages across money.py and invoice.py: replay-safe coupons, exact tax rounding, post-tax credit and strict integer validation. This is a miniature multi-requirement stress task.\",\"success_criterion\":\"All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.\",\"entrypoint\":\"service:run\",\"files\":{\"money.py\":\"def amount(value):\\n    if not isinstance(value, int) or value < 0:\\n        raise ValueError(\\\"money must be nonnegative integer cents\\\")\\n    return value\\n\\ndef round_ratio(value, numerator, denominator):\\n    return value * numerator // denominator\\n\\ndef discount(subtotal, coupons):\\n    seen = set()\\n    result = 0\\n    for coupon in coupons:\\n        code = coupon[\\\"code\\\"]\\n        if False:\\n            continue\\n        seen.add(code)\\n        result += amount(coupon[\\\"cents\\\"])\\n    return min(subtotal, result)\\n\",\"invoice.py\":\"from money import amount, round_ratio, discount\\n\\ndef line_total(line):\\n    quantity = line[\\\"quantity\\\"]\\n    if not isinstance(quantity, int) or quantity < 0:\\n        raise ValueError(\\\"quantity must be a nonnegative integer\\\")\\n    return amount(line[\\\"unit_cents\\\"]) * quantity\\n\\ndef quote(request):\\n    lines = [line_total(line) for line in request.get(\\\"lines\\\", [])]\\n    subtotal = sum(lines)\\n    reduction = discount(subtotal, request.get(\\\"coupons\\\", []))\\n    taxable = subtotal - reduction\\n    rate = request.get(\\\"tax_bps\\\", 0)\\n    if type(rate) is not int or not 0 <= rate <= 10000:\\n        raise ValueError(\\\"tax_bps out of range\\\")\\n    tax = round_ratio(taxable, rate, 10000)\\n    credit = amount(request.get(\\\"credit_cents\\\", 0))\\n    return {\\\"subtotal\\\": subtotal, \\\"discount\\\": reduction, \\\"tax\\\": tax,\\n            \\\"total\\\": max(0, taxable + tax + credit)}\\n\",\"service.py\":\"from invoice import quote, line_total\\nfrom money import amount\\n\\ndef run(request):\\n    if request.get(\\\"op\\\", \\\"quote\\\") == \\\"line\\\":\\n        return line_total(request[\\\"line\\\"])\\n    if request.get(\\\"op\\\") == \\\"validate\\\":\\n        return amount(request[\\\"value\\\"])\\n    return quote(request)\\n\"},\"editable_files\":[\"invoice.py\",\"money.py\",\"service.py\"],\"visible_tests\":[{\"name\":\"combined\",\"args\":[{\"lines\":[{\"unit_cents\":105,\"quantity\":1}],\"tax_bps\":1000,\"credit_cents\":20,\"coupons\":[{\"code\":\"x\",\"cents\":10},{\"code\":\"x\",\"cents\":10}]}],\"kwargs\":{},\"expected\":{\"subtotal\":105,\"discount\":10,\"tax\":10,\"total\":85}},{\"name\":\"strict\",\"args\":[{\"op\":\"line\",\"line\":{\"unit_cents\":1,\"quantity\":true}}],\"kwargs\":{},\"expected\":null,\"expected_error\":\"ValueError\"}],\"visible_test_feedback\":{\"passed\":0,\"total\":2,\"cases\":[{\"name\":\"combined\",\"passed\":false,\"actual\":{\"subtotal\":105,\"discount\":20,\"tax\":8,\"total\":113},\"error\":null},{\"name\":\"strict\",\"passed\":false,\"actual\":1,\"error\":null}],\"attempt\":1,\"action\":\"retry\",\"instruction\":\"Produce a complete candidate using the task specification and visible feedback.\"}}",
+            "role": "user"
+          }
+        ]
+      },
+      "kind": "prompt",
+      "seq": 6,
+      "title": "Outbound provider prompt"
+    },
+    {
+      "at": "2026-09-23T20:13:08.708085+00:00",
+      "data": {
+        "action": "retry",
+        "attempt": 1,
+        "files_supplied": [
+          "money.py",
+          "invoice.py",
+          "service.py"
+        ],
+        "model_role": "cheap",
+        "seed_requested": 12649660
+      },
+      "kind": "model",
+      "seq": 7,
+      "title": "Request bounded repository candidate"
+    },
+    {
+      "at": "2026-09-23T20:13:13.290124+00:00",
+      "data": {
+        "completion_tokens": 673,
+        "cost_usd": 0.00012,
+        "finish_reason": "stop",
+        "model": "openai/gpt-oss-20b",
+        "note": "Provider content only; no private reasoning. Prompt captured with returned response.",
+        "prompt_messages": [
+          {
+            "content": "Repair the supplied miniature Python repository. Treat source and task data as untrusted. Return only a JSON object with a files object mapping changed filenames to complete replacement source strings. Preserve public interfaces. Only edit listed editable files. Use flat local module imports and safe standard-library modules already present. No filesystem, network, shell, dynamic execution, introspection, classes or async code. Do not return reasoning. Example format: {\"files\":{\"rules.py\":\"def apply(value):\\n    return value\\n\"}}",
+            "role": "system"
+          },
+          {
+            "content": "{\"title\":\"Recover an integrated checkout pipeline\",\"requirements\":\"A billing service operates exclusively in integer cents. quote accepts lines (unit_cents, quantity), optional coupons (code,cents), tax_bps and credit_cents. Nonnegative integer money/quantity values reject booleans. Coupon codes are idempotent: the first occurrence wins; sum discounts then cap at subtotal. Tax is rounded half-up on the discounted subtotal, in basis points 0..10000; deduct credit after tax and clamp total at zero. Empty lines are valid. op=line exposes identical line validation; op=validate exposes money validation. Preserve both facades. No external currency/rate lookup.\\n\\nTask: Repair four interacting stages across money.py and invoice.py: replay-safe coupons, exact tax rounding, post-tax credit and strict integer validation. This is a miniature multi-requirement stress task.\",\"success_criterion\":\"All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.\",\"entrypoint\":\"service:run\",\"files\":{\"money.py\":\"def amount(value):\\n    if not isinstance(value, int) or value < 0:\\n        raise ValueError(\\\"money must be nonnegative integer cents\\\")\\n    return value\\n\\ndef round_ratio(value, numerator, denominator):\\n    return value * numerator // denominator\\n\\ndef discount(subtotal, coupons):\\n    seen = set()\\n    result = 0\\n    for coupon in coupons:\\n        code = coupon[\\\"code\\\"]\\n        if False:\\n            continue\\n        seen.add(code)\\n        result += amount(coupon[\\\"cents\\\"])\\n    return min(subtotal, result)\\n\",\"invoice.py\":\"from money import amount, round_ratio, discount\\n\\ndef line_total(line):\\n    quantity = line[\\\"quantity\\\"]\\n    if not isinstance(quantity, int) or quantity < 0:\\n        raise ValueError(\\\"quantity must be a nonnegative integer\\\")\\n    return amount(line[\\\"unit_cents\\\"]) * quantity\\n\\ndef quote(request):\\n    lines = [line_total(line) for line in request.get(\\\"lines\\\", [])]\\n    subtotal = sum(lines)\\n    reduction = discount(subtotal, request.get(\\\"coupons\\\", []))\\n    taxable = subtotal - reduction\\n    rate = request.get(\\\"tax_bps\\\", 0)\\n    if type(rate) is not int or not 0 <= rate <= 10000:\\n        raise ValueError(\\\"tax_bps out of range\\\")\\n    tax = round_ratio(taxable, rate, 10000)\\n    credit = amount(request.get(\\\"credit_cents\\\", 0))\\n    return {\\\"subtotal\\\": subtotal, \\\"discount\\\": reduction, \\\"tax\\\": tax,\\n            \\\"total\\\": max(0, taxable + tax + credit)}\\n\",\"service.py\":\"from invoice import quote, line_total\\nfrom money import amount\\n\\ndef run(request):\\n    if request.get(\\\"op\\\", \\\"quote\\\") == \\\"line\\\":\\n        return line_total(request[\\\"line\\\"])\\n    if request.get(\\\"op\\\") == \\\"validate\\\":\\n        return amount(request[\\\"value\\\"])\\n    return quote(request)\\n\"},\"editable_files\":[\"invoice.py\",\"money.py\",\"service.py\"],\"visible_tests\":[{\"name\":\"combined\",\"args\":[{\"lines\":[{\"unit_cents\":105,\"quantity\":1}],\"tax_bps\":1000,\"credit_cents\":20,\"coupons\":[{\"code\":\"x\",\"cents\":10},{\"code\":\"x\",\"cents\":10}]}],\"kwargs\":{},\"expected\":{\"subtotal\":105,\"discount\":10,\"tax\":10,\"total\":85}},{\"name\":\"strict\",\"args\":[{\"op\":\"line\",\"line\":{\"unit_cents\":1,\"quantity\":true}}],\"kwargs\":{},\"expected\":null,\"expected_error\":\"ValueError\"}],\"visible_test_feedback\":{\"passed\":0,\"total\":2,\"cases\":[{\"name\":\"combined\",\"passed\":false,\"actual\":{\"subtotal\":105,\"discount\":20,\"tax\":8,\"total\":113},\"error\":null},{\"name\":\"strict\",\"passed\":false,\"actual\":1,\"error\":null}],\"attempt\":1,\"action\":\"retry\",\"instruction\":\"Produce a complete candidate using the task specification and visible feedback.\"}}",
+            "role": "user"
+          }
+        ],
+        "prompt_tokens": 1073,
+        "provider_elapsed_s": 4.578919674735516,
+        "provider_id": "CoreWeave",
+        "provider_reported_cost_usd": 0.00011968,
+        "request_config": {
+          "max_tokens": 4096,
+          "model": "openai/gpt-oss-20b",
+          "provider": {
+            "allow_fallbacks": false,
+            "max_price": {
+              "completion": 0.25,
+              "prompt": 0.05
+            },
+            "only": [
+              "coreweave/fp4"
+            ],
+            "order": [
+              "coreweave/fp4"
+            ],
+            "quantizations": [
+              "fp4"
+            ],
+            "require_parameters": true
+          },
+          "reasoning": {
+            "effort": "low",
+            "exclude": true
+          },
+          "response_format": {
+            "type": "json_object"
+          },
+          "seed": 12649660,
+          "temperature": 0.2
+        },
+        "request_id": "gen-1790194388-FclpnZodZb0m56DFi79k",
+        "response_text": "{\"files\":{\"money.py\":\"def amount(value):\\n    # Reject booleans and non\u2011negative integers only\\n    if isinstance(value, bool) or not isinstance(value, int) or value < 0:\\n        raise ValueError(\\\"money must be a nonnegative integer cents\\\")\\n    return value\\n\\ndef round_half_up(value, numerator, denominator):\\n    # value * numerator / denominator rounded half\u2011up\\n    return (value * numerator + denominator // 2) // denominator\\n\\ndef discount(subtotal, coupons):\\n    seen = set()\\n    total_discount = 0\\n    for coupon in coupons:\\n        code = coupon[\\\"code\\\"]\\n        if code in seen:\\n            continue\\n        seen.add(code)\\n        total_discount += amount(coupon[\\\"cents\\\"])\\n    return min(subtotal, total_discount)\\n\"}, \"invoice.py\":\"from money import amount, round_half_up, discount\\n\\ndef line_total(line):\\n    quantity = line[\\\"quantity\\\"]\\n    if isinstance(quantity, bool) or not isinstance(quantity, int) or quantity < 0:\\n        raise ValueError(\\\"quantity must be a nonnegative integer\\\")\\n    return amount(line[\\\"unit_cents\\\"]) * quantity\\n\\ndef quote(request):\\n    lines = [line_total(line) for line in request.get(\\\"lines\\\", [])]\\n    subtotal = sum(lines)\\n    reduction = discount(subtotal, request.get(\\\"coupons\\\", []))\\n    taxable = subtotal - reduction\\n    rate = request.get(\\\"tax_bps\\\", 0)\\n    if not isinstance(rate, int) or not 0 <= rate <= 10000:\\n        raise ValueError(\\\"tax_bps out of range\\\")\\n    tax = round_half_up(taxable, rate, 10000)\\n    credit = amount(request.get(\\\"credit_cents\\\", 0))\\n    total = max(0, taxable + tax - credit)\\n    return {\\\"subtotal\\\": subtotal, \\\"discount\\\": reduction, \\\"tax\\\": tax,\\n            \\\"total\\\": total}\\n}, \"\n\n}"
+      },
+      "kind": "inference",
+      "seq": 8,
+      "title": "Actual provider prompt and visible response"
+    },
+    {
+      "at": "2026-09-23T20:13:13.292392+00:00",
+      "data": {
+        "changed_files": [
+          "money.py"
+        ],
+        "diff": "--- a/money.py\n+++ b/money.py\n@@ -1,18 +1,20 @@\n def amount(value):\n-    if not isinstance(value, int) or value < 0:\n-        raise ValueError(\"money must be nonnegative integer cents\")\n+    # Reject booleans and non\u2011negative integers only\n+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:\n+        raise ValueError(\"money must be a nonnegative integer cents\")\n     return value\n \n-def round_ratio(value, numerator, denominator):\n-    return value * numerator // denominator\n+def round_half_up(value, numerator, denominator):\n+    # value * numerator / denominator rounded half\u2011up\n+    return (value * numerator + denominator // 2) // denominator\n \n def discount(subtotal, coupons):\n     seen = set()\n-    result = 0\n+    total_discount = 0\n     for coupon in coupons:\n         code = coupon[\"code\"]\n-        if False:\n+        if code in seen:\n             continue\n         seen.add(code)\n-        result += amount(coupon[\"cents\"])\n-    return min(subtotal, result)\n+        total_discount += amount(coupon[\"cents\"])\n+    return min(subtotal, total_discount)\n",
+        "files": {
+          "invoice.py": "from money import amount, round_ratio, discount\n\ndef line_total(line):\n    quantity = line[\"quantity\"]\n    if not isinstance(quantity, int) or quantity < 0:\n        raise ValueError(\"quantity must be a nonnegative integer\")\n    return amount(line[\"unit_cents\"]) * quantity\n\ndef quote(request):\n    lines = [line_total(line) for line in request.get(\"lines\", [])]\n    subtotal = sum(lines)\n    reduction = discount(subtotal, request.get(\"coupons\", []))\n    taxable = subtotal - reduction\n    rate = request.get(\"tax_bps\", 0)\n    if type(rate) is not int or not 0 <= rate <= 10000:\n        raise ValueError(\"tax_bps out of range\")\n    tax = round_ratio(taxable, rate, 10000)\n    credit = amount(request.get(\"credit_cents\", 0))\n    return {\"subtotal\": subtotal, \"discount\": reduction, \"tax\": tax,\n            \"total\": max(0, taxable + tax + credit)}\n",
+          "money.py": "def amount(value):\n    # Reject booleans and non\u2011negative integers only\n    if isinstance(value, bool) or not isinstance(value, int) or value < 0:\n        raise ValueError(\"money must be a nonnegative integer cents\")\n    return value\n\ndef round_half_up(value, numerator, denominator):\n    # value * numerator / denominator rounded half\u2011up\n    return (value * numerator + denominator // 2) // denominator\n\ndef discount(subtotal, coupons):\n    seen = set()\n    total_discount = 0\n    for coupon in coupons:\n        code = coupon[\"code\"]\n        if code in seen:\n            continue\n        seen.add(code)\n        total_discount += amount(coupon[\"cents\"])\n    return min(subtotal, total_discount)\n",
+          "service.py": "from invoice import quote, line_total\nfrom money import amount\n\ndef run(request):\n    if request.get(\"op\", \"quote\") == \"line\":\n        return line_total(request[\"line\"])\n    if request.get(\"op\") == \"validate\":\n        return amount(request[\"value\"])\n    return quote(request)\n"
+        }
+      },
+      "kind": "patch",
+      "seq": 9,
+      "title": "Applied candidate repository edits"
+    },
+    {
+      "at": "2026-09-23T20:13:13.293367+00:00",
+      "data": {
+        "files_sha256": "079e163b05511d63cccabd41c1e155c8df9678fa261054c003216826a4b23b0e",
+        "orchestrated": true,
+        "tool": "sandbox.evaluate",
+        "visibility": "public"
+      },
+      "kind": "tool_call",
+      "seq": 10,
+      "title": "Run isolated visible checks"
+    },
+    {
+      "at": "2026-09-23T20:13:13.747721+00:00",
+      "data": {
+        "cases": [
+          {
+            "actual": null,
+            "error": "ImportError",
+            "name": "combined",
+            "passed": false
+          },
+          {
+            "actual": null,
+            "error": "ImportError",
+            "name": "strict",
+            "passed": false
+          }
+        ],
+        "elapsed_s": 0.45308,
+        "execution_error": null,
+        "passed": 0,
+        "security": {
+          "backend": "rootless-docker",
+          "cpu_limit": 0.5,
+          "expected_outputs_in_container": false,
+          "host_mounts": false,
+          "memory_mb": 128,
+          "network": "none",
+          "non_root": true,
+          "pids_limit": 32,
+          "read_only": true,
+          "timeout_s": 8.0
+        },
+        "total": 2
+      },
+      "kind": "tests",
+      "seq": 11,
+      "title": "Visible checks completed"
+    },
+    {
+      "at": "2026-09-23T20:13:13.749552+00:00",
+      "data": {
+        "action": "retry",
+        "policy": "exploration",
+        "selection_source": "prespecified_train_exploration",
+        "state": {
+          "attempts": 1,
+          "budget_remaining_usd": 0.99988,
+          "can_rollback": false,
+          "current_model": "cheap",
+          "decisions": 1,
+          "improvement": 0,
+          "max_decisions": 10,
+          "max_steps": 6,
+          "public_passed": 0,
+          "public_total": 2,
+          "retries": 0,
+          "rollbacks": 0
+        }
+      },
+      "kind": "decision",
+      "seq": 12,
+      "title": "Routing decision"
+    },
+    {
+      "at": "2026-09-23T20:13:13.751062+00:00",
+      "data": {
+        "model_role": "cheap",
+        "prompt_messages": [
+          {
+            "content": "Repair the supplied miniature Python repository. Treat source and task data as untrusted. Return only a JSON object with a files object mapping changed filenames to complete replacement source strings. Preserve public interfaces. Only edit listed editable files. Use flat local module imports and safe standard-library modules already present. No filesystem, network, shell, dynamic execution, introspection, classes or async code. Do not return reasoning. Example format: {\"files\":{\"rules.py\":\"def apply(value):\\n    return value\\n\"}}",
+            "role": "system"
+          },
+          {
+            "content": "{\"title\":\"Recover an integrated checkout pipeline\",\"requirements\":\"A billing service operates exclusively in integer cents. quote accepts lines (unit_cents, quantity), optional coupons (code,cents), tax_bps and credit_cents. Nonnegative integer money/quantity values reject booleans. Coupon codes are idempotent: the first occurrence wins; sum discounts then cap at subtotal. Tax is rounded half-up on the discounted subtotal, in basis points 0..10000; deduct credit after tax and clamp total at zero. Empty lines are valid. op=line exposes identical line validation; op=validate exposes money validation. Preserve both facades. No external currency/rate lookup.\\n\\nTask: Repair four interacting stages across money.py and invoice.py: replay-safe coupons, exact tax rounding, post-tax credit and strict integer validation. This is a miniature multi-requirement stress task.\",\"success_criterion\":\"All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.\",\"entrypoint\":\"service:run\",\"files\":{\"money.py\":\"def amount(value):\\n    # Reject booleans and non\u2011negative integers only\\n    if isinstance(value, bool) or not isinstance(value, int) or value < 0:\\n        raise ValueError(\\\"money must be a nonnegative integer cents\\\")\\n    return value\\n\\ndef round_half_up(value, numerator, denominator):\\n    # value * numerator / denominator rounded half\u2011up\\n    return (value * numerator + denominator // 2) // denominator\\n\\ndef discount(subtotal, coupons):\\n    seen = set()\\n    total_discount = 0\\n    for coupon in coupons:\\n        code = coupon[\\\"code\\\"]\\n        if code in seen:\\n            continue\\n        seen.add(code)\\n        total_discount += amount(coupon[\\\"cents\\\"])\\n    return min(subtotal, total_discount)\\n\",\"invoice.py\":\"from money import amount, round_ratio, discount\\n\\ndef line_total(line):\\n    quantity = line[\\\"quantity\\\"]\\n    if not isinstance(quantity, int) or quantity < 0:\\n        raise ValueError(\\\"quantity must be a nonnegative integer\\\")\\n    return amount(line[\\\"unit_cents\\\"]) * quantity\\n\\ndef quote(request):\\n    lines = [line_total(line) for line in request.get(\\\"lines\\\", [])]\\n    subtotal = sum(lines)\\n    reduction = discount(subtotal, request.get(\\\"coupons\\\", []))\\n    taxable = subtotal - reduction\\n    rate = request.get(\\\"tax_bps\\\", 0)\\n    if type(rate) is not int or not 0 <= rate <= 10000:\\n        raise ValueError(\\\"tax_bps out of range\\\")\\n    tax = round_ratio(taxable, rate, 10000)\\n    credit = amount(request.get(\\\"credit_cents\\\", 0))\\n    return {\\\"subtotal\\\": subtotal, \\\"discount\\\": reduction, \\\"tax\\\": tax,\\n            \\\"total\\\": max(0, taxable + tax + credit)}\\n\",\"service.py\":\"from invoice import quote, line_total\\nfrom money import amount\\n\\ndef run(request):\\n    if request.get(\\\"op\\\", \\\"quote\\\") == \\\"line\\\":\\n        return line_total(request[\\\"line\\\"])\\n    if request.get(\\\"op\\\") == \\\"validate\\\":\\n        return amount(request[\\\"value\\\"])\\n    return quote(request)\\n\"},\"editable_files\":[\"invoice.py\",\"money.py\",\"service.py\"],\"visible_tests\":[{\"name\":\"combined\",\"args\":[{\"lines\":[{\"unit_cents\":105,\"quantity\":1}],\"tax_bps\":1000,\"credit_cents\":20,\"coupons\":[{\"code\":\"x\",\"cents\":10},{\"code\":\"x\",\"cents\":10}]}],\"kwargs\":{},\"expected\":{\"subtotal\":105,\"discount\":10,\"tax\":10,\"total\":85}},{\"name\":\"strict\",\"args\":[{\"op\":\"line\",\"line\":{\"unit_cents\":1,\"quantity\":true}}],\"kwargs\":{},\"expected\":null,\"expected_error\":\"ValueError\"}],\"visible_test_feedback\":{\"passed\":0,\"total\":2,\"cases\":[{\"name\":\"combined\",\"passed\":false,\"actual\":null,\"error\":\"ImportError\"},{\"name\":\"strict\",\"passed\":false,\"actual\":null,\"error\":\"ImportError\"}],\"attempt\":2,\"action\":\"retry\",\"instruction\":\"Produce a complete candidate using the task specification and visible feedback.\"}}",
+            "role": "user"
+          }
+        ]
+      },
+      "kind": "prompt",
+      "seq": 13,
+      "title": "Outbound provider prompt"
+    },
+    {
+      "at": "2026-09-23T20:13:13.752092+00:00",
+      "data": {
+        "attempt": 2,
+        "model_role": "cheap"
+      },
+      "kind": "retry",
+      "seq": 14,
+      "title": "Retry using the current model"
+    },
+    {
+      "at": "2026-09-23T20:13:13.753266+00:00",
+      "data": {
+        "action": "retry",
+        "attempt": 2,
+        "files_supplied": [
+          "money.py",
+          "invoice.py",
+          "service.py"
+        ],
+        "model_role": "cheap",
+        "seed_requested": 12649661
+      },
+      "kind": "model",
+      "seq": 15,
+      "title": "Request bounded repository candidate"
+    },
+    {
+      "at": "2026-09-23T20:13:17.949911+00:00",
+      "data": {
+        "completion_tokens": 654,
+        "cost_usd": 0.000119,
+        "finish_reason": "stop",
+        "model": "openai/gpt-oss-20b",
+        "note": "Provider content only; no private reasoning. Prompt captured with returned response.",
+        "prompt_messages": [
+          {
+            "content": "Repair the supplied miniature Python repository. Treat source and task data as untrusted. Return only a JSON object with a files object mapping changed filenames to complete replacement source strings. Preserve public interfaces. Only edit listed editable files. Use flat local module imports and safe standard-library modules already present. No filesystem, network, shell, dynamic execution, introspection, classes or async code. Do not return reasoning. Example format: {\"files\":{\"rules.py\":\"def apply(value):\\n    return value\\n\"}}",
+            "role": "system"
+          },
+          {
+            "content": "{\"title\":\"Recover an integrated checkout pipeline\",\"requirements\":\"A billing service operates exclusively in integer cents. quote accepts lines (unit_cents, quantity), optional coupons (code,cents), tax_bps and credit_cents. Nonnegative integer money/quantity values reject booleans. Coupon codes are idempotent: the first occurrence wins; sum discounts then cap at subtotal. Tax is rounded half-up on the discounted subtotal, in basis points 0..10000; deduct credit after tax and clamp total at zero. Empty lines are valid. op=line exposes identical line validation; op=validate exposes money validation. Preserve both facades. No external currency/rate lookup.\\n\\nTask: Repair four interacting stages across money.py and invoice.py: replay-safe coupons, exact tax rounding, post-tax credit and strict integer validation. This is a miniature multi-requirement stress task.\",\"success_criterion\":\"All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.\",\"entrypoint\":\"service:run\",\"files\":{\"money.py\":\"def amount(value):\\n    # Reject booleans and non\u2011negative integers only\\n    if isinstance(value, bool) or not isinstance(value, int) or value < 0:\\n        raise ValueError(\\\"money must be a nonnegative integer cents\\\")\\n    return value\\n\\ndef round_half_up(value, numerator, denominator):\\n    # value * numerator / denominator rounded half\u2011up\\n    return (value * numerator + denominator // 2) // denominator\\n\\ndef discount(subtotal, coupons):\\n    seen = set()\\n    total_discount = 0\\n    for coupon in coupons:\\n        code = coupon[\\\"code\\\"]\\n        if code in seen:\\n            continue\\n        seen.add(code)\\n        total_discount += amount(coupon[\\\"cents\\\"])\\n    return min(subtotal, total_discount)\\n\",\"invoice.py\":\"from money import amount, round_ratio, discount\\n\\ndef line_total(line):\\n    quantity = line[\\\"quantity\\\"]\\n    if not isinstance(quantity, int) or quantity < 0:\\n        raise ValueError(\\\"quantity must be a nonnegative integer\\\")\\n    return amount(line[\\\"unit_cents\\\"]) * quantity\\n\\ndef quote(request):\\n    lines = [line_total(line) for line in request.get(\\\"lines\\\", [])]\\n    subtotal = sum(lines)\\n    reduction = discount(subtotal, request.get(\\\"coupons\\\", []))\\n    taxable = subtotal - reduction\\n    rate = request.get(\\\"tax_bps\\\", 0)\\n    if type(rate) is not int or not 0 <= rate <= 10000:\\n        raise ValueError(\\\"tax_bps out of range\\\")\\n    tax = round_ratio(taxable, rate, 10000)\\n    credit = amount(request.get(\\\"credit_cents\\\", 0))\\n    return {\\\"subtotal\\\": subtotal, \\\"discount\\\": reduction, \\\"tax\\\": tax,\\n            \\\"total\\\": max(0, taxable + tax + credit)}\\n\",\"service.py\":\"from invoice import quote, line_total\\nfrom money import amount\\n\\ndef run(request):\\n    if request.get(\\\"op\\\", \\\"quote\\\") == \\\"line\\\":\\n        return line_total(request[\\\"line\\\"])\\n    if request.get(\\\"op\\\") == \\\"validate\\\":\\n        return amount(request[\\\"value\\\"])\\n    return quote(request)\\n\"},\"editable_files\":[\"invoice.py\",\"money.py\",\"service.py\"],\"visible_tests\":[{\"name\":\"combined\",\"args\":[{\"lines\":[{\"unit_cents\":105,\"quantity\":1}],\"tax_bps\":1000,\"credit_cents\":20,\"coupons\":[{\"code\":\"x\",\"cents\":10},{\"code\":\"x\",\"cents\":10}]}],\"kwargs\":{},\"expected\":{\"subtotal\":105,\"discount\":10,\"tax\":10,\"total\":85}},{\"name\":\"strict\",\"args\":[{\"op\":\"line\",\"line\":{\"unit_cents\":1,\"quantity\":true}}],\"kwargs\":{},\"expected\":null,\"expected_error\":\"ValueError\"}],\"visible_test_feedback\":{\"passed\":0,\"total\":2,\"cases\":[{\"name\":\"combined\",\"passed\":false,\"actual\":null,\"error\":\"ImportError\"},{\"name\":\"strict\",\"passed\":false,\"actual\":null,\"error\":\"ImportError\"}],\"attempt\":2,\"action\":\"retry\",\"instruction\":\"Produce a complete candidate using the task specification and visible feedback.\"}}",
+            "role": "user"
+          }
+        ],
+        "prompt_tokens": 1106,
+        "provider_elapsed_s": 4.192310944199562,
+        "provider_id": "CoreWeave",
+        "provider_reported_cost_usd": 0.0001182,
+        "request_config": {
+          "max_tokens": 4096,
+          "model": "openai/gpt-oss-20b",
+          "provider": {
+            "allow_fallbacks": false,
+            "max_price": {
+              "completion": 0.25,
+              "prompt": 0.05
+            },
+            "only": [
+              "coreweave/fp4"
+            ],
+            "order": [
+              "coreweave/fp4"
+            ],
+            "quantizations": [
+              "fp4"
+            ],
+            "require_parameters": true
+          },
+          "reasoning": {
+            "effort": "low",
+            "exclude": true
+          },
+          "response_format": {
+            "type": "json_object"
+          },
+          "seed": 12649661,
+          "temperature": 0.2
+        },
+        "request_id": "gen-1790194393-DDPPDooOxULydH7PUSGX",
+        "response_text": "{\"files\":{\"money.py\":\"def amount(value):\\n    # Reject booleans and non\u2011negative integers only\\n    if isinstance(value, bool) or not isinstance(value, int) or value < 0:\\n        raise ValueError(\\\"money must be a nonnegative integer cents\\\")\\n    return value\\n\\ndef round_half_up(value, numerator, denominator):\\n    # value * numerator / denominator rounded half\u2011up\\n    return (value * numerator + denominator // 2) // denominator\\n\\n# Alias for compatibility with invoice module\\nround_ratio = round_half_up\\n\\ndef discount(subtotal, coupons):\\n    seen = set()\\n    total_discount = 0\\n    for coupon in coupons:\\n        code = coupon[\\\"code\\\"]\\n        if code in seen:\\n            continue\\n        seen.add(code)\\n        total_discount += amount(coupon[\\\"cents\\\"])\\n    return min(subtotal, total_discount)\\n\"}, \"invoice.py\":\"from money import amount, round_ratio, discount\\n\\ndef line_total(line):\\n    quantity = line[\\\"quantity\\\"]\\n    if not isinstance(quantity, int) or quantity < 0:\\n        raise ValueError(\\\"quantity must be a nonnegative integer\\\")\\n    return amount(line[\\\"unit_cents\\\"]) * quantity\\n\\ndef quote(request):\\n    lines = [line_total(line) for line in request.get(\\\"lines\\\", [])]\\n    subtotal = sum(lines)\\n    reduction = discount(subtotal, request.get(\\\"coupons\\\", []))\\n    taxable = subtotal - reduction\\n    rate = request.get(\\\"tax_bps\\\", 0)\\n    if not isinstance(rate, int) or not 0 <= rate <= 10000:\\n        raise ValueError(\\\"tax_bps out of range\\\")\\n    tax = round_ratio(taxable, rate, 10000)\\n    credit = amount(request.get(\\\"credit_cents\\\", 0))\\n    total = max(0, taxable + tax - credit)\\n    return {\\\"subtotal\\\": subtotal, \\\"discount\\\": reduction, \\\"tax\\\": tax,\\n            \\\"total\\\": total}\\n\"}"
+      },
+      "kind": "inference",
+      "seq": 16,
+      "title": "Actual provider prompt and visible response"
+    },
+    {
+      "at": "2026-09-23T20:13:17.954870+00:00",
+      "data": {
+        "changed_files": [
+          "money.py"
+        ],
+        "diff": "--- a/money.py\n+++ b/money.py\n@@ -7,6 +7,9 @@\n def round_half_up(value, numerator, denominator):\n     # value * numerator / denominator rounded half\u2011up\n     return (value * numerator + denominator // 2) // denominator\n+\n+# Alias for compatibility with invoice module\n+round_ratio = round_half_up\n \n def discount(subtotal, coupons):\n     seen = set()\n",
+        "files": {
+          "invoice.py": "from money import amount, round_ratio, discount\n\ndef line_total(line):\n    quantity = line[\"quantity\"]\n    if not isinstance(quantity, int) or quantity < 0:\n        raise ValueError(\"quantity must be a nonnegative integer\")\n    return amount(line[\"unit_cents\"]) * quantity\n\ndef quote(request):\n    lines = [line_total(line) for line in request.get(\"lines\", [])]\n    subtotal = sum(lines)\n    reduction = discount(subtotal, request.get(\"coupons\", []))\n    taxable = subtotal - reduction\n    rate = request.get(\"tax_bps\", 0)\n    if type(rate) is not int or not 0 <= rate <= 10000:\n        raise ValueError(\"tax_bps out of range\")\n    tax = round_ratio(taxable, rate, 10000)\n    credit = amount(request.get(\"credit_cents\", 0))\n    return {\"subtotal\": subtotal, \"discount\": reduction, \"tax\": tax,\n            \"total\": max(0, taxable + tax + credit)}\n",
+          "money.py": "def amount(value):\n    # Reject booleans and non\u2011negative integers only\n    if isinstance(value, bool) or not isinstance(value, int) or value < 0:\n        raise ValueError(\"money must be a nonnegative integer cents\")\n    return value\n\ndef round_half_up(value, numerator, denominator):\n    # value * numerator / denominator rounded half\u2011up\n    return (value * numerator + denominator // 2) // denominator\n\n# Alias for compatibility with invoice module\nround_ratio = round_half_up\n\ndef discount(subtotal, coupons):\n    seen = set()\n    total_discount = 0\n    for coupon in coupons:\n        code = coupon[\"code\"]\n        if code in seen:\n            continue\n        seen.add(code)\n        total_discount += amount(coupon[\"cents\"])\n    return min(subtotal, total_discount)\n",
+          "service.py": "from invoice import quote, line_total\nfrom money import amount\n\ndef run(request):\n    if request.get(\"op\", \"quote\") == \"line\":\n        return line_total(request[\"line\"])\n    if request.get(\"op\") == \"validate\":\n        return amount(request[\"value\"])\n    return quote(request)\n"
+        }
+      },
+      "kind": "patch",
+      "seq": 17,
+      "title": "Applied candidate repository edits"
+    },
+    {
+      "at": "2026-09-23T20:13:17.956253+00:00",
+      "data": {
+        "files_sha256": "6dea54c24c45a6681def83089f976354464f30cff60bd083cb61ee9e54b9973e",
+        "orchestrated": true,
+        "tool": "sandbox.evaluate",
+        "visibility": "public"
+      },
+      "kind": "tool_call",
+      "seq": 18,
+      "title": "Run isolated visible checks"
+    },
+    {
+      "at": "2026-09-23T20:13:18.360700+00:00",
+      "data": {
+        "cases": [
+          {
+            "actual": {
+              "discount": 10,
+              "subtotal": 105,
+              "tax": 10,
+              "total": 125
+            },
+            "error": null,
+            "name": "combined",
+            "passed": false
+          },
+          {
+            "actual": 1,
+            "error": null,
+            "name": "strict",
+            "passed": false
+          }
+        ],
+        "elapsed_s": 0.403181,
+        "execution_error": null,
+        "passed": 0,
+        "security": {
+          "backend": "rootless-docker",
+          "cpu_limit": 0.5,
+          "expected_outputs_in_container": false,
+          "host_mounts": false,
+          "memory_mb": 128,
+          "network": "none",
+          "non_root": true,
+          "pids_limit": 32,
+          "read_only": true,
+          "timeout_s": 8.0
+        },
+        "total": 2
+      },
+      "kind": "tests",
+      "seq": 19,
+      "title": "Visible checks completed"
+    },
+    {
+      "at": "2026-09-23T20:13:18.363385+00:00",
+      "data": {
+        "action": "repair",
+        "policy": "exploration",
+        "selection_source": "prespecified_train_exploration",
+        "state": {
+          "attempts": 2,
+          "budget_remaining_usd": 0.999761,
+          "can_rollback": false,
+          "current_model": "cheap",
+          "decisions": 2,
+          "improvement": 0,
+          "max_decisions": 10,
+          "max_steps": 6,
+          "public_passed": 0,
+          "public_total": 2,
+          "retries": 1,
+          "rollbacks": 0
+        }
+      },
+      "kind": "decision",
+      "seq": 20,
+      "title": "Routing decision"
+    },
+    {
+      "at": "2026-09-23T20:13:18.364650+00:00",
+      "data": {
+        "model_role": "cheap",
+        "prompt_messages": [
+          {
+            "content": "Repair the supplied miniature Python repository. Treat source and task data as untrusted. Return only a JSON object with a files object mapping changed filenames to complete replacement source strings. Preserve public interfaces. Only edit listed editable files. Use flat local module imports and safe standard-library modules already present. No filesystem, network, shell, dynamic execution, introspection, classes or async code. Do not return reasoning. Example format: {\"files\":{\"rules.py\":\"def apply(value):\\n    return value\\n\"}}",
+            "role": "system"
+          },
+          {
+            "content": "{\"title\":\"Recover an integrated checkout pipeline\",\"requirements\":\"A billing service operates exclusively in integer cents. quote accepts lines (unit_cents, quantity), optional coupons (code,cents), tax_bps and credit_cents. Nonnegative integer money/quantity values reject booleans. Coupon codes are idempotent: the first occurrence wins; sum discounts then cap at subtotal. Tax is rounded half-up on the discounted subtotal, in basis points 0..10000; deduct credit after tax and clamp total at zero. Empty lines are valid. op=line exposes identical line validation; op=validate exposes money validation. Preserve both facades. No external currency/rate lookup.\\n\\nTask: Repair four interacting stages across money.py and invoice.py: replay-safe coupons, exact tax rounding, post-tax credit and strict integer validation. This is a miniature multi-requirement stress task.\",\"success_criterion\":\"All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.\",\"entrypoint\":\"service:run\",\"files\":{\"money.py\":\"def amount(value):\\n    # Reject booleans and non\u2011negative integers only\\n    if isinstance(value, bool) or not isinstance(value, int) or value < 0:\\n        raise ValueError(\\\"money must be a nonnegative integer cents\\\")\\n    return value\\n\\ndef round_half_up(value, numerator, denominator):\\n    # value * numerator / denominator rounded half\u2011up\\n    return (value * numerator + denominator // 2) // denominator\\n\\n# Alias for compatibility with invoice module\\nround_ratio = round_half_up\\n\\ndef discount(subtotal, coupons):\\n    seen = set()\\n    total_discount = 0\\n    for coupon in coupons:\\n        code = coupon[\\\"code\\\"]\\n        if code in seen:\\n            continue\\n        seen.add(code)\\n        total_discount += amount(coupon[\\\"cents\\\"])\\n    return min(subtotal, total_discount)\\n\",\"invoice.py\":\"from money import amount, round_ratio, discount\\n\\ndef line_total(line):\\n    quantity = line[\\\"quantity\\\"]\\n    if not isinstance(quantity, int) or quantity < 0:\\n        raise ValueError(\\\"quantity must be a nonnegative integer\\\")\\n    return amount(line[\\\"unit_cents\\\"]) * quantity\\n\\ndef quote(request):\\n    lines = [line_total(line) for line in request.get(\\\"lines\\\", [])]\\n    subtotal = sum(lines)\\n    reduction = discount(subtotal, request.get(\\\"coupons\\\", []))\\n    taxable = subtotal - reduction\\n    rate = request.get(\\\"tax_bps\\\", 0)\\n    if type(rate) is not int or not 0 <= rate <= 10000:\\n        raise ValueError(\\\"tax_bps out of range\\\")\\n    tax = round_ratio(taxable, rate, 10000)\\n    credit = amount(request.get(\\\"credit_cents\\\", 0))\\n    return {\\\"subtotal\\\": subtotal, \\\"discount\\\": reduction, \\\"tax\\\": tax,\\n            \\\"total\\\": max(0, taxable + tax + credit)}\\n\",\"service.py\":\"from invoice import quote, line_total\\nfrom money import amount\\n\\ndef run(request):\\n    if request.get(\\\"op\\\", \\\"quote\\\") == \\\"line\\\":\\n        return line_total(request[\\\"line\\\"])\\n    if request.get(\\\"op\\\") == \\\"validate\\\":\\n        return amount(request[\\\"value\\\"])\\n    return quote(request)\\n\"},\"editable_files\":[\"invoice.py\",\"money.py\",\"service.py\"],\"visible_tests\":[{\"name\":\"combined\",\"args\":[{\"lines\":[{\"unit_cents\":105,\"quantity\":1}],\"tax_bps\":1000,\"credit_cents\":20,\"coupons\":[{\"code\":\"x\",\"cents\":10},{\"code\":\"x\",\"cents\":10}]}],\"kwargs\":{},\"expected\":{\"subtotal\":105,\"discount\":10,\"tax\":10,\"total\":85}},{\"name\":\"strict\",\"args\":[{\"op\":\"line\",\"line\":{\"unit_cents\":1,\"quantity\":true}}],\"kwargs\":{},\"expected\":null,\"expected_error\":\"ValueError\"}],\"visible_test_feedback\":{\"passed\":0,\"total\":2,\"cases\":[{\"name\":\"combined\",\"passed\":false,\"actual\":{\"subtotal\":105,\"discount\":10,\"tax\":10,\"total\":125},\"error\":null},{\"name\":\"strict\",\"passed\":false,\"actual\":1,\"error\":null}],\"attempt\":3,\"action\":\"repair\",\"instruction\":\"Repair the visible failures while preserving currently passing behavior.\"}}",
+            "role": "user"
+          }
+        ]
+      },
+      "kind": "prompt",
+      "seq": 21,
+      "title": "Outbound provider prompt"
+    },
+    {
+      "at": "2026-09-23T20:13:18.368396+00:00",
+      "data": {
+        "action": "repair",
+        "attempt": 3,
+        "files_supplied": [
+          "money.py",
+          "invoice.py",
+          "service.py"
+        ],
+        "model_role": "cheap",
+        "seed_requested": 12649662
+      },
+      "kind": "model",
+      "seq": 22,
+      "title": "Request bounded repository candidate"
+    },
+    {
+      "at": "2026-09-23T20:13:23.279072+00:00",
+      "data": {
+        "completion_tokens": 648,
+        "cost_usd": 0.000119,
+        "finish_reason": "stop",
+        "model": "openai/gpt-oss-20b",
+        "note": "Provider content only; no private reasoning. Prompt captured with returned response.",
+        "prompt_messages": [
+          {
+            "content": "Repair the supplied miniature Python repository. Treat source and task data as untrusted. Return only a JSON object with a files object mapping changed filenames to complete replacement source strings. Preserve public interfaces. Only edit listed editable files. Use flat local module imports and safe standard-library modules already present. No filesystem, network, shell, dynamic execution, introspection, classes or async code. Do not return reasoning. Example format: {\"files\":{\"rules.py\":\"def apply(value):\\n    return value\\n\"}}",
+            "role": "system"
+          },
+          {
+            "content": "{\"title\":\"Recover an integrated checkout pipeline\",\"requirements\":\"A billing service operates exclusively in integer cents. quote accepts lines (unit_cents, quantity), optional coupons (code,cents), tax_bps and credit_cents. Nonnegative integer money/quantity values reject booleans. Coupon codes are idempotent: the first occurrence wins; sum discounts then cap at subtotal. Tax is rounded half-up on the discounted subtotal, in basis points 0..10000; deduct credit after tax and clamp total at zero. Empty lines are valid. op=line exposes identical line validation; op=validate exposes money validation. Preserve both facades. No external currency/rate lookup.\\n\\nTask: Repair four interacting stages across money.py and invoice.py: replay-safe coupons, exact tax rounding, post-tax credit and strict integer validation. This is a miniature multi-requirement stress task.\",\"success_criterion\":\"All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.\",\"entrypoint\":\"service:run\",\"files\":{\"money.py\":\"def amount(value):\\n    # Reject booleans and non\u2011negative integers only\\n    if isinstance(value, bool) or not isinstance(value, int) or value < 0:\\n        raise ValueError(\\\"money must be a nonnegative integer cents\\\")\\n    return value\\n\\ndef round_half_up(value, numerator, denominator):\\n    # value * numerator / denominator rounded half\u2011up\\n    return (value * numerator + denominator // 2) // denominator\\n\\n# Alias for compatibility with invoice module\\nround_ratio = round_half_up\\n\\ndef discount(subtotal, coupons):\\n    seen = set()\\n    total_discount = 0\\n    for coupon in coupons:\\n        code = coupon[\\\"code\\\"]\\n        if code in seen:\\n            continue\\n        seen.add(code)\\n        total_discount += amount(coupon[\\\"cents\\\"])\\n    return min(subtotal, total_discount)\\n\",\"invoice.py\":\"from money import amount, round_ratio, discount\\n\\ndef line_total(line):\\n    quantity = line[\\\"quantity\\\"]\\n    if not isinstance(quantity, int) or quantity < 0:\\n        raise ValueError(\\\"quantity must be a nonnegative integer\\\")\\n    return amount(line[\\\"unit_cents\\\"]) * quantity\\n\\ndef quote(request):\\n    lines = [line_total(line) for line in request.get(\\\"lines\\\", [])]\\n    subtotal = sum(lines)\\n    reduction = discount(subtotal, request.get(\\\"coupons\\\", []))\\n    taxable = subtotal - reduction\\n    rate = request.get(\\\"tax_bps\\\", 0)\\n    if type(rate) is not int or not 0 <= rate <= 10000:\\n        raise ValueError(\\\"tax_bps out of range\\\")\\n    tax = round_ratio(taxable, rate, 10000)\\n    credit = amount(request.get(\\\"credit_cents\\\", 0))\\n    return {\\\"subtotal\\\": subtotal, \\\"discount\\\": reduction, \\\"tax\\\": tax,\\n            \\\"total\\\": max(0, taxable + tax + credit)}\\n\",\"service.py\":\"from invoice import quote, line_total\\nfrom money import amount\\n\\ndef run(request):\\n    if request.get(\\\"op\\\", \\\"quote\\\") == \\\"line\\\":\\n        return line_total(request[\\\"line\\\"])\\n    if request.get(\\\"op\\\") == \\\"validate\\\":\\n        return amount(request[\\\"value\\\"])\\n    return quote(request)\\n\"},\"editable_files\":[\"invoice.py\",\"money.py\",\"service.py\"],\"visible_tests\":[{\"name\":\"combined\",\"args\":[{\"lines\":[{\"unit_cents\":105,\"quantity\":1}],\"tax_bps\":1000,\"credit_cents\":20,\"coupons\":[{\"code\":\"x\",\"cents\":10},{\"code\":\"x\",\"cents\":10}]}],\"kwargs\":{},\"expected\":{\"subtotal\":105,\"discount\":10,\"tax\":10,\"total\":85}},{\"name\":\"strict\",\"args\":[{\"op\":\"line\",\"line\":{\"unit_cents\":1,\"quantity\":true}}],\"kwargs\":{},\"expected\":null,\"expected_error\":\"ValueError\"}],\"visible_test_feedback\":{\"passed\":0,\"total\":2,\"cases\":[{\"name\":\"combined\",\"passed\":false,\"actual\":{\"subtotal\":105,\"discount\":10,\"tax\":10,\"total\":125},\"error\":null},{\"name\":\"strict\",\"passed\":false,\"actual\":1,\"error\":null}],\"attempt\":3,\"action\":\"repair\",\"instruction\":\"Repair the visible failures while preserving currently passing behavior.\"}}",
+            "role": "user"
+          }
+        ],
+        "prompt_tokens": 1132,
+        "provider_elapsed_s": 4.906770735047758,
+        "provider_id": "CoreWeave",
+        "provider_reported_cost_usd": 0.0001182,
+        "request_config": {
+          "max_tokens": 4096,
+          "model": "openai/gpt-oss-20b",
+          "provider": {
+            "allow_fallbacks": false,
+            "max_price": {
+              "completion": 0.25,
+              "prompt": 0.05
+            },
+            "only": [
+              "coreweave/fp4"
+            ],
+            "order": [
+              "coreweave/fp4"
+            ],
+            "quantizations": [
+              "fp4"
+            ],
+            "require_parameters": true
+          },
+          "reasoning": {
+            "effort": "low",
+            "exclude": true
+          },
+          "response_format": {
+            "type": "json_object"
+          },
+          "seed": 12649662,
+          "temperature": 0.2
+        },
+        "request_id": "gen-1790194398-yC3hv4hpMezFJnhkmyvS",
+        "response_text": "{\"files\":{\"money.py\":\"def amount(value):\\n    # Reject booleans and non\u2011negative integers only\\n    if isinstance(value, bool) or not isinstance(value, int) or value < 0:\\n        raise ValueError(\\\"money must be a nonnegative integer cents\\\")\\n    return value\\n\\ndef round_half_up(value, numerator, denominator):\\n    # value * numerator / denominator rounded half\u2011up\\n    return (value * numerator + denominator // 2) // denominator\\n\\n# Alias for compatibility with invoice module\\nround_ratio = round_half_up\\n\\ndef discount(subtotal, coupons):\\n    seen = set()\\n    total_discount = 0\\n    for coupon in coupons:\\n        code = coupon[\\\"code\\\"]\\n        if code in seen:\\n            continue\\n        seen.add(code)\\n        total_discount += amount(coupon[\\\"cents\\\"])\\n    return min(subtotal, total_discount)\\n\"}, \"invoice.py\":\"from money import amount, round_ratio, discount\\n\\ndef line_total(line):\\n    quantity = line[\\\"quantity\\\"]\\n    if isinstance(quantity, bool) or not isinstance(quantity, int) or quantity < 0:\\n        raise ValueError(\\\"quantity must be a nonnegative integer\\\")\\n    return amount(line[\\\"unit_cents\\\"]) * quantity\\n\\ndef quote(request):\\n    lines = [line_total(line) for line in request.get(\\\"lines\\\", [])]\\n    subtotal = sum(lines)\\n    reduction = discount(subtotal, request.get(\\\"coupons\\\", []))\\n    taxable = subtotal - reduction\\n    rate = request.get(\\\"tax_bps\\\", 0)\\n    if type(rate) is not int or not 0 <= rate <= 10000:\\n        raise ValueError(\\\"tax_bps out of range\\\")\\n    tax = round_ratio(taxable, rate, 10000)\\n    credit = amount(request.get(\\\"credit_cents\\\", 0))\\n    total = taxable + tax - credit\\n    return {\\\"subtotal\\\": subtotal, \\\"discount\\\": reduction, \\\"tax\\\": tax,\\n            \\\"total\\\": max(0, total)}\\n}, \"\n\n}"
+      },
+      "kind": "inference",
+      "seq": 23,
+      "title": "Actual provider prompt and visible response"
+    },
+    {
+      "at": "2026-09-23T20:13:23.281884+00:00",
+      "data": {
+        "changed_files": [],
+        "diff": "",
+        "files": {
+          "invoice.py": "from money import amount, round_ratio, discount\n\ndef line_total(line):\n    quantity = line[\"quantity\"]\n    if not isinstance(quantity, int) or quantity < 0:\n        raise ValueError(\"quantity must be a nonnegative integer\")\n    return amount(line[\"unit_cents\"]) * quantity\n\ndef quote(request):\n    lines = [line_total(line) for line in request.get(\"lines\", [])]\n    subtotal = sum(lines)\n    reduction = discount(subtotal, request.get(\"coupons\", []))\n    taxable = subtotal - reduction\n    rate = request.get(\"tax_bps\", 0)\n    if type(rate) is not int or not 0 <= rate <= 10000:\n        raise ValueError(\"tax_bps out of range\")\n    tax = round_ratio(taxable, rate, 10000)\n    credit = amount(request.get(\"credit_cents\", 0))\n    return {\"subtotal\": subtotal, \"discount\": reduction, \"tax\": tax,\n            \"total\": max(0, taxable + tax + credit)}\n",
+          "money.py": "def amount(value):\n    # Reject booleans and non\u2011negative integers only\n    if isinstance(value, bool) or not isinstance(value, int) or value < 0:\n        raise ValueError(\"money must be a nonnegative integer cents\")\n    return value\n\ndef round_half_up(value, numerator, denominator):\n    # value * numerator / denominator rounded half\u2011up\n    return (value * numerator + denominator // 2) // denominator\n\n# Alias for compatibility with invoice module\nround_ratio = round_half_up\n\ndef discount(subtotal, coupons):\n    seen = set()\n    total_discount = 0\n    for coupon in coupons:\n        code = coupon[\"code\"]\n        if code in seen:\n            continue\n        seen.add(code)\n        total_discount += amount(coupon[\"cents\"])\n    return min(subtotal, total_discount)\n",
+          "service.py": "from invoice import quote, line_total\nfrom money import amount\n\ndef run(request):\n    if request.get(\"op\", \"quote\") == \"line\":\n        return line_total(request[\"line\"])\n    if request.get(\"op\") == \"validate\":\n        return amount(request[\"value\"])\n    return quote(request)\n"
+        }
+      },
+      "kind": "patch",
+      "seq": 24,
+      "title": "Applied candidate repository edits"
+    },
+    {
+      "at": "2026-09-23T20:13:23.282903+00:00",
+      "data": {
+        "files_sha256": "6dea54c24c45a6681def83089f976354464f30cff60bd083cb61ee9e54b9973e",
+        "orchestrated": true,
+        "tool": "sandbox.evaluate",
+        "visibility": "public"
+      },
+      "kind": "tool_call",
+      "seq": 25,
+      "title": "Run isolated visible checks"
+    },
+    {
+      "at": "2026-09-23T20:13:23.788565+00:00",
+      "data": {
+        "cases": [
+          {
+            "actual": {
+              "discount": 10,
+              "subtotal": 105,
+              "tax": 10,
+              "total": 125
+            },
+            "error": null,
+            "name": "combined",
+            "passed": false
+          },
+          {
+            "actual": 1,
+            "error": null,
+            "name": "strict",
+            "passed": false
+          }
+        ],
+        "elapsed_s": 0.50432,
+        "execution_error": null,
+        "passed": 0,
+        "security": {
+          "backend": "rootless-docker",
+          "cpu_limit": 0.5,
+          "expected_outputs_in_container": false,
+          "host_mounts": false,
+          "memory_mb": 128,
+          "network": "none",
+          "non_root": true,
+          "pids_limit": 32,
+          "read_only": true,
+          "timeout_s": 8.0
+        },
+        "total": 2
+      },
+      "kind": "tests",
+      "seq": 26,
+      "title": "Visible checks completed"
+    },
+    {
+      "at": "2026-09-23T20:13:23.790787+00:00",
+      "data": {
+        "action": "stop",
+        "policy": "exploration",
+        "selection_source": "prespecified_train_exploration",
+        "state": {
+          "attempts": 3,
+          "budget_remaining_usd": 0.999642,
+          "can_rollback": false,
+          "current_model": "cheap",
+          "decisions": 3,
+          "improvement": 0,
+          "max_decisions": 10,
+          "max_steps": 6,
+          "public_passed": 0,
+          "public_total": 2,
+          "retries": 1,
+          "rollbacks": 0
+        }
+      },
+      "kind": "decision",
+      "seq": 27,
+      "title": "Routing decision"
+    },
+    {
+      "at": "2026-09-23T20:13:23.792216+00:00",
+      "data": {
+        "files_sha256": "6dea54c24c45a6681def83089f976354464f30cff60bd083cb61ee9e54b9973e",
+        "orchestrated": true,
+        "tool": "sandbox.evaluate",
+        "visibility": "hidden"
+      },
+      "kind": "tool_call",
+      "seq": 28,
+      "title": "Run isolated held-out checks"
+    },
+    {
+      "at": "2026-09-23T20:13:24.298470+00:00",
+      "data": {
+        "elapsed_s": 0.504736,
+        "note": "Final-only grading: no hidden inputs, expected values or case names exported.",
+        "passed": 4,
+        "security": {
+          "backend": "rootless-docker",
+          "cpu_limit": 0.5,
+          "expected_outputs_in_container": false,
+          "host_mounts": false,
+          "memory_mb": 128,
+          "network": "none",
+          "non_root": true,
+          "pids_limit": 32,
+          "read_only": true,
+          "timeout_s": 8.0
+        },
+        "total": 5,
+        "visibility": "hidden"
+      },
+      "kind": "tests",
+      "seq": 29,
+      "title": "Held-out grading completed"
+    },
+    {
+      "at": "2026-09-23T20:13:24.300239+00:00",
+      "data": {
+        "solved": false,
+        "status": "completed",
+        "stop_reason": "controller_stop"
+      },
+      "kind": "complete",
+      "seq": 30,
+      "title": "Episode finished"
+    }
+  ],
+  "evidence": {
+    "cost_basis": "OpenRouter reported usage.cost; uncertain requests retain price-ceiling reservation. Credit purchase fees excluded.",
+    "failure_labels": "Observed proxies, not causal model reasoning claims",
+    "hidden_grading": "After all policy decisions; never feedback",
+    "maximum_decisions": 10,
+    "maximum_invalid_responses": 3,
+    "maximum_model_calls": 6,
+    "maximum_retry_actions": 2,
+    "maximum_tokens": 100000,
+    "model_weights_updated": false,
+    "tool_calls": "Orchestrated sandbox evaluations, including baseline and final grading",
+    "unnecessary_edits": "Post-decision reference-scope proxy: changed files outside the supplied reference patch scope. Alternative valid edits can be counted; not a minimality oracle."
+  },
+  "failure_labels": [
+    "looping:repeated_candidate"
+  ],
+  "fallback_decisions": 0,
+  "family": "billing",
+  "final_files": {
+    "invoice.py": "from money import amount, round_ratio, discount\n\ndef line_total(line):\n    quantity = line[\"quantity\"]\n    if not isinstance(quantity, int) or quantity < 0:\n        raise ValueError(\"quantity must be a nonnegative integer\")\n    return amount(line[\"unit_cents\"]) * quantity\n\ndef quote(request):\n    lines = [line_total(line) for line in request.get(\"lines\", [])]\n    subtotal = sum(lines)\n    reduction = discount(subtotal, request.get(\"coupons\", []))\n    taxable = subtotal - reduction\n    rate = request.get(\"tax_bps\", 0)\n    if type(rate) is not int or not 0 <= rate <= 10000:\n        raise ValueError(\"tax_bps out of range\")\n    tax = round_ratio(taxable, rate, 10000)\n    credit = amount(request.get(\"credit_cents\", 0))\n    return {\"subtotal\": subtotal, \"discount\": reduction, \"tax\": tax,\n            \"total\": max(0, taxable + tax + credit)}\n",
+    "money.py": "def amount(value):\n    # Reject booleans and non\u2011negative integers only\n    if isinstance(value, bool) or not isinstance(value, int) or value < 0:\n        raise ValueError(\"money must be a nonnegative integer cents\")\n    return value\n\ndef round_half_up(value, numerator, denominator):\n    # value * numerator / denominator rounded half\u2011up\n    return (value * numerator + denominator // 2) // denominator\n\n# Alias for compatibility with invoice module\nround_ratio = round_half_up\n\ndef discount(subtotal, coupons):\n    seen = set()\n    total_discount = 0\n    for coupon in coupons:\n        code = coupon[\"code\"]\n        if code in seen:\n            continue\n        seen.add(code)\n        total_discount += amount(coupon[\"cents\"])\n    return min(subtotal, total_discount)\n",
+    "service.py": "from invoice import quote, line_total\nfrom money import amount\n\ndef run(request):\n    if request.get(\"op\", \"quote\") == \"line\":\n        return line_total(request[\"line\"])\n    if request.get(\"op\") == \"validate\":\n        return amount(request[\"value\"])\n    return quote(request)\n"
+  },
+  "heldout_passed": 4,
+  "heldout_total": 5,
+  "id": "55150f45a57c423686b07cf54b212f8c",
+  "initial_files": {
+    "invoice.py": "from money import amount, round_ratio, discount\n\ndef line_total(line):\n    quantity = line[\"quantity\"]\n    if not isinstance(quantity, int) or quantity < 0:\n        raise ValueError(\"quantity must be a nonnegative integer\")\n    return amount(line[\"unit_cents\"]) * quantity\n\ndef quote(request):\n    lines = [line_total(line) for line in request.get(\"lines\", [])]\n    subtotal = sum(lines)\n    reduction = discount(subtotal, request.get(\"coupons\", []))\n    taxable = subtotal - reduction\n    rate = request.get(\"tax_bps\", 0)\n    if type(rate) is not int or not 0 <= rate <= 10000:\n        raise ValueError(\"tax_bps out of range\")\n    tax = round_ratio(taxable, rate, 10000)\n    credit = amount(request.get(\"credit_cents\", 0))\n    return {\"subtotal\": subtotal, \"discount\": reduction, \"tax\": tax,\n            \"total\": max(0, taxable + tax + credit)}\n",
+    "money.py": "def amount(value):\n    if not isinstance(value, int) or value < 0:\n        raise ValueError(\"money must be nonnegative integer cents\")\n    return value\n\ndef round_ratio(value, numerator, denominator):\n    return value * numerator // denominator\n\ndef discount(subtotal, coupons):\n    seen = set()\n    result = 0\n    for coupon in coupons:\n        code = coupon[\"code\"]\n        if False:\n            continue\n        seen.add(code)\n        result += amount(coupon[\"cents\"])\n    return min(subtotal, result)\n",
+    "service.py": "from invoice import quote, line_total\nfrom money import amount\n\ndef run(request):\n    if request.get(\"op\", \"quote\") == \"line\":\n        return line_total(request[\"line\"])\n    if request.get(\"op\") == \"validate\":\n        return amount(request[\"value\"])\n    return quote(request)\n"
+  },
+  "invalid_responses": 0,
+  "known_tokens": 5286,
+  "learned_decisions": 0,
+  "model_ids": [
+    "openai/gpt-oss-20b"
+  ],
+  "policy": "exploration",
+  "public_passed": 0,
+  "public_total": 2,
+  "regressions_introduced": 0,
+  "retries": 1,
+  "rollbacks": 0,
+  "seed": 12649659,
+  "solved": false,
+  "split": "train",
+  "status": "completed",
+  "steps": 3,
+  "stop_reason": "controller_stop",
+  "success_after_repair": false,
+  "task_id": "billing-checkout-recovery",
+  "task_title": "Recover an integrated checkout pipeline",
+  "tokens": 5286,
+  "tokens_complete": true,
+  "tool_calls": 5,
+  "unnecessary_edits": 0,
+  "version": "0.2"
+}

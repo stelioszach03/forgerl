@@ -1,0 +1,51 @@
+{
+  "comparisons": [
+    {
+      "baseline": "strong_only",
+      "bootstrap_samples": 0,
+      "family_bootstrap_95": null,
+      "note": "Seeds averaged within task; families resampled together. Fewer than three families: no interval estimated. Even three clusters warrant cautious descriptive interpretation.",
+      "paired_episodes": 30,
+      "paired_families": 2,
+      "paired_tasks": 10,
+      "solve_rate_difference": 0.03333333333333333,
+      "status": "insufficient_clusters"
+    },
+    {
+      "baseline": "cheap_only",
+      "bootstrap_samples": 0,
+      "family_bootstrap_95": null,
+      "note": "Seeds averaged within task; families resampled together. Fewer than three families: no interval estimated. Even three clusters warrant cautious descriptive interpretation.",
+      "paired_episodes": 30,
+      "paired_families": 2,
+      "paired_tasks": 10,
+      "solve_rate_difference": -0.06666666666666667,
+      "status": "insufficient_clusters"
+    },
+    {
+      "baseline": "escalate_on_failure",
+      "bootstrap_samples": 0,
+      "family_bootstrap_95": null,
+      "note": "Seeds averaged within task; families resampled together. Fewer than three families: no interval estimated. Even three clusters warrant cautious descriptive interpretation.",
+      "paired_episodes": 30,
+      "paired_families": 2,
+      "paired_tasks": 10,
+      "solve_rate_difference": -0.03333333333333333,
+      "status": "insufficient_clusters"
+    },
+    {
+      "baseline": "static_router",
+      "bootstrap_samples": 0,
+      "family_bootstrap_95": null,
+      "note": "Seeds averaged within task; families resampled together. Fewer than three families: no interval estimated. Even three clusters warrant cautious descriptive interpretation.",
+      "paired_episodes": 30,
+      "paired_families": 2,
+      "paired_tasks": 10,
+      "solve_rate_difference": -0.06666666666666667,
+      "status": "insufficient_clusters"
+    }
+  ],
+  "no_binomial_interval": true,
+  "seed": 17,
+  "unit": "family clusters after within-task seed averaging"
+}

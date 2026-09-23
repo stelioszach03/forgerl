@@ -1,0 +1,388 @@
+{
+  "attempts": 1,
+  "category": "multi_file",
+  "cost_usd": 0.000135,
+  "created_at": "2026-09-23T20:57:55.772232+00:00",
+  "decisions": 1,
+  "diff": "--- a/allocation.py\n+++ b/allocation.py\n@@ -17,5 +17,6 @@\n     return {\"stock\": remaining, \"accepted\": accepted, \"rejected\": rejected}\n \n def replenishment(stock, targets):\n-    return {sku: max(0, quantity(target) + stock.get(sku, 0))\n+    # Return the shortfall for each SKU: max(0, target - current stock)\n+    return {sku: max(0, quantity(target) - stock.get(sku, 0))\n             for sku, target in sorted(targets.items())}\n--- a/ledger.py\n+++ b/ledger.py\n@@ -13,9 +13,10 @@\n         seen.add(identifier)\n         count = quantity(event[\"quantity\"])\n         sku = event[\"sku\"]\n-        delta = count\n-        if event[\"kind\"] not in (\"receive\", \"ship\"):\n+        kind = event.get(\"kind\")\n+        if kind not in (\"receive\", \"ship\"):\n             raise ValueError(\"unknown event\")\n+        delta = count if kind == \"receive\" else -count\n         updated = stock.get(sku, 0) + delta\n         if updated < 0:\n             raise ValueError(\"negative stock\")\n",
+  "elapsed_s": 19.419439,
+  "error": null,
+  "escalations": 0,
+  "events": [
+    {
+      "at": "2026-09-23T20:57:55.772286+00:00",
+      "data": {
+        "description": "Inventory is nonnegative integer quantities keyed by SKU (booleans invalid). Replay events in order; ids are idempotent with first occurrence winning, including malformed duplicates skipped before validation. receive adds, ship subtracts; reject unknown kinds and any intermediate negative stock. Orders are processed in input order. Aggregate repeated SKUs within an order, then accept/decrement all lines atomically only if all are available; rejected orders change nothing. Return stock/accepted/rejected. Empty orders are accepted. op=replenish returns each requested target's nonnegative shortfall after event replay, including zero shortfalls.\n\nTask: Fix outbound ledger deltas and calculate replenishment from the resulting stock.",
+        "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+        "task_id": "inventory-stock-projection"
+      },
+      "kind": "prompt",
+      "seq": 1,
+      "title": "Authored task specification"
+    },
+    {
+      "at": "2026-09-23T20:57:55.773083+00:00",
+      "data": {
+        "entrypoint": "service:run",
+        "files": {
+          "allocation.py": "from ledger import quantity\n\ndef reserve(stock, orders):\n    remaining = dict(stock)\n    accepted, rejected = [], []\n    for order in orders:\n        needed = {}\n        for item in order[\"items\"]:\n            sku = item[\"sku\"]\n            needed[sku] = needed.get(sku, 0) + quantity(item[\"quantity\"])\n        if all(remaining.get(sku, 0) >= count for sku, count in needed.items()):\n            for sku, count in needed.items():\n                remaining[sku] = remaining.get(sku, 0) - count\n            accepted.append(order[\"id\"])\n        else:\n            rejected.append(order[\"id\"])\n    return {\"stock\": remaining, \"accepted\": accepted, \"rejected\": rejected}\n\ndef replenishment(stock, targets):\n    return {sku: max(0, quantity(target) + stock.get(sku, 0))\n            for sku, target in sorted(targets.items())}\n",
+          "ledger.py": "def quantity(value):\n    if type(value) is not int or value < 0:\n        raise ValueError(\"quantity must be a nonnegative integer\")\n    return value\n\ndef replay(initial, events):\n    stock = {sku: quantity(value) for sku, value in initial.items()}\n    seen = set()\n    for event in events:\n        identifier = event[\"id\"]\n        if identifier in seen:\n            continue\n        seen.add(identifier)\n        count = quantity(event[\"quantity\"])\n        sku = event[\"sku\"]\n        delta = count\n        if event[\"kind\"] not in (\"receive\", \"ship\"):\n            raise ValueError(\"unknown event\")\n        updated = stock.get(sku, 0) + delta\n        if updated < 0:\n            raise ValueError(\"negative stock\")\n        stock[sku] = updated\n    return stock\n",
+          "service.py": "from ledger import replay\nfrom allocation import reserve, replenishment\n\ndef run(request):\n    stock = replay(request.get(\"stock\", {}), request.get(\"events\", []))\n    if request.get(\"op\") == \"replenish\":\n        return replenishment(stock, request.get(\"targets\", {}))\n    return reserve(stock, request.get(\"orders\", []))\n"
+        },
+        "note": "Files supplied as context; not a claim of autonomous file inspection."
+      },
+      "kind": "context",
+      "seq": 2,
+      "title": "Repository supplied to the repair harness"
+    },
+    {
+      "at": "2026-09-23T20:57:55.773935+00:00",
+      "data": {
+        "files_sha256": "cf3a2c5fd2557c95e07da313f1269b1dd99f8f317ca4ecef0d285402efd46da3",
+        "orchestrated": true,
+        "tool": "sandbox.evaluate",
+        "visibility": "public"
+      },
+      "kind": "tool_call",
+      "seq": 3,
+      "title": "Run isolated visible checks"
+    },
+    {
+      "at": "2026-09-23T20:57:56.277819+00:00",
+      "data": {
+        "cases": [
+          {
+            "actual": {
+              "x": 23
+            },
+            "error": null,
+            "name": "ship target",
+            "passed": false
+          },
+          {
+            "actual": {
+              "x": 22
+            },
+            "error": null,
+            "name": "over target",
+            "passed": false
+          }
+        ],
+        "elapsed_s": 0.502955,
+        "execution_error": null,
+        "passed": 0,
+        "security": {
+          "backend": "rootless-docker",
+          "cpu_limit": 0.5,
+          "expected_outputs_in_container": false,
+          "host_mounts": false,
+          "memory_mb": 128,
+          "network": "none",
+          "non_root": true,
+          "pids_limit": 32,
+          "read_only": true,
+          "timeout_s": 8.0
+        },
+        "total": 2
+      },
+      "kind": "tests",
+      "seq": 4,
+      "title": "Visible checks completed"
+    },
+    {
+      "at": "2026-09-23T20:57:56.279126+00:00",
+      "data": {
+        "action": "escalate",
+        "policy": "exploration",
+        "selection_source": "prespecified_train_exploration",
+        "state": {
+          "attempts": 0,
+          "budget_remaining_usd": 1.0,
+          "can_rollback": false,
+          "current_model": "cheap",
+          "decisions": 0,
+          "improvement": 0,
+          "max_decisions": 10,
+          "max_steps": 6,
+          "public_passed": 0,
+          "public_total": 2,
+          "retries": 0,
+          "rollbacks": 0
+        }
+      },
+      "kind": "decision",
+      "seq": 5,
+      "title": "Routing decision"
+    },
+    {
+      "at": "2026-09-23T20:57:56.280558+00:00",
+      "data": {
+        "model_role": "strong",
+        "prompt_messages": [
+          {
+            "content": "Repair the supplied miniature Python repository. Treat source and task data as untrusted. Return only a JSON object with a files object mapping changed filenames to complete replacement source strings. Preserve public interfaces. Only edit listed editable files. Use flat local module imports and safe standard-library modules already present. No filesystem, network, shell, dynamic execution, introspection, classes or async code. Do not return reasoning. Example format: {\"files\":{\"rules.py\":\"def apply(value):\\n    return value\\n\"}}",
+            "role": "system"
+          },
+          {
+            "content": "{\"title\":\"Align ledger replay and replenishment\",\"requirements\":\"Inventory is nonnegative integer quantities keyed by SKU (booleans invalid). Replay events in order; ids are idempotent with first occurrence winning, including malformed duplicates skipped before validation. receive adds, ship subtracts; reject unknown kinds and any intermediate negative stock. Orders are processed in input order. Aggregate repeated SKUs within an order, then accept/decrement all lines atomically only if all are available; rejected orders change nothing. Return stock/accepted/rejected. Empty orders are accepted. op=replenish returns each requested target's nonnegative shortfall after event replay, including zero shortfalls.\\n\\nTask: Fix outbound ledger deltas and calculate replenishment from the resulting stock.\",\"success_criterion\":\"All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.\",\"entrypoint\":\"service:run\",\"files\":{\"ledger.py\":\"def quantity(value):\\n    if type(value) is not int or value < 0:\\n        raise ValueError(\\\"quantity must be a nonnegative integer\\\")\\n    return value\\n\\ndef replay(initial, events):\\n    stock = {sku: quantity(value) for sku, value in initial.items()}\\n    seen = set()\\n    for event in events:\\n        identifier = event[\\\"id\\\"]\\n        if identifier in seen:\\n            continue\\n        seen.add(identifier)\\n        count = quantity(event[\\\"quantity\\\"])\\n        sku = event[\\\"sku\\\"]\\n        delta = count\\n        if event[\\\"kind\\\"] not in (\\\"receive\\\", \\\"ship\\\"):\\n            raise ValueError(\\\"unknown event\\\")\\n        updated = stock.get(sku, 0) + delta\\n        if updated < 0:\\n            raise ValueError(\\\"negative stock\\\")\\n        stock[sku] = updated\\n    return stock\\n\",\"allocation.py\":\"from ledger import quantity\\n\\ndef reserve(stock, orders):\\n    remaining = dict(stock)\\n    accepted, rejected = [], []\\n    for order in orders:\\n        needed = {}\\n        for item in order[\\\"items\\\"]:\\n            sku = item[\\\"sku\\\"]\\n            needed[sku] = needed.get(sku, 0) + quantity(item[\\\"quantity\\\"])\\n        if all(remaining.get(sku, 0) >= count for sku, count in needed.items()):\\n            for sku, count in needed.items():\\n                remaining[sku] = remaining.get(sku, 0) - count\\n            accepted.append(order[\\\"id\\\"])\\n        else:\\n            rejected.append(order[\\\"id\\\"])\\n    return {\\\"stock\\\": remaining, \\\"accepted\\\": accepted, \\\"rejected\\\": rejected}\\n\\ndef replenishment(stock, targets):\\n    return {sku: max(0, quantity(target) + stock.get(sku, 0))\\n            for sku, target in sorted(targets.items())}\\n\",\"service.py\":\"from ledger import replay\\nfrom allocation import reserve, replenishment\\n\\ndef run(request):\\n    stock = replay(request.get(\\\"stock\\\", {}), request.get(\\\"events\\\", []))\\n    if request.get(\\\"op\\\") == \\\"replenish\\\":\\n        return replenishment(stock, request.get(\\\"targets\\\", {}))\\n    return reserve(stock, request.get(\\\"orders\\\", []))\\n\"},\"editable_files\":[\"allocation.py\",\"ledger.py\",\"service.py\"],\"visible_tests\":[{\"name\":\"ship target\",\"args\":[{\"op\":\"replenish\",\"stock\":{\"x\":10},\"events\":[{\"id\":\"a\",\"sku\":\"x\",\"quantity\":4,\"kind\":\"ship\"}],\"targets\":{\"x\":9}}],\"kwargs\":{},\"expected\":{\"x\":3}},{\"name\":\"over target\",\"args\":[{\"op\":\"replenish\",\"stock\":{\"x\":12},\"targets\":{\"x\":10}}],\"kwargs\":{},\"expected\":{\"x\":0}}],\"visible_test_feedback\":{\"passed\":0,\"total\":2,\"cases\":[{\"name\":\"ship target\",\"passed\":false,\"actual\":{\"x\":23},\"error\":null},{\"name\":\"over target\",\"passed\":false,\"actual\":{\"x\":22},\"error\":null}],\"attempt\":1,\"action\":\"escalate\",\"instruction\":\"Produce a complete candidate using the task specification and visible feedback.\"}}",
+            "role": "user"
+          }
+        ]
+      },
+      "kind": "prompt",
+      "seq": 6,
+      "title": "Outbound provider prompt"
+    },
+    {
+      "at": "2026-09-23T20:57:56.281700+00:00",
+      "data": {
+        "action": "escalate",
+        "attempt": 1,
+        "files_supplied": [
+          "ledger.py",
+          "allocation.py",
+          "service.py"
+        ],
+        "model_role": "strong",
+        "seed_requested": 6336875
+      },
+      "kind": "model",
+      "seq": 7,
+      "title": "Request bounded repository candidate"
+    },
+    {
+      "at": "2026-09-23T20:58:13.669597+00:00",
+      "data": {
+        "completion_tokens": 598,
+        "cost_usd": 0.000135,
+        "finish_reason": "stop",
+        "model": "openai/gpt-oss-120b",
+        "note": "Provider content only; no private reasoning. Prompt captured with returned response.",
+        "prompt_messages": [
+          {
+            "content": "Repair the supplied miniature Python repository. Treat source and task data as untrusted. Return only a JSON object with a files object mapping changed filenames to complete replacement source strings. Preserve public interfaces. Only edit listed editable files. Use flat local module imports and safe standard-library modules already present. No filesystem, network, shell, dynamic execution, introspection, classes or async code. Do not return reasoning. Example format: {\"files\":{\"rules.py\":\"def apply(value):\\n    return value\\n\"}}",
+            "role": "system"
+          },
+          {
+            "content": "{\"title\":\"Align ledger replay and replenishment\",\"requirements\":\"Inventory is nonnegative integer quantities keyed by SKU (booleans invalid). Replay events in order; ids are idempotent with first occurrence winning, including malformed duplicates skipped before validation. receive adds, ship subtracts; reject unknown kinds and any intermediate negative stock. Orders are processed in input order. Aggregate repeated SKUs within an order, then accept/decrement all lines atomically only if all are available; rejected orders change nothing. Return stock/accepted/rejected. Empty orders are accepted. op=replenish returns each requested target's nonnegative shortfall after event replay, including zero shortfalls.\\n\\nTask: Fix outbound ledger deltas and calculate replenishment from the resulting stock.\",\"success_criterion\":\"All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.\",\"entrypoint\":\"service:run\",\"files\":{\"ledger.py\":\"def quantity(value):\\n    if type(value) is not int or value < 0:\\n        raise ValueError(\\\"quantity must be a nonnegative integer\\\")\\n    return value\\n\\ndef replay(initial, events):\\n    stock = {sku: quantity(value) for sku, value in initial.items()}\\n    seen = set()\\n    for event in events:\\n        identifier = event[\\\"id\\\"]\\n        if identifier in seen:\\n            continue\\n        seen.add(identifier)\\n        count = quantity(event[\\\"quantity\\\"])\\n        sku = event[\\\"sku\\\"]\\n        delta = count\\n        if event[\\\"kind\\\"] not in (\\\"receive\\\", \\\"ship\\\"):\\n            raise ValueError(\\\"unknown event\\\")\\n        updated = stock.get(sku, 0) + delta\\n        if updated < 0:\\n            raise ValueError(\\\"negative stock\\\")\\n        stock[sku] = updated\\n    return stock\\n\",\"allocation.py\":\"from ledger import quantity\\n\\ndef reserve(stock, orders):\\n    remaining = dict(stock)\\n    accepted, rejected = [], []\\n    for order in orders:\\n        needed = {}\\n        for item in order[\\\"items\\\"]:\\n            sku = item[\\\"sku\\\"]\\n            needed[sku] = needed.get(sku, 0) + quantity(item[\\\"quantity\\\"])\\n        if all(remaining.get(sku, 0) >= count for sku, count in needed.items()):\\n            for sku, count in needed.items():\\n                remaining[sku] = remaining.get(sku, 0) - count\\n            accepted.append(order[\\\"id\\\"])\\n        else:\\n            rejected.append(order[\\\"id\\\"])\\n    return {\\\"stock\\\": remaining, \\\"accepted\\\": accepted, \\\"rejected\\\": rejected}\\n\\ndef replenishment(stock, targets):\\n    return {sku: max(0, quantity(target) + stock.get(sku, 0))\\n            for sku, target in sorted(targets.items())}\\n\",\"service.py\":\"from ledger import replay\\nfrom allocation import reserve, replenishment\\n\\ndef run(request):\\n    stock = replay(request.get(\\\"stock\\\", {}), request.get(\\\"events\\\", []))\\n    if request.get(\\\"op\\\") == \\\"replenish\\\":\\n        return replenishment(stock, request.get(\\\"targets\\\", {}))\\n    return reserve(stock, request.get(\\\"orders\\\", []))\\n\"},\"editable_files\":[\"allocation.py\",\"ledger.py\",\"service.py\"],\"visible_tests\":[{\"name\":\"ship target\",\"args\":[{\"op\":\"replenish\",\"stock\":{\"x\":10},\"events\":[{\"id\":\"a\",\"sku\":\"x\",\"quantity\":4,\"kind\":\"ship\"}],\"targets\":{\"x\":9}}],\"kwargs\":{},\"expected\":{\"x\":3}},{\"name\":\"over target\",\"args\":[{\"op\":\"replenish\",\"stock\":{\"x\":12},\"targets\":{\"x\":10}}],\"kwargs\":{},\"expected\":{\"x\":0}}],\"visible_test_feedback\":{\"passed\":0,\"total\":2,\"cases\":[{\"name\":\"ship target\",\"passed\":false,\"actual\":{\"x\":23},\"error\":null},{\"name\":\"over target\",\"passed\":false,\"actual\":{\"x\":22},\"error\":null}],\"attempt\":1,\"action\":\"escalate\",\"instruction\":\"Produce a complete candidate using the task specification and visible feedback.\"}}",
+            "role": "user"
+          }
+        ],
+        "prompt_tokens": 1085,
+        "provider_elapsed_s": 17.384170147124678,
+        "provider_id": "CoreWeave",
+        "provider_reported_cost_usd": 0.00013421,
+        "request_config": {
+          "max_tokens": 4096,
+          "model": "openai/gpt-oss-120b",
+          "provider": {
+            "allow_fallbacks": false,
+            "max_price": {
+              "completion": 0.25,
+              "prompt": 0.05
+            },
+            "only": [
+              "coreweave/fp4"
+            ],
+            "order": [
+              "coreweave/fp4"
+            ],
+            "quantizations": [
+              "fp4"
+            ],
+            "require_parameters": true
+          },
+          "reasoning": {
+            "effort": "low",
+            "exclude": true
+          },
+          "response_format": {
+            "type": "json_object"
+          },
+          "seed": 6336875,
+          "temperature": 0.2
+        },
+        "request_id": "gen-1790197076-1MC8GDOgxrfqLf3XtYKv",
+        "response_text": "{\n  \"files\": {\n    \"ledger.py\": \"def quantity(value):\\n    if type(value) is not int or value < 0:\\n        raise ValueError(\\\"quantity must be a nonnegative integer\\\")\\n    return value\\n\\ndef replay(initial, events):\\n    stock = {sku: quantity(value) for sku, value in initial.items()}\\n    seen = set()\\n    for event in events:\\n        identifier = event[\\\"id\\\"]\\n        if identifier in seen:\\n            continue\\n        seen.add(identifier)\\n        count = quantity(event[\\\"quantity\\\"])\\n        sku = event[\\\"sku\\\"]\\n        kind = event.get(\\\"kind\\\")\\n        if kind not in (\\\"receive\\\", \\\"ship\\\"):\\n            raise ValueError(\\\"unknown event\\\")\\n        delta = count if kind == \\\"receive\\\" else -count\\n        updated = stock.get(sku, 0) + delta\\n        if updated < 0:\\n            raise ValueError(\\\"negative stock\\\")\\n        stock[sku] = updated\\n    return stock\\n\",\n    \"allocation.py\": \"from ledger import quantity\\n\\ndef reserve(stock, orders):\\n    remaining = dict(stock)\\n    accepted, rejected = [], []\\n    for order in orders:\\n        needed = {}\\n        for item in order[\\\"items\\\"]:\\n            sku = item[\\\"sku\\\"]\\n            needed[sku] = needed.get(sku, 0) + quantity(item[\\\"quantity\\\"])\\n        if all(remaining.get(sku, 0) >= count for sku, count in needed.items()):\\n            for sku, count in needed.items():\\n                remaining[sku] = remaining.get(sku, 0) - count\\n            accepted.append(order[\\\"id\\\"])\\n        else:\\n            rejected.append(order[\\\"id\\\"])\\n    return {\\\"stock\\\": remaining, \\\"accepted\\\": accepted, \\\"rejected\\\": rejected}\\n\\ndef replenishment(stock, targets):\\n    # Return the shortfall for each SKU: max(0, target - current stock)\\n    return {sku: max(0, quantity(target) - stock.get(sku, 0))\\n            for sku, target in sorted(targets.items())}\\n\"\n  }\n}"
+      },
+      "kind": "inference",
+      "seq": 8,
+      "title": "Actual provider prompt and visible response"
+    },
+    {
+      "at": "2026-09-23T20:58:13.674241+00:00",
+      "data": {
+        "changed_files": [
+          "ledger.py",
+          "allocation.py"
+        ],
+        "diff": "--- a/allocation.py\n+++ b/allocation.py\n@@ -17,5 +17,6 @@\n     return {\"stock\": remaining, \"accepted\": accepted, \"rejected\": rejected}\n \n def replenishment(stock, targets):\n-    return {sku: max(0, quantity(target) + stock.get(sku, 0))\n+    # Return the shortfall for each SKU: max(0, target - current stock)\n+    return {sku: max(0, quantity(target) - stock.get(sku, 0))\n             for sku, target in sorted(targets.items())}\n--- a/ledger.py\n+++ b/ledger.py\n@@ -13,9 +13,10 @@\n         seen.add(identifier)\n         count = quantity(event[\"quantity\"])\n         sku = event[\"sku\"]\n-        delta = count\n-        if event[\"kind\"] not in (\"receive\", \"ship\"):\n+        kind = event.get(\"kind\")\n+        if kind not in (\"receive\", \"ship\"):\n             raise ValueError(\"unknown event\")\n+        delta = count if kind == \"receive\" else -count\n         updated = stock.get(sku, 0) + delta\n         if updated < 0:\n             raise ValueError(\"negative stock\")\n",
+        "files": {
+          "allocation.py": "from ledger import quantity\n\ndef reserve(stock, orders):\n    remaining = dict(stock)\n    accepted, rejected = [], []\n    for order in orders:\n        needed = {}\n        for item in order[\"items\"]:\n            sku = item[\"sku\"]\n            needed[sku] = needed.get(sku, 0) + quantity(item[\"quantity\"])\n        if all(remaining.get(sku, 0) >= count for sku, count in needed.items()):\n            for sku, count in needed.items():\n                remaining[sku] = remaining.get(sku, 0) - count\n            accepted.append(order[\"id\"])\n        else:\n            rejected.append(order[\"id\"])\n    return {\"stock\": remaining, \"accepted\": accepted, \"rejected\": rejected}\n\ndef replenishment(stock, targets):\n    # Return the shortfall for each SKU: max(0, target - current stock)\n    return {sku: max(0, quantity(target) - stock.get(sku, 0))\n            for sku, target in sorted(targets.items())}\n",
+          "ledger.py": "def quantity(value):\n    if type(value) is not int or value < 0:\n        raise ValueError(\"quantity must be a nonnegative integer\")\n    return value\n\ndef replay(initial, events):\n    stock = {sku: quantity(value) for sku, value in initial.items()}\n    seen = set()\n    for event in events:\n        identifier = event[\"id\"]\n        if identifier in seen:\n            continue\n        seen.add(identifier)\n        count = quantity(event[\"quantity\"])\n        sku = event[\"sku\"]\n        kind = event.get(\"kind\")\n        if kind not in (\"receive\", \"ship\"):\n            raise ValueError(\"unknown event\")\n        delta = count if kind == \"receive\" else -count\n        updated = stock.get(sku, 0) + delta\n        if updated < 0:\n            raise ValueError(\"negative stock\")\n        stock[sku] = updated\n    return stock\n",
+          "service.py": "from ledger import replay\nfrom allocation import reserve, replenishment\n\ndef run(request):\n    stock = replay(request.get(\"stock\", {}), request.get(\"events\", []))\n    if request.get(\"op\") == \"replenish\":\n        return replenishment(stock, request.get(\"targets\", {}))\n    return reserve(stock, request.get(\"orders\", []))\n"
+        }
+      },
+      "kind": "patch",
+      "seq": 9,
+      "title": "Applied candidate repository edits"
+    },
+    {
+      "at": "2026-09-23T20:58:13.675507+00:00",
+      "data": {
+        "files_sha256": "6634af1293dbc868c2edc95f9e0451a43de9e3aec41547184eeb4a243464cf2c",
+        "orchestrated": true,
+        "tool": "sandbox.evaluate",
+        "visibility": "public"
+      },
+      "kind": "tool_call",
+      "seq": 10,
+      "title": "Run isolated visible checks"
+    },
+    {
+      "at": "2026-09-23T20:58:14.531894+00:00",
+      "data": {
+        "cases": [
+          {
+            "actual": {
+              "x": 3
+            },
+            "error": null,
+            "name": "ship target",
+            "passed": true
+          },
+          {
+            "actual": {
+              "x": 0
+            },
+            "error": null,
+            "name": "over target",
+            "passed": true
+          }
+        ],
+        "elapsed_s": 0.855209,
+        "execution_error": null,
+        "passed": 2,
+        "security": {
+          "backend": "rootless-docker",
+          "cpu_limit": 0.5,
+          "expected_outputs_in_container": false,
+          "host_mounts": false,
+          "memory_mb": 128,
+          "network": "none",
+          "non_root": true,
+          "pids_limit": 32,
+          "read_only": true,
+          "timeout_s": 8.0
+        },
+        "total": 2
+      },
+      "kind": "tests",
+      "seq": 11,
+      "title": "Visible checks completed"
+    },
+    {
+      "at": "2026-09-23T20:58:14.533264+00:00",
+      "data": {
+        "files_sha256": "6634af1293dbc868c2edc95f9e0451a43de9e3aec41547184eeb4a243464cf2c",
+        "orchestrated": true,
+        "tool": "sandbox.evaluate",
+        "visibility": "hidden"
+      },
+      "kind": "tool_call",
+      "seq": 12,
+      "title": "Run isolated held-out checks"
+    },
+    {
+      "at": "2026-09-23T20:58:15.189945+00:00",
+      "data": {
+        "elapsed_s": 0.655006,
+        "note": "Final-only grading: no hidden inputs, expected values or case names exported.",
+        "passed": 4,
+        "security": {
+          "backend": "rootless-docker",
+          "cpu_limit": 0.5,
+          "expected_outputs_in_container": false,
+          "host_mounts": false,
+          "memory_mb": 128,
+          "network": "none",
+          "non_root": true,
+          "pids_limit": 32,
+          "read_only": true,
+          "timeout_s": 8.0
+        },
+        "total": 4,
+        "visibility": "hidden"
+      },
+      "kind": "tests",
+      "seq": 13,
+      "title": "Held-out grading completed"
+    },
+    {
+      "at": "2026-09-23T20:58:15.191878+00:00",
+      "data": {
+        "solved": true,
+        "status": "completed",
+        "stop_reason": "visible_tests_pass"
+      },
+      "kind": "complete",
+      "seq": 14,
+      "title": "Episode finished"
+    }
+  ],
+  "evidence": {
+    "cost_basis": "OpenRouter reported usage.cost; uncertain requests retain price-ceiling reservation. Credit purchase fees excluded.",
+    "failure_labels": "Observed proxies, not causal model reasoning claims",
+    "hidden_grading": "After all policy decisions; never feedback",
+    "maximum_decisions": 10,
+    "maximum_invalid_responses": 3,
+    "maximum_model_calls": 6,
+    "maximum_retry_actions": 2,
+    "maximum_tokens": 100000,
+    "model_weights_updated": false,
+    "tool_calls": "Orchestrated sandbox evaluations, including baseline and final grading",
+    "unnecessary_edits": "Post-decision reference-scope proxy: changed files outside the supplied reference patch scope. Alternative valid edits can be counted; not a minimality oracle."
+  },
+  "failure_labels": [],
+  "fallback_decisions": 0,
+  "family": "inventory",
+  "final_files": {
+    "allocation.py": "from ledger import quantity\n\ndef reserve(stock, orders):\n    remaining = dict(stock)\n    accepted, rejected = [], []\n    for order in orders:\n        needed = {}\n        for item in order[\"items\"]:\n            sku = item[\"sku\"]\n            needed[sku] = needed.get(sku, 0) + quantity(item[\"quantity\"])\n        if all(remaining.get(sku, 0) >= count for sku, count in needed.items()):\n            for sku, count in needed.items():\n                remaining[sku] = remaining.get(sku, 0) - count\n            accepted.append(order[\"id\"])\n        else:\n            rejected.append(order[\"id\"])\n    return {\"stock\": remaining, \"accepted\": accepted, \"rejected\": rejected}\n\ndef replenishment(stock, targets):\n    # Return the shortfall for each SKU: max(0, target - current stock)\n    return {sku: max(0, quantity(target) - stock.get(sku, 0))\n            for sku, target in sorted(targets.items())}\n",
+    "ledger.py": "def quantity(value):\n    if type(value) is not int or value < 0:\n        raise ValueError(\"quantity must be a nonnegative integer\")\n    return value\n\ndef replay(initial, events):\n    stock = {sku: quantity(value) for sku, value in initial.items()}\n    seen = set()\n    for event in events:\n        identifier = event[\"id\"]\n        if identifier in seen:\n            continue\n        seen.add(identifier)\n        count = quantity(event[\"quantity\"])\n        sku = event[\"sku\"]\n        kind = event.get(\"kind\")\n        if kind not in (\"receive\", \"ship\"):\n            raise ValueError(\"unknown event\")\n        delta = count if kind == \"receive\" else -count\n        updated = stock.get(sku, 0) + delta\n        if updated < 0:\n            raise ValueError(\"negative stock\")\n        stock[sku] = updated\n    return stock\n",
+    "service.py": "from ledger import replay\nfrom allocation import reserve, replenishment\n\ndef run(request):\n    stock = replay(request.get(\"stock\", {}), request.get(\"events\", []))\n    if request.get(\"op\") == \"replenish\":\n        return replenishment(stock, request.get(\"targets\", {}))\n    return reserve(stock, request.get(\"orders\", []))\n"
+  },
+  "heldout_passed": 4,
+  "heldout_total": 4,
+  "id": "2d41dcf38a1a4199aa8b47797490b5d2",
+  "initial_files": {
+    "allocation.py": "from ledger import quantity\n\ndef reserve(stock, orders):\n    remaining = dict(stock)\n    accepted, rejected = [], []\n    for order in orders:\n        needed = {}\n        for item in order[\"items\"]:\n            sku = item[\"sku\"]\n            needed[sku] = needed.get(sku, 0) + quantity(item[\"quantity\"])\n        if all(remaining.get(sku, 0) >= count for sku, count in needed.items()):\n            for sku, count in needed.items():\n                remaining[sku] = remaining.get(sku, 0) - count\n            accepted.append(order[\"id\"])\n        else:\n            rejected.append(order[\"id\"])\n    return {\"stock\": remaining, \"accepted\": accepted, \"rejected\": rejected}\n\ndef replenishment(stock, targets):\n    return {sku: max(0, quantity(target) + stock.get(sku, 0))\n            for sku, target in sorted(targets.items())}\n",
+    "ledger.py": "def quantity(value):\n    if type(value) is not int or value < 0:\n        raise ValueError(\"quantity must be a nonnegative integer\")\n    return value\n\ndef replay(initial, events):\n    stock = {sku: quantity(value) for sku, value in initial.items()}\n    seen = set()\n    for event in events:\n        identifier = event[\"id\"]\n        if identifier in seen:\n            continue\n        seen.add(identifier)\n        count = quantity(event[\"quantity\"])\n        sku = event[\"sku\"]\n        delta = count\n        if event[\"kind\"] not in (\"receive\", \"ship\"):\n            raise ValueError(\"unknown event\")\n        updated = stock.get(sku, 0) + delta\n        if updated < 0:\n            raise ValueError(\"negative stock\")\n        stock[sku] = updated\n    return stock\n",
+    "service.py": "from ledger import replay\nfrom allocation import reserve, replenishment\n\ndef run(request):\n    stock = replay(request.get(\"stock\", {}), request.get(\"events\", []))\n    if request.get(\"op\") == \"replenish\":\n        return replenishment(stock, request.get(\"targets\", {}))\n    return reserve(stock, request.get(\"orders\", []))\n"
+  },
+  "invalid_responses": 0,
+  "known_tokens": 1683,
+  "learned_decisions": 0,
+  "model_ids": [
+    "openai/gpt-oss-120b"
+  ],
+  "policy": "exploration",
+  "public_passed": 2,
+  "public_total": 2,
+  "regressions_introduced": 0,
+  "retries": 0,
+  "rollbacks": 0,
+  "seed": 6336874,
+  "solved": true,
+  "split": "train",
+  "status": "completed",
+  "steps": 1,
+  "stop_reason": "visible_tests_pass",
+  "success_after_repair": false,
+  "task_id": "inventory-stock-projection",
+  "task_title": "Align ledger replay and replenishment",
+  "tokens": 1683,
+  "tokens_complete": true,
+  "tool_calls": 3,
+  "unnecessary_edits": 0,
+  "version": "0.2"
+}

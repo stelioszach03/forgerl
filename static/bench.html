@@ -60,7 +60,10 @@
           </div>
           <div>
             <dt>Recorded episodes</dt>
-            <dd id="episode-count">—</dd>
+            <dd>
+              <span id="episode-count">—</span
+              ><small id="episode-split"></small>
+            </dd>
           </div>
           <div>
             <dt>Models evaluated</dt>
@@ -541,6 +544,20 @@ No recorded candidate selected.</pre
                 <dd>Loading metadata.</dd>
               </div>
             </dl>
+            <details class="provenance-full">
+              <summary>Full recorded provenance</summary>
+              <pre id="full-provenance">No provenance published yet.</pre>
+            </details>
+            <div class="artifact-downloads" id="artifact-downloads" hidden>
+              <h3>Download the evidence</h3>
+              <a id="report-download" class="text-link" hidden
+                >Technical report (PDF)</a
+              ><a id="results-download" class="text-link" hidden
+                >Episode metrics (CSV)</a
+              ><a id="trajectories-download" class="text-link" hidden
+                >Complete trajectories (JSONL)</a
+              >
+            </div>
           </aside>
         </div>
       </section>

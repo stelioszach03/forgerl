@@ -350,7 +350,7 @@ test("category, split and search filters compose without conflating task selecti
     );
     assert.equal(d.querySelectorAll(".task-option").length, 0);
     assert.match(d.getElementById("filtered-count").textContent, /0 of 2/);
-    assert.equal(d.getElementById("episode-count").textContent, "1 eval");
+    assert.equal(d.getElementById("episode-count").textContent, "1");
   } finally {
     dom.window.close();
   }
@@ -513,10 +513,7 @@ test("training trajectories are inspectable without entering held-out comparison
   );
   try {
     await settle();
-    assert.equal(
-      d.getElementById("episode-count").textContent,
-      "1 eval / 1 train",
-    );
+    assert.equal(d.getElementById("episode-count").textContent, "2");
     assert.match(
       d.getElementById("coverage-copy").textContent,
       /training trajectories.*excluded/,
@@ -537,6 +534,34 @@ test("training trajectories are inspectable without entering held-out comparison
         (call) => !call.options?.method || call.options.method === "GET",
       ),
     );
+  } finally {
+    dom.window.close();
+  }
+});
+
+test("tiny measured costs retain precision and artifact downloads appear only when published", async () => {
+  assert.equal(helpers.money(0.000093), "$0.000093");
+  const { dom, d } = page({
+    ...measured,
+    downloads: ["technical-report.pdf", "results.csv"],
+    provenance: {
+      ...measured.provenance,
+      source_manifest: { files: { "module.py": "actual-hash" } },
+    },
+  });
+  try {
+    await settle();
+    assert.equal(d.getElementById("artifact-downloads").hidden, false);
+    assert.match(
+      d.getElementById("report-download").href,
+      /\/api\/forgebench\/download\/technical-report.pdf$/,
+    );
+    assert.equal(d.getElementById("trajectories-download").hidden, true);
+    assert.doesNotMatch(
+      d.getElementById("study-provenance").textContent,
+      /module.py/,
+    );
+    assert.match(d.getElementById("full-provenance").textContent, /module.py/);
   } finally {
     dom.window.close();
   }

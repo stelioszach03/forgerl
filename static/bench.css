@@ -1711,3 +1711,37 @@ select:hover {
     transition: none !important;
   }
 }
+
+#episode-split {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font: 400 0.7rem/1.5 var(--sans);
+  overflow-wrap: anywhere;
+}
+.provenance-full {
+  margin-top: 1rem;
+  border-top: 1px solid var(--line);
+  padding-top: 0.8rem;
+}
+.provenance-full summary {
+  cursor: pointer;
+  padding: 0.65rem 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.provenance-full pre {
+  max-height: 22rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 0.7rem;
+  line-height: 1.6;
+}
+.artifact-downloads {
+  margin-top: 1.5rem;
+}
+.artifact-downloads a {
+  display: block;
+  padding: 0.65rem 0;
+}
