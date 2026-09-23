@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib
 import json
 import os
+import re
 from types import SimpleNamespace
 
 import pytest
@@ -341,7 +342,9 @@ def test_public_home_is_current_benchmark_with_archive_access_and_no_post_endpoi
     client = public_bench.client
     home = client.get("/")
     assert home.status_code == 200 and "ForgeBench" in home.text
-    assert 'src="bench.js"' in home.text
+    script = re.search(r'src="(bench\.js(?:\?[^\"]*)?)"', home.text)
+    assert script is not None
+    assert client.get('/' + script.group(1)).status_code == 200
     assert "Run repair" not in home.text
     assert client.get("/index.html").status_code == 200
     assert "script-src 'self'" in home.headers["content-security-policy"]
