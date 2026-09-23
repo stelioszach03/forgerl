@@ -1,0 +1,59 @@
+{
+  "collection_cost_usd": 0.24435,
+  "completed_at": "2026-09-23T03:57:02.278320+00:00",
+  "controller_seed": 29,
+  "controller_sha256": "a6bcae83f820348db4f527c6ab6e4eadb48e8116120bb86352264df6d077e810",
+  "cost_weight": 5.0,
+  "evaluation": "fresh prospective episodes after fitting",
+  "evaluation_cost_usd": 0.3391,
+  "language_model_weights_updated": false,
+  "max_steps": 3,
+  "model_sampling": "Provider/episode configuration; determinism is not guaranteed.",
+  "planned_exclusions": [],
+  "policies": [
+    "fixed",
+    "deliberate",
+    "heuristic",
+    "adaptive"
+  ],
+  "protocol": "forgerl-pilot-v1",
+  "splits": {
+    "test": [
+      "graph-shortest-path",
+      "graph-topological",
+      "graph-components",
+      "calendar-leap-days",
+      "calendar-month-shift",
+      "calendar-business-days"
+    ],
+    "train": [
+      "sequence-runs",
+      "sequence-rotate",
+      "sequence-windows",
+      "text-key-value",
+      "text-duration",
+      "text-version",
+      "mapping-counts",
+      "mapping-invert",
+      "mapping-merge",
+      "numeric-coins",
+      "numeric-weighted",
+      "numeric-quantile"
+    ],
+    "validation": [
+      "interval-merge",
+      "interval-intersection",
+      "interval-subtract",
+      "codec-rle-encode",
+      "codec-rle-decode",
+      "codec-escaped-fields"
+    ]
+  },
+  "started_at": "2026-09-23T03:51:24.886066+00:00",
+  "status": "complete",
+  "task_manifest_sha256": "458697f87af4e845ebdc5f876c6f7c9645db7a3edbfca40e709762147ecbcaef",
+  "training_collection": "binary-fast-deliberate-tree; stop at visible-test pass",
+  "training_partial": false,
+  "training_tasks_completed": 12,
+  "transition_count": 54
+}

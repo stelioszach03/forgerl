@@ -1,0 +1,15 @@
+{
+  "name": "forgerl-frontend-checks",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Development-only acceptance checks for the dependency-free ForgeRL browser interface.",
+  "scripts": {
+    "test:frontend": "node --test frontend-tests/*.test.cjs"
+  },
+  "devDependencies": {
+    "jsdom": "29.1.1"
+  },
+  "engines": {
+    "node": "^20.19.0 || ^22.13.0 || >=24.0.0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "purpose": "provider calibration, not benchmark",
+  "endpoint": "granite-4-0-h-small",
+  "model": "ibm-granite/granite-4.0-h-small",
+  "usage": {
+    "completion_tokens": 23,
+    "prompt_tokens": 54,
+    "prompt_tokens_details": null,
+    "total_tokens": 77
+  },
+  "seconds": 6.544,
+  "response": "```python\ndef clamp(x, low, high):\n    return max(low, min(x, high))\n```",
+  "cost_usd_upper_estimate": 0.00077
+}

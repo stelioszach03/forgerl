@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+.env*
+!.env.example
+data/
+*.sqlite3*
+*.private.json
+*.key
+*.pem
+node_modules/
+artifacts/raw/
+.DS_Store
+*.egg-info/

@@ -1,0 +1,88 @@
+{
+  "tasks": [
+    {
+      "collection_cost_usd": 0.00793,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "sequence-runs"
+    },
+    {
+      "collection_cost_usd": 0.0089,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "sequence-rotate"
+    },
+    {
+      "collection_cost_usd": 0.008369999999999999,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "sequence-windows"
+    },
+    {
+      "collection_cost_usd": 0.01194,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "text-key-value"
+    },
+    {
+      "collection_cost_usd": 0.08259999999999998,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 8,
+      "task_id": "text-duration"
+    },
+    {
+      "collection_cost_usd": 0.01298,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "text-version"
+    },
+    {
+      "collection_cost_usd": 0.009049999999999999,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "mapping-counts"
+    },
+    {
+      "collection_cost_usd": 0.009250000000000001,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "mapping-invert"
+    },
+    {
+      "collection_cost_usd": 0.00957,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "mapping-merge"
+    },
+    {
+      "collection_cost_usd": 0.01109,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "numeric-coins"
+    },
+    {
+      "collection_cost_usd": 0.01064,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "numeric-weighted"
+    },
+    {
+      "collection_cost_usd": 0.01122,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "numeric-quantile"
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b141c">
+  <meta name="description" content="Inspect a bounded Python repair agent: curated regression tasks, observable decisions, isolated test execution, patches and measured policy comparisons.">
+  <title>ForgeRL — Python repair workbench · Stelios Zacharioudakis</title>
+  <link rel="icon" type="image/png" href="assets/personal-logo.png">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to workbench</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="./" aria-label="ForgeRL home"><img src="assets/personal-logo.png" alt="SZ" width="36" height="36"><span class="brand-divider" aria-hidden="true"></span><span>Forge<span class="accent">RL</span></span></a>
+      <nav class="top-nav" aria-label="Project navigation">
+        <a href="#workbench" class="active" data-view="workbench" aria-current="page">Workbench</a>
+        <a href="#experiments" data-view="experiments">Experiments</a>
+        <a href="#methodology" data-view="methodology">Methodology</a>
+      </nav>
+      <a class="portfolio-link" href="https://stelioszach.com/">Portfolio <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <section id="workbench" class="view" aria-labelledby="workbench-title">
+      <div class="page-heading">
+        <div><p class="eyebrow"><span class="rule" aria-hidden="true"></span> Bounded coding agent</p><h1 id="workbench-title">A repair you can inspect.</h1><p class="lede">Choose a Python regression task. Follow the agent’s decisions, test results and patch.</p></div>
+        <div class="service-indicator" id="service-indicator"><span class="status-dot" aria-hidden="true"></span><span id="service-status">Connecting to workspace</span></div>
+      </div>
+      <div id="global-alert" class="notice error" role="alert" hidden></div>
+      <div id="live-notice" class="notice" hidden></div>
+
+      <form class="run-controls" id="run-form">
+        <div class="control task-control"><label for="task-select">01 <span>Regression task</span></label><select id="task-select" name="task" disabled><option value="">Loading tasks…</option></select></div>
+        <div class="control policy-control"><label for="policy-select">02 <span>Decision policy</span></label><select id="policy-select" name="policy" disabled><option value="">Loading policies…</option></select></div>
+        <button type="submit" class="button primary run-button" id="run-button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"/></svg><span>Run repair</span></button>
+      </form>
+      <p class="control-hint" id="policy-description">Only curated tasks run in this workspace. No code upload or repository access.</p>
+
+      <div class="workspace">
+        <section class="task-pane" aria-labelledby="task-title">
+          <div class="pane-label"><span>Task brief</span><span id="task-split" class="quiet-tag">Loading</span></div>
+          <div class="task-intro"><h2 id="task-title">Loading regression tasks</h2><p id="task-description">The task description and starting implementation will appear here.</p><div id="task-tags" class="tags"></div></div>
+          <div class="source-heading"><h3>Starting implementation</h3><span id="task-filename">Python</span></div>
+          <div class="source-frame"><pre class="source-code" id="task-source" tabindex="0" aria-label="Starting Python implementation"><code>Waiting for task data…</code></pre></div>
+          <details class="public-tests"><summary>Visible test cases <span id="public-test-count">—</span></summary><ul id="task-tests"><li>Test descriptions load with the selected task.</li></ul></details>
+        </section>
+
+        <section class="result-pane" aria-labelledby="result-title">
+          <div class="pane-label"><span>Run inspector</span><span id="run-mode" class="quiet-tag">Not run</span></div>
+          <div class="result-heading"><div><h2 id="result-title">Ready when you are.</h2><p id="run-caption">Start a repair or inspect a recorded run below.</p></div><span id="run-status" class="run-state">Not run</span></div>
+          <dl class="run-metrics" aria-label="Measured run metrics">
+            <div><dt>Public tests</dt><dd id="metric-public">—</dd></div><div><dt>Held-out tests</dt><dd id="metric-heldout">—</dd></div><div><dt>Model calls</dt><dd id="metric-steps">—</dd></div><div><dt>Tokens</dt><dd id="metric-tokens">—</dd></div><div><dt>Est. cost</dt><dd id="metric-cost">—</dd></div><div><dt>Elapsed</dt><dd id="metric-time">—</dd></div>
+          </dl>
+          <div class="inspector-toolbar"><div class="tab-list" role="tablist" aria-label="Run details"><button type="button" id="tab-patch" role="tab" aria-selected="true" aria-controls="panel-patch" data-tab="patch">Patch</button><button type="button" id="tab-tests" role="tab" aria-selected="false" aria-controls="panel-tests" tabindex="-1" data-tab="tests">Tests</button><button type="button" id="tab-trace" role="tab" aria-selected="false" aria-controls="panel-trace" tabindex="-1" data-tab="trace">Trace <span id="trace-count">0</span></button><button type="button" id="tab-source" role="tab" aria-selected="false" aria-controls="panel-source" tabindex="-1" data-tab="source">Final source</button></div><button type="button" class="icon-button" id="refresh-run" aria-label="Refresh selected run" title="Refresh run" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6.1 7a7 7 0 0 1 11.6-2L20 8M4 16l2.3 3A7 7 0 0 0 17.9 17"/></svg></button></div>
+          <div class="inspector-panels">
+            <section id="panel-patch" role="tabpanel" aria-labelledby="tab-patch" tabindex="0"><div class="empty-state" id="patch-empty"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="m17 14-10 10 10 10m14-20 10 10-10 10M27 8l-6 32"/></svg><h3>The diff is the evidence.</h3><p>Generated edits appear here after a model call. Test outcomes remain visible, including failures.</p></div><pre id="patch-code" class="diff-code" aria-label="Unified patch" hidden></pre></section>
+            <section id="panel-tests" role="tabpanel" aria-labelledby="tab-tests" tabindex="0" hidden><div id="tests-content" class="tests-content"><p class="empty-copy">No test evaluation yet. Public tests guide the repair; held-out checks assess the final candidate.</p></div></section>
+            <section id="panel-trace" role="tabpanel" aria-labelledby="tab-trace" tabindex="0" hidden><ol id="event-list" class="event-list"><li class="empty-copy">The execution trace will show real events as they arrive.</li></ol></section>
+            <section id="panel-source" role="tabpanel" aria-labelledby="tab-source" tabindex="0" hidden><pre id="final-source" class="source-code" aria-label="Final Python source">No candidate has been generated.</pre></section>
+          </div>
+          <div class="run-footer"><p id="run-explanation">A visible test pass is not a guarantee of general correctness.</p><div class="run-downloads"><a id="download-patch" class="text-link" hidden>Download patch <span aria-hidden="true">↗</span></a><a id="download-trace" class="text-link" hidden>Export trace <span aria-hidden="true">↗</span></a></div></div>
+        </section>
+      </div>
+      <section class="recorded-section" aria-labelledby="recorded-title"><div class="section-heading"><div><p class="eyebrow">Inspect the evidence</p><h2 id="recorded-title">Recent runs</h2></div><button type="button" class="button subtle" id="refresh-gallery">Refresh runs <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6.1 7a7 7 0 0 1 11.6-2L20 8M4 16l2.3 3A7 7 0 0 0 17.9 17"/></svg></button></div><div id="run-gallery" class="run-gallery" aria-live="polite"><p class="empty-copy">Loading recorded runs…</p></div></section>
+    </section>
+
+    <section id="experiments" class="view" aria-labelledby="experiments-title" hidden>
+      <div class="page-heading"><div><p class="eyebrow"><span class="rule" aria-hidden="true"></span> Measured comparisons</p><h1 id="experiments-title">The policy, under test.</h1><p class="lede">Compare outcomes on the same authored tasks. A smaller cost only matters alongside the solve rate.</p></div><span class="quiet-tag" id="benchmark-status">Loading evidence</span></div>
+      <div class="benchmark-intro"><div><h2>Policy evaluation</h2><p id="benchmark-description">Results load from the recorded experiment artifacts.</p></div><a class="text-link" href="api/benchmark" target="_blank" rel="noopener">Raw results <span aria-hidden="true">↗</span></a></div>
+      <div class="table-wrap" tabindex="0" aria-label="Policy evaluation results"><table class="benchmark-table"><thead><tr><th scope="col">Policy</th><th scope="col">Runs</th><th scope="col">Solved</th><th scope="col">Solve rate</th><th scope="col">Mean calls</th><th scope="col">Mean tokens</th><th scope="col">Mean est. cost</th><th scope="col">Mean time</th></tr></thead><tbody id="benchmark-body"><tr><td colspan="8">Loading recorded measurements…</td></tr></tbody></table></div>
+      <div class="experiment-columns"><section aria-labelledby="paired-title"><div class="section-heading"><div><p class="eyebrow">Like for like</p><h2 id="paired-title">Paired task runs</h2></div></div><div id="paired-runs"><p class="empty-copy">Paired runs will appear when an evaluation is available.</p></div></section><aside class="evidence-notes" aria-labelledby="limits-title"><h2 id="limits-title">Read the limits first</h2><ul id="benchmark-limitations"><li>This is an authored Python repair task suite, not SWE-bench or a measure of arbitrary repository repair.</li><li>Passing the recorded tests does not establish general program correctness.</li></ul><h3>Provenance</h3><dl id="benchmark-provenance" class="provenance"><div><dt>Status</dt><dd>Waiting for experiment metadata.</dd></div></dl></aside></div>
+    </section>
+
+    <section id="methodology" class="view" aria-labelledby="methodology-title" hidden>
+      <div class="page-heading"><div><p class="eyebrow"><span class="rule" aria-hidden="true"></span> Design &amp; boundaries</p><h1 id="methodology-title">Traceable by design.</h1><p class="lede">A bounded experiment in choosing how much reasoning a repair needs.</p></div><a id="methodology-source" class="button subtle" hidden>Read protocol <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg></a></div>
+      <div class="method-overview"><p class="large-copy">The controller chooses an action.<br>The model proposes an edit.<br><span class="accent">The tests provide the evidence.</span></p><div class="method-summary"><p>ForgeRL studies a finite decision policy around model calls. Its actions are a short-budget call, a deliberate call, replan or stop. It does not claim to fine-tune the language model.</p><p id="evidence-status">Training and evaluation status is loaded from the running service. Results are reported only when recorded artifacts exist.</p></div></div>
+      <ol class="method-flow"><li><span>01</span><h2>Observe</h2><p>Read an authored task, its initial Python implementation and visible regression tests.</p></li><li><span>02</span><h2>Choose</h2><p>A fixed, heuristic or adaptive policy selects the next action from observable state and budget.</p></li><li><span>03</span><h2>Repair</h2><p>A model proposes a candidate. Execution is isolated and bounded by resource and call limits.</p></li><li><span>04</span><h2>Evaluate</h2><p>Report public and held-out checks separately. Keep the patch, failures, latency and recorded cost.</p></li></ol>
+      <div class="method-details"><section><h2>What this demonstrates</h2><ul class="check-list"><li>Inspectable model-driven repair on a curated Python task suite.</li><li>Explicit decision policies with a bounded inference budget.</li><li>Trace exports linking an outcome to its task, candidate and execution events.</li><li>Prospective policy comparison when evaluation artifacts are available.</li></ul></section><section><h2>What it does not establish</h2><ul class="check-list"><li>Performance on arbitrary repositories or a standard external benchmark.</li><li>That an adaptive policy is better before its held-out evaluation shows it.</li><li>Security or correctness of generated code beyond the documented boundaries.</li><li>Language-model fine-tuning, autonomous deployment or access to private code.</li></ul></section></div>
+      <div class="method-note"><span class="rule" aria-hidden="true"></span><p>Training, validation and held-out task families are separated. The adaptive controller must be labeled as a fallback until a trained artifact is loaded. Negative results remain part of the experiment.</p></div>
+    </section>
+  </main>
+  <footer class="site-footer"><div><a href="https://stelioszach.com/">Stelios Zacharioudakis</a><span>Research &amp; engineering</span></div><div><span id="version-label">ForgeRL</span><a id="source-link" hidden>Source code <span aria-hidden="true">↗</span></a><a href="#methodology" data-view="methodology">Methodology</a></div></footer>
+  <div class="sr-only" id="announcer" role="status" aria-live="polite"></div>
+</body>
+</html>

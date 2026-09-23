@@ -1,0 +1,25 @@
+ForgeRL — attribution and scope of licensing
+
+Original project code, authored task fixtures and documentation:
+Copyright (c) 2026 Stelios Zacharioudakis. Licensed under LICENSE.
+
+Branding exclusion:
+static/assets/personal-logo.png is the author's existing SZ personal logo,
+reused by permission for this project and favicon. It is excluded from the
+repository's MIT grant. No permission to reuse the logo, personal identity,
+or branding is granted here. Replace it with your own asset in a fork or
+redistributed product. The code license does not grant trademark rights or
+imply endorsement by the author.
+
+Hosted models and dependencies:
+This repository does not distribute hosted language-model weights. IBM Granite,
+GPT-OSS, Runpod and other referenced names identify their respective products
+or providers; no affiliation or endorsement is claimed. Model/service terms
+and dependency licenses remain with their respective owners. Dependency
+versions are recorded in requirements.lock and package-lock.json.
+
+Research attribution:
+The implemented controller uses tabular fitted-Q iteration. Related work,
+methodology and scope are documented in docs/METHODOLOGY.md. This project does
+not claim invention of model routing, fitted-Q learning, or language-model
+architectures. Its authored task suite is not the SWE-bench dataset.

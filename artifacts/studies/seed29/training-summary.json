@@ -1,0 +1,88 @@
+{
+  "tasks": [
+    {
+      "collection_cost_usd": 0.00793,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "sequence-runs"
+    },
+    {
+      "collection_cost_usd": 0.00914,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "sequence-rotate"
+    },
+    {
+      "collection_cost_usd": 0.00825,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "sequence-windows"
+    },
+    {
+      "collection_cost_usd": 0.01214,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "text-key-value"
+    },
+    {
+      "collection_cost_usd": 0.13486,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 14,
+      "task_id": "text-duration"
+    },
+    {
+      "collection_cost_usd": 0.01129,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "text-version"
+    },
+    {
+      "collection_cost_usd": 0.00883,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "mapping-counts"
+    },
+    {
+      "collection_cost_usd": 0.009389999999999999,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "mapping-invert"
+    },
+    {
+      "collection_cost_usd": 0.00988,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "mapping-merge"
+    },
+    {
+      "collection_cost_usd": 0.01096,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "numeric-coins"
+    },
+    {
+      "collection_cost_usd": 0.01043,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "numeric-weighted"
+    },
+    {
+      "collection_cost_usd": 0.01125,
+      "partial": false,
+      "reason": null,
+      "requests_attempted": 2,
+      "task_id": "numeric-quantile"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "uid": 65534,
+  "memory_max": "134217728",
+  "cpu_max": "50000 100000",
+  "pids_max": "32",
+  "interfaces": [
+    "lo"
+  ],
+  "read_only": true,
+  "cap_eff": "0000000000000000",
+  "no_new_privs": "1",
+  "seccomp": "2",
+  "rootless": true,
+  "image": "sha256:f12752e9787c9adca42f5bd48da4e33cabba66acccfef30e7ed1c1f88c7e2d21",
+  "host_mounts": false,
+  "verified": true
+}

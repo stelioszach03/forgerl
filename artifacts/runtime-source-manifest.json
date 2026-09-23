@@ -1,0 +1,12 @@
+{
+  "forgerl/__init__.py": "d49651804052ebc9b68b58cc48402e0b2c86fd1eb92a633955d934c92b90a7d0",
+  "forgerl/app.py": "6dd358232aa95b252dc937a8f3cddf9065244726bdb077968594fa9fe5caf6b8",
+  "forgerl/controller.py": "767d923732fceb7b8260f249b85d10f207cae6e5a3ad49d1f4c85efb3db9b4c4",
+  "forgerl/orchestrator.py": "5d364b5fbede45924b1d02ae2c55405e36e5a4a8a3e968bb0bc46c8dc9e4159b",
+  "forgerl/provider.py": "df77a8fea741d0e8089426a2cfc568183352b892ac3a1632bea4b4f85fa1be19",
+  "forgerl/research.py": "bf247915af386d37b1d948ceb379936d664bd9096526067f28bc8ee565109f02",
+  "forgerl/sandbox.py": "d977010b232d71d25ec3b9e4c60d439c2f542de1861520325315f215357c0819",
+  "forgerl/store.py": "3c8060eb0000c2b6edacdec37ae6c665efbcc07db5803b54855baa3b708b666f",
+  "forgerl/tasks.py": "1f07c276fa8cccae00803a3ec4f50efb1a54a9e9e0e4a31a8630f32052829097",
+  "sandbox/runner.py": "2a055713cdbd5fc2f2088869be3c7e774029d20a18d0e054493c9d72a35994e9"
+}
