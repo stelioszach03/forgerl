@@ -4,6 +4,8 @@ import builtins
 import json
 import resource
 import sys
+import types
+import re
 
 MAX_INPUT = 65536
 ALLOWED_MODULES = {"math", "re", "collections", "itertools", "functools", "heapq", "bisect", "statistics", "datetime", "decimal", "fractions", "json", "string"}
@@ -16,6 +18,59 @@ def restricted_import(name, globals=None, locals=None, fromlist=(), level=0):
     return builtins.__import__(name, globals, locals, fromlist, level)
 
 
+def checked_tree(source, local_modules):
+    tree = ast.parse(source)
+    forbidden = (ast.ClassDef, ast.AsyncFunctionDef, ast.Await, ast.Global, ast.Nonlocal)
+    forbidden_names = {"eval", "exec", "compile", "open", "input", "breakpoint", "globals", "locals", "vars", "getattr", "setattr", "delattr", "dir", "help", "exit", "quit", "memoryview", "print"}
+    for node in ast.walk(tree):
+        if isinstance(node, forbidden):
+            raise ValueError("Unsupported construct")
+        if isinstance(node, (ast.Name, ast.Attribute)):
+            name = node.id if isinstance(node, ast.Name) else node.attr
+            if '__' in name or (isinstance(node, ast.Attribute) and name.startswith('_')) or name in forbidden_names:
+                raise ValueError("Private runtime access is unavailable")
+        if isinstance(node, ast.Import):
+            if any(alias.name not in local_modules and alias.name.split('.')[0] not in ALLOWED_MODULES for alias in node.names):
+                raise ValueError("Unsupported import")
+        if isinstance(node, ast.ImportFrom):
+            if node.level or not node.module or (node.module not in local_modules and node.module.split('.')[0] not in ALLOWED_MODULES) or any(alias.name.startswith('_') or alias.name == '*' for alias in node.names):
+                raise ValueError("Unsupported import")
+    return tree
+
+
+def load_entry(files, entrypoint):
+    """Flat modules loaded only in container memory; never write source to disk."""
+    local = {name[:-3] for name in files}
+    trees = {name[:-3]: checked_tree(source, local) for name, source in files.items()}
+    loaded, loading = {}, set()
+    def importer(name, globals=None, locals=None, fromlist=(), level=0):
+        if level:
+            raise ImportError("Relative imports unavailable")
+        if name in trees:
+            return load(name)
+        return restricted_import(name, globals, locals, fromlist, level)
+    def load(name):
+        if name in loading:
+            raise ImportError("Cyclic repository import")
+        if name in loaded:
+            return loaded[name]
+        loading.add(name)
+        module = types.ModuleType(name)
+        safe = {key: getattr(builtins, key) for key in SAFE_NAMES}
+        safe["__import__"] = importer
+        module.__dict__["__builtins__"] = safe
+        # Sole candidate execution boundary: disposable, networkless container.
+        exec(compile(trees[name], name + ".py", "exec"), module.__dict__)
+        loaded[name] = module
+        loading.remove(name)
+        return module
+    module_name, function_name = entrypoint.split(":")
+    function = load(module_name).__dict__.get(function_name)
+    if not callable(function):
+        raise ValueError("Required function missing")
+    return function
+
+
 def main():
     resource.setrlimit(resource.RLIMIT_CPU, (2, 3))
     resource.setrlimit(resource.RLIMIT_FSIZE, (1048576, 1048576))
@@ -23,41 +78,30 @@ def main():
     if len(raw) > MAX_INPUT:
         raise ValueError("Input exceeds runner limit")
     payload = json.loads(raw)
-    source, function_name = payload["source"], payload["function_name"]
-    # The host performs the same AST screening. Isolation is provided by Docker,
-    # not by either AST guard or this restricted builtins dictionary.
-    tree = ast.parse(source)
-    forbidden = (ast.ClassDef, ast.AsyncFunctionDef, ast.Await, ast.Global, ast.Nonlocal)
-    for node in ast.walk(tree):
-        if isinstance(node, forbidden):
-            raise ValueError("Unsupported construct")
-        if isinstance(node, (ast.Name, ast.Attribute)):
-            name = node.id if isinstance(node, ast.Name) else node.attr
-            if '__' in name or (isinstance(node, ast.Attribute) and name.startswith('_')):
-                raise ValueError("Private runtime access is unavailable")
-        if isinstance(node, ast.Import):
-            if any(alias.name.split('.')[0] not in ALLOWED_MODULES for alias in node.names):
-                raise ValueError("Unsupported import")
-        if isinstance(node, ast.ImportFrom):
-            if node.level or not node.module or node.module.split('.')[0] not in ALLOWED_MODULES or any(alias.name.startswith('_') or alias.name == '*' for alias in node.names):
-                raise ValueError("Unsupported import")
-    safe = {name: getattr(builtins, name) for name in SAFE_NAMES}
-    safe["__import__"] = restricted_import
-    namespace = {"__builtins__": safe}
-    # This is the sole generated-code execution point, inside the disposable
-    # container with no mounts, network, capabilities or root user.
-    exec(compile(tree, "solution.py", "exec"), namespace)
-    function = namespace.get(function_name)
-    if not callable(function):
-        raise ValueError("Required function missing")
+    repository = payload.get("kind") == "repository-v2"
+    if repository:
+        files, entrypoint = payload["files"], payload["entrypoint"]
+        if not isinstance(files, dict) or not 1 <= len(files) <= 8 or any(not re.fullmatch(r"[a-z][a-z0-9_]{0,39}\.py", name) or "__" in name for name in files) or any(not isinstance(source, str) for source in files.values()) or sum(len(source.encode()) for source in files.values()) > 40000:
+            raise ValueError("Invalid repository")
+        if not re.fullmatch(r"[a-z][a-z0-9_]{0,39}:[a-z][a-z0-9_]{0,59}", entrypoint) or "__" in entrypoint or entrypoint.split(":")[0] + ".py" not in files:
+            raise ValueError("Invalid entrypoint")
+        if {name[:-3] for name in files} & ALLOWED_MODULES:
+            raise ValueError("Standard library shadowing unavailable")
+    else:
+        files = {"solution.py": payload["source"]}
+        entrypoint = "solution:" + payload["function_name"]
+    if not isinstance(payload["cases"], list) or len(payload["cases"]) > 24:
+        raise ValueError("Invalid case collection")
+    function = None if repository else load_entry(files, entrypoint)
     cases = []
     for case in payload["cases"]:
         before = json.dumps([case["args"], case.get("kwargs", {})], sort_keys=True)
         result = {"name": case["name"], "actual": None, "error": None}
         try:
+            # Independent module state per v2 case prevents order-dependent answers.
+            if repository:
+                function = load_entry(files, entrypoint)
             actual = function(*case["args"], **case.get("kwargs", {}))
-            # Convert tuples and other JSON-compatible result containers exactly
-            # as transport does; reject unsupported or nonfinite values.
             result["actual"] = json.loads(json.dumps(actual, allow_nan=False))
         except BaseException as exc:
             result["error"] = type(exc).__name__

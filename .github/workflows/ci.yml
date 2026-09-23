@@ -20,6 +20,7 @@ jobs:
     timeout-minutes: 15
     env:
       FORGERL_RUN_DOCKER_TESTS: "1"
+      FORGERL_DOCKER_TESTS: "1"
       FORGERL_SANDBOX_IMAGE: forgerl-sandbox:v1
       PYTHONDONTWRITEBYTECODE: "1"
     steps:
@@ -40,7 +41,9 @@ jobs:
       - name: Run unit and real Docker integration checks
         run: python -m pytest -q
       - name: Check research CLI without starting inference
-        run: python scripts/research_run.py
+        run: |
+          python scripts/research_run.py
+          python scripts/forgebench.py
 
   frontend:
     name: Browser behavior

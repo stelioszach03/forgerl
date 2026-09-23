@@ -237,10 +237,17 @@ def _bounded_process(
     return process.returncode, b"".join(chunks), cap_reached.is_set()
 
 
+def _validated_payload(payload: dict):
+    if not isinstance(payload, dict):
+        raise SandboxRejected("Invalid executor payload")
+    if payload.get("kind") == "repository-v2":
+        from .bench.sandbox import payload as repository_payload
+        return repository_payload(payload["files"], payload["entrypoint"], payload["cases"])
+    return _payload(payload["source"], payload["function_name"], payload["cases"])
+
+
 def execute_docker(payload: dict, image: str | None = None) -> dict:
-    clean, encoded = _payload(
-        payload["source"], payload["function_name"], payload["cases"]
-    )
+    clean, encoded = _validated_payload(payload)
     name = "forgerl-" + uuid.uuid4().hex
     selected_image = image or os.environ.get("FORGERL_SANDBOX_IMAGE", DEFAULT_IMAGE)
     try:
@@ -308,9 +315,7 @@ def _validate_result(result: dict, cases: list[dict]) -> dict:
 
 
 def execute_broker(payload: dict, path: str) -> dict:
-    clean, encoded = _payload(
-        payload["source"], payload["function_name"], payload["cases"]
-    )
+    clean, encoded = _validated_payload(payload)
     data = bytearray()
     try:
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:

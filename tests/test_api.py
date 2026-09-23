@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 
 @pytest.fixture
 def client(tmp_path, monkeypatch):
+    monkeypatch.setenv("FORGERL_PUBLIC_INFERENCE", "1")
     monkeypatch.setenv("FORGERL_DB", str(tmp_path / "api.sqlite3"))
     monkeypatch.setenv("FORGERL_WORKER", "0")
     monkeypatch.setenv("FORGERL_POLICY_FILE", str(tmp_path / "no-policy.json"))

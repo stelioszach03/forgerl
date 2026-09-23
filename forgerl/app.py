@@ -16,7 +16,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request, Response
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict
 
@@ -175,11 +175,13 @@ async def worker(app):
 @asynccontextmanager
 async def lifespan(app):
     app.state.store = Store()
-    app.state.secret = load_secret()
-    app.state.store.recover()
+    enabled = os.environ.get("FORGERL_PUBLIC_INFERENCE", "0") == "1"
+    app.state.secret = load_secret() if enabled else None
+    if enabled:
+        app.state.store.recover()
     work = (
         asyncio.create_task(worker(app))
-        if os.environ.get("FORGERL_WORKER", "1") == "1"
+        if enabled and os.environ.get("FORGERL_WORKER", "1") == "1"
         else None
     )
     app.state.worker_task = work
@@ -261,6 +263,8 @@ def session(request):
 
 
 def live_state(request):
+    if os.environ.get("FORGERL_PUBLIC_INFERENCE", "0") != "1":
+        return {"available": False, "reason": "This public workbench only replays recorded experiments. Research runs are started separately by the operator.", "remaining_usd": None, "per_run_max_steps": 0, "accounting": "Viewing evidence makes no inference requests."}
     budget = request.app.state.store.budget("public")
     reason = None
     queue_worker = getattr(request.app.state, "worker_task", None)
@@ -334,6 +338,8 @@ def task(ident: str):
 
 @app.post("/api/session")
 def create_session(request: Request, response: Response):
+    if os.environ.get("FORGERL_PUBLIC_INFERENCE", "0") != "1":
+        raise problem(403, "recorded_only", "The public site is read-only; no paid sessions are created.")
     origin_check(request)
     secret = request.app.state.secret
     if not secret:
@@ -363,6 +369,8 @@ class RunRequest(BaseModel):
 
 @app.post("/api/runs", status_code=202)
 def create_run(body: RunRequest, request: Request):
+    if os.environ.get("FORGERL_PUBLIC_INFERENCE", "0") != "1":
+        raise problem(403, "recorded_only", "Research runs can only be started by the operator.")
     origin_check(request)
     ident = session(request)
     secret = request.app.state.secret
@@ -520,6 +528,16 @@ def benchmark():
         ],
         "provenance": {},
     }
+
+
+from .bench.api import router as bench_router
+
+app.include_router(bench_router)
+
+
+@app.get("/", include_in_schema=False)
+def home():
+    return FileResponse(ROOT / "static/bench.html")
 
 
 app.mount("/", StaticFiles(directory=ROOT / "static", html=True), name="static")

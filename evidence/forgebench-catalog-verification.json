@@ -1,0 +1,6619 @@
+{
+  "task_manifest_sha256": "ccb6b8e3996e067e24ecfb4b2f14d6ffb543380b10acb7bcfbc4f19d6b6f116b",
+  "verified_tasks": 50,
+  "task_count": 50,
+  "rows": [
+    {
+      "task_id": "billing-credit-order",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "credit",
+            "passed": false,
+            "actual": {
+              "subtotal": 1000,
+              "discount": 0,
+              "tax": 0,
+              "total": 1200
+            },
+            "error": null
+          },
+          {
+            "name": "tax before credit",
+            "passed": false,
+            "actual": {
+              "subtotal": 1000,
+              "discount": 0,
+              "tax": 100,
+              "total": 1600
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.558187,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "credit",
+            "passed": true,
+            "actual": {
+              "subtotal": 1000,
+              "discount": 0,
+              "tax": 0,
+              "total": 800
+            },
+            "error": null
+          },
+          {
+            "name": "tax before credit",
+            "passed": true,
+            "actual": {
+              "subtotal": 1000,
+              "discount": 0,
+              "tax": 100,
+              "total": 600
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.555762,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.605512,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "billing-tax-rounding",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "half cent",
+            "passed": false,
+            "actual": {
+              "subtotal": 1,
+              "discount": 0,
+              "tax": 0,
+              "total": 1
+            },
+            "error": null
+          },
+          {
+            "name": "discounted basis",
+            "passed": false,
+            "actual": {
+              "subtotal": 105,
+              "discount": 10,
+              "tax": 9,
+              "total": 104
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.655704,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "half cent",
+            "passed": true,
+            "actual": {
+              "subtotal": 1,
+              "discount": 0,
+              "tax": 1,
+              "total": 2
+            },
+            "error": null
+          },
+          {
+            "name": "discounted basis",
+            "passed": true,
+            "actual": {
+              "subtotal": 105,
+              "discount": 10,
+              "tax": 10,
+              "total": 105
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.561854,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.554961,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "billing-shared-validation",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "money bool",
+            "passed": false,
+            "actual": true,
+            "error": null
+          },
+          {
+            "name": "quantity bool",
+            "passed": false,
+            "actual": 10,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.554449,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "money bool",
+            "passed": true,
+            "actual": null,
+            "error": "ValueError"
+          },
+          {
+            "name": "quantity bool",
+            "passed": true,
+            "actual": null,
+            "error": "ValueError"
+          }
+        ],
+        "elapsed_s": 0.655287,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.555182,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "billing-coupon-idempotency",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "duplicate",
+            "passed": false,
+            "actual": {
+              "subtotal": 100,
+              "discount": 20,
+              "tax": 0,
+              "total": 80
+            },
+            "error": null
+          },
+          {
+            "name": "first wins",
+            "passed": false,
+            "actual": {
+              "subtotal": 100,
+              "discount": 95,
+              "tax": 0,
+              "total": 5
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.505407,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "duplicate",
+            "passed": true,
+            "actual": {
+              "subtotal": 100,
+              "discount": 10,
+              "tax": 0,
+              "total": 90
+            },
+            "error": null
+          },
+          {
+            "name": "first wins",
+            "passed": true,
+            "actual": {
+              "subtotal": 100,
+              "discount": 5,
+              "tax": 0,
+              "total": 95
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.605008,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.505311,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "billing-checkout-recovery",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "combined",
+            "passed": false,
+            "actual": {
+              "subtotal": 105,
+              "discount": 20,
+              "tax": 8,
+              "total": 113
+            },
+            "error": null
+          },
+          {
+            "name": "strict",
+            "passed": false,
+            "actual": 1,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.505208,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "combined",
+            "passed": true,
+            "actual": {
+              "subtotal": 105,
+              "discount": 10,
+              "tax": 10,
+              "total": 85
+            },
+            "error": null
+          },
+          {
+            "name": "strict",
+            "passed": true,
+            "actual": null,
+            "error": "ValueError"
+          }
+        ],
+        "elapsed_s": 0.504335,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 5,
+        "total": 5,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-5",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.636146,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "scheduling-adjacent-bookings",
+      "verified": true,
+      "baseline": {
+        "passed": 1,
+        "total": 2,
+        "cases": [
+          {
+            "name": "adjacent",
+            "passed": false,
+            "actual": [
+              "a"
+            ],
+            "error": null
+          },
+          {
+            "name": "same",
+            "passed": true,
+            "actual": [
+              "a"
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.709064,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "adjacent",
+            "passed": true,
+            "actual": [],
+            "error": null
+          },
+          {
+            "name": "same",
+            "passed": true,
+            "actual": [
+              "a"
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.607975,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.608356,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "scheduling-availability-union",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "nested",
+            "passed": false,
+            "actual": [
+              [
+                0,
+                5
+              ],
+              [
+                15,
+                30
+              ]
+            ],
+            "error": null
+          },
+          {
+            "name": "exact tail",
+            "passed": false,
+            "actual": [],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.558674,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "nested",
+            "passed": true,
+            "actual": [
+              [
+                0,
+                5
+              ],
+              [
+                25,
+                30
+              ]
+            ],
+            "error": null
+          },
+          {
+            "name": "exact tail",
+            "passed": true,
+            "actual": [
+              [
+                5,
+                10
+              ]
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.507056,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.558638,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "scheduling-resource-scope",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "cancelled",
+            "passed": false,
+            "actual": [
+              "a"
+            ],
+            "error": null
+          },
+          {
+            "name": "other room",
+            "passed": false,
+            "actual": [],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.558862,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "cancelled",
+            "passed": true,
+            "actual": [],
+            "error": null
+          },
+          {
+            "name": "other room",
+            "passed": true,
+            "actual": [
+              [
+                0,
+                10
+              ]
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.557291,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.506667,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "scheduling-reject-empty-slots",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "empty candidate",
+            "passed": false,
+            "actual": [],
+            "error": null
+          },
+          {
+            "name": "empty window",
+            "passed": false,
+            "actual": [],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.557234,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "empty candidate",
+            "passed": true,
+            "actual": null,
+            "error": "ValueError"
+          },
+          {
+            "name": "empty window",
+            "passed": true,
+            "actual": null,
+            "error": "ValueError"
+          }
+        ],
+        "elapsed_s": 0.506457,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.507839,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "scheduling-calendar-recovery",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "integrated free",
+            "passed": false,
+            "actual": [
+              [
+                15,
+                30
+              ]
+            ],
+            "error": null
+          },
+          {
+            "name": "room boundary",
+            "passed": false,
+            "actual": [
+              "a",
+              "b"
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.506175,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "integrated free",
+            "passed": true,
+            "actual": [
+              [
+                0,
+                5
+              ],
+              [
+                25,
+                30
+              ]
+            ],
+            "error": null
+          },
+          {
+            "name": "room boundary",
+            "passed": true,
+            "actual": [],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.506465,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 5,
+        "total": 5,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-5",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.556539,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "inventory-event-replay",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "duplicate receive",
+            "passed": false,
+            "actual": {
+              "stock": {
+                "x": 8
+              },
+              "accepted": [],
+              "rejected": []
+            },
+            "error": null
+          },
+          {
+            "name": "first wins",
+            "passed": false,
+            "actual": {
+              "stock": {
+                "x": 4,
+                "y": 9
+              },
+              "accepted": [],
+              "rejected": []
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.455291,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "duplicate receive",
+            "passed": true,
+            "actual": {
+              "stock": {
+                "x": 4
+              },
+              "accepted": [],
+              "rejected": []
+            },
+            "error": null
+          },
+          {
+            "name": "first wins",
+            "passed": true,
+            "actual": {
+              "stock": {
+                "x": 4
+              },
+              "accepted": [],
+              "rejected": []
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.455163,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.504972,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "inventory-atomic-reservations",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "aggregate rejection",
+            "passed": false,
+            "actual": {
+              "stock": {
+                "x": 2
+              },
+              "accepted": [
+                "a"
+              ],
+              "rejected": []
+            },
+            "error": null
+          },
+          {
+            "name": "exact",
+            "passed": false,
+            "actual": {
+              "stock": {
+                "x": 5
+              },
+              "accepted": [],
+              "rejected": [
+                "a"
+              ]
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.504855,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "aggregate rejection",
+            "passed": true,
+            "actual": {
+              "stock": {
+                "x": 5
+              },
+              "accepted": [],
+              "rejected": [
+                "a"
+              ]
+            },
+            "error": null
+          },
+          {
+            "name": "exact",
+            "passed": true,
+            "actual": {
+              "stock": {
+                "x": 0
+              },
+              "accepted": [
+                "a"
+              ],
+              "rejected": []
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.50586,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.555876,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "inventory-stock-projection",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "ship target",
+            "passed": false,
+            "actual": {
+              "x": 23
+            },
+            "error": null
+          },
+          {
+            "name": "over target",
+            "passed": false,
+            "actual": {
+              "x": 22
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.50502,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "ship target",
+            "passed": true,
+            "actual": {
+              "x": 3
+            },
+            "error": null
+          },
+          {
+            "name": "over target",
+            "passed": true,
+            "actual": {
+              "x": 0
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.454247,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.55346,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "inventory-shipment-regression",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "ship",
+            "passed": false,
+            "actual": {
+              "stock": {
+                "x": 10
+              },
+              "accepted": [],
+              "rejected": []
+            },
+            "error": null
+          },
+          {
+            "name": "overdraw",
+            "passed": false,
+            "actual": {
+              "stock": {
+                "x": 3
+              },
+              "accepted": [],
+              "rejected": []
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.504238,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "ship",
+            "passed": true,
+            "actual": {
+              "stock": {
+                "x": 4
+              },
+              "accepted": [],
+              "rejected": []
+            },
+            "error": null
+          },
+          {
+            "name": "overdraw",
+            "passed": true,
+            "actual": null,
+            "error": "ValueError"
+          }
+        ],
+        "elapsed_s": 0.504198,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.504812,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "inventory-warehouse-recovery",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "integrated",
+            "passed": false,
+            "actual": {
+              "stock": {
+                "x": 9
+              },
+              "accepted": [
+                "one"
+              ],
+              "rejected": []
+            },
+            "error": null
+          },
+          {
+            "name": "projection",
+            "passed": false,
+            "actual": {
+              "x": 15
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.504272,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "integrated",
+            "passed": true,
+            "actual": {
+              "stock": {
+                "x": 0
+              },
+              "accepted": [
+                "one"
+              ],
+              "rejected": []
+            },
+            "error": null
+          },
+          {
+            "name": "projection",
+            "passed": true,
+            "actual": {
+              "x": 5
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.45437,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 5,
+        "total": 5,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-5",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.504509,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "permissions-deny-precedence",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "deny wins",
+            "passed": false,
+            "actual": true,
+            "error": null
+          },
+          {
+            "name": "batch",
+            "passed": false,
+            "actual": [
+              true,
+              true
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.454976,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "deny wins",
+            "passed": true,
+            "actual": false,
+            "error": null
+          },
+          {
+            "name": "batch",
+            "passed": true,
+            "actual": [
+              false,
+              true
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.455422,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.505062,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "permissions-segment-wildcards",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "too deep",
+            "passed": false,
+            "actual": true,
+            "error": null
+          },
+          {
+            "name": "too short",
+            "passed": false,
+            "actual": true,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.504139,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "too deep",
+            "passed": true,
+            "actual": false,
+            "error": null
+          },
+          {
+            "name": "too short",
+            "passed": true,
+            "actual": false,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.555774,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.505083,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "permissions-role-inheritance",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "parent",
+            "passed": false,
+            "actual": false,
+            "error": null
+          },
+          {
+            "name": "cycle",
+            "passed": false,
+            "actual": false,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.506409,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "parent",
+            "passed": true,
+            "actual": true,
+            "error": null
+          },
+          {
+            "name": "cycle",
+            "passed": true,
+            "actual": null,
+            "error": "ValueError"
+          }
+        ],
+        "elapsed_s": 0.454617,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.554903,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "permissions-safe-export",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "tenant",
+            "passed": false,
+            "actual": [
+              {
+                "id": "a",
+                "name": "Other"
+              }
+            ],
+            "error": null
+          },
+          {
+            "name": "secrets",
+            "passed": false,
+            "actual": [
+              {
+                "id": "a",
+                "token": "secret"
+              }
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.505443,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "tenant",
+            "passed": true,
+            "actual": [],
+            "error": null
+          },
+          {
+            "name": "secrets",
+            "passed": true,
+            "actual": [
+              {
+                "id": "a"
+              }
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.504308,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.505107,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "permissions-policy-migration",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "inherited scoped export",
+            "passed": false,
+            "actual": [],
+            "error": null
+          },
+          {
+            "name": "wildcard depth",
+            "passed": false,
+            "actual": true,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.554079,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "inherited scoped export",
+            "passed": true,
+            "actual": [
+              {
+                "id": "public"
+              }
+            ],
+            "error": null
+          },
+          {
+            "name": "wildcard depth",
+            "passed": true,
+            "actual": false,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.504734,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 5,
+        "total": 5,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-5",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.505417,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "delivery-backoff-index",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "first",
+            "passed": false,
+            "actual": 4,
+            "error": null
+          },
+          {
+            "name": "third",
+            "passed": false,
+            "actual": 24,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.55691,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "first",
+            "passed": true,
+            "actual": 2,
+            "error": null
+          },
+          {
+            "name": "third",
+            "passed": true,
+            "actual": 12,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.505784,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.504899,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "delivery-rate-limit-retries",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "429",
+            "passed": false,
+            "actual": [
+              {
+                "id": "a",
+                "state": "dead",
+                "attempt": 1,
+                "next_at": null
+              }
+            ],
+            "error": null
+          },
+          {
+            "name": "503 hint",
+            "passed": false,
+            "actual": [
+              {
+                "id": "a",
+                "state": "pending",
+                "attempt": 1,
+                "next_at": 2
+              }
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.504412,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "429",
+            "passed": true,
+            "actual": [
+              {
+                "id": "a",
+                "state": "pending",
+                "attempt": 1,
+                "next_at": 25
+              }
+            ],
+            "error": null
+          },
+          {
+            "name": "503 hint",
+            "passed": true,
+            "actual": [
+              {
+                "id": "a",
+                "state": "pending",
+                "attempt": 1,
+                "next_at": 100
+              }
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.505627,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.506093,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "delivery-queue-ordering",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "due now",
+            "passed": false,
+            "actual": [],
+            "error": null
+          },
+          {
+            "name": "earliest first",
+            "passed": false,
+            "actual": [
+              "a"
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.504195,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "due now",
+            "passed": true,
+            "actual": [
+              "a"
+            ],
+            "error": null
+          },
+          {
+            "name": "earliest first",
+            "passed": true,
+            "actual": [
+              "z"
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.504978,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.507151,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "delivery-idempotent-selection",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "select duplicate",
+            "passed": false,
+            "actual": [
+              "a",
+              "a"
+            ],
+            "error": null
+          },
+          {
+            "name": "deliver duplicate",
+            "passed": false,
+            "actual": [
+              {
+                "id": "a",
+                "state": "delivered",
+                "attempt": 1,
+                "next_at": null
+              },
+              {
+                "id": "a",
+                "state": "delivered",
+                "attempt": 1,
+                "next_at": null
+              }
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.556946,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "select duplicate",
+            "passed": true,
+            "actual": [
+              "a"
+            ],
+            "error": null
+          },
+          {
+            "name": "deliver duplicate",
+            "passed": true,
+            "actual": [
+              {
+                "id": "a",
+                "state": "delivered",
+                "attempt": 1,
+                "next_at": null
+              }
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.457694,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.45501,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "delivery-delivery-recovery",
+      "verified": true,
+      "baseline": {
+        "passed": 1,
+        "total": 2,
+        "cases": [
+          {
+            "name": "combined",
+            "passed": false,
+            "actual": [
+              {
+                "id": "a",
+                "state": "dead",
+                "attempt": 1,
+                "next_at": null
+              },
+              {
+                "id": "a",
+                "state": "dead",
+                "attempt": 1,
+                "next_at": null
+              }
+            ],
+            "error": null
+          },
+          {
+            "name": "due limit",
+            "passed": true,
+            "actual": [
+              "z"
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.455383,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "combined",
+            "passed": true,
+            "actual": [
+              {
+                "id": "a",
+                "state": "pending",
+                "attempt": 1,
+                "next_at": 15
+              },
+              {
+                "id": "b",
+                "state": "pending",
+                "attempt": 1,
+                "next_at": 7
+              }
+            ],
+            "error": null
+          },
+          {
+            "name": "due limit",
+            "passed": true,
+            "actual": [
+              "z"
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.45625,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 5,
+        "total": 5,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-5",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.556763,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "publishing-text-escaping",
+      "verified": true,
+      "baseline": {
+        "passed": 1,
+        "total": 2,
+        "cases": [
+          {
+            "name": "tag text",
+            "passed": false,
+            "actual": {
+              "id": "1",
+              "path": "/articles/news-1",
+              "title": "&amp;lt;News&amp;gt;",
+              "summary": "A&amp;B"
+            },
+            "error": null
+          },
+          {
+            "name": "quotes",
+            "passed": true,
+            "actual": {
+              "id": "2",
+              "path": "/articles/hi-2",
+              "title": "&quot;Hi&quot;",
+              "summary": "&#39;x&#39;"
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.506587,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "tag text",
+            "passed": true,
+            "actual": {
+              "id": "1",
+              "path": "/articles/news-1",
+              "title": "&lt;News&gt;",
+              "summary": "A&amp;B"
+            },
+            "error": null
+          },
+          {
+            "name": "quotes",
+            "passed": true,
+            "actual": {
+              "id": "2",
+              "path": "/articles/hi-2",
+              "title": "&quot;Hi&quot;",
+              "summary": "&#39;x&#39;"
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.506566,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.559174,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "publishing-partial-translations",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "empty title",
+            "passed": false,
+            "actual": {
+              "id": "1",
+              "path": "/articles/news-1",
+              "title": "News",
+              "summary": "Text"
+            },
+            "error": null
+          },
+          {
+            "name": "empty body",
+            "passed": false,
+            "actual": {
+              "id": "1",
+              "path": "/articles/news-1",
+              "title": "News",
+              "summary": "Text"
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.454901,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "empty title",
+            "passed": true,
+            "actual": {
+              "id": "1",
+              "path": "/articles/news-1",
+              "title": "",
+              "summary": "Text"
+            },
+            "error": null
+          },
+          {
+            "name": "empty body",
+            "passed": true,
+            "actual": {
+              "id": "1",
+              "path": "/articles/news-1",
+              "title": "News",
+              "summary": ""
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.454359,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.507249,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "publishing-feed-continuation",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "due",
+            "passed": false,
+            "actual": {
+              "items": [],
+              "next": null
+            },
+            "error": null
+          },
+          {
+            "name": "exclusive",
+            "passed": false,
+            "actual": {
+              "items": [
+                {
+                  "id": "1",
+                  "path": "/articles/news-1",
+                  "title": "News",
+                  "summary": "Text"
+                },
+                {
+                  "id": "2",
+                  "path": "/articles/news-2",
+                  "title": "News",
+                  "summary": "Text"
+                }
+              ],
+              "next": null
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.505699,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "due",
+            "passed": true,
+            "actual": {
+              "items": [
+                {
+                  "id": "1",
+                  "path": "/articles/news-1",
+                  "title": "News",
+                  "summary": "Text"
+                }
+              ],
+              "next": null
+            },
+            "error": null
+          },
+          {
+            "name": "exclusive",
+            "passed": true,
+            "actual": {
+              "items": [
+                {
+                  "id": "2",
+                  "path": "/articles/news-2",
+                  "title": "News",
+                  "summary": "Text"
+                }
+              ],
+              "next": null
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.457127,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.505283,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "publishing-shared-excerpts",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "whitespace",
+            "passed": false,
+            "actual": " a  b\nc ",
+            "error": null
+          },
+          {
+            "name": "limit",
+            "passed": false,
+            "actual": "abcdef...",
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.505086,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "whitespace",
+            "passed": true,
+            "actual": "a b c",
+            "error": null
+          },
+          {
+            "name": "limit",
+            "passed": true,
+            "actual": "abc...",
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.506704,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 5,
+        "total": 5,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-5",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.556147,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "publishing-cms-release",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "combined",
+            "passed": false,
+            "actual": {
+              "items": [],
+              "next": null
+            },
+            "error": null
+          },
+          {
+            "name": "pagination",
+            "passed": false,
+            "actual": null,
+            "error": "ValueError"
+          }
+        ],
+        "elapsed_s": 0.555737,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "combined",
+            "passed": true,
+            "actual": {
+              "items": [
+                {
+                  "id": "1",
+                  "path": "/articles/news-1",
+                  "title": "&lt;N&gt;",
+                  "summary": ""
+                }
+              ],
+              "next": null
+            },
+            "error": null
+          },
+          {
+            "name": "pagination",
+            "passed": true,
+            "actual": {
+              "items": [
+                {
+                  "id": "2",
+                  "path": "/articles/news-2",
+                  "title": "News",
+                  "summary": "Text"
+                }
+              ],
+              "next": null
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.506096,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 5,
+        "total": 5,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-5",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.557485,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "analytics-window-boundary",
+      "verified": true,
+      "baseline": {
+        "passed": 1,
+        "total": 2,
+        "cases": [
+          {
+            "name": "exclude end",
+            "passed": false,
+            "actual": {
+              "g": {
+                "count": 1,
+                "sum": 8,
+                "mean": 8.0
+              }
+            },
+            "error": null
+          },
+          {
+            "name": "include start",
+            "passed": true,
+            "actual": {
+              "g": {
+                "count": 1,
+                "sum": 3,
+                "mean": 3.0
+              }
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.608601,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "exclude end",
+            "passed": true,
+            "actual": {},
+            "error": null
+          },
+          {
+            "name": "include start",
+            "passed": true,
+            "actual": {
+              "g": {
+                "count": 1,
+                "sum": 3,
+                "mean": 3.0
+              }
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.506425,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.55692,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "analytics-partial-buckets",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "partial",
+            "passed": false,
+            "actual": [
+              {
+                "start": 0,
+                "end": 6,
+                "count": 0,
+                "sum": 0
+              }
+            ],
+            "error": null
+          },
+          {
+            "name": "wide",
+            "passed": false,
+            "actual": [],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.556339,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "partial",
+            "passed": true,
+            "actual": [
+              {
+                "start": 0,
+                "end": 6,
+                "count": 0,
+                "sum": 0
+              },
+              {
+                "start": 6,
+                "end": 10,
+                "count": 1,
+                "sum": 4
+              }
+            ],
+            "error": null
+          },
+          {
+            "name": "wide",
+            "passed": true,
+            "actual": [
+              {
+                "start": 0,
+                "end": 10,
+                "count": 1,
+                "sum": 1
+              }
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.454872,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.556301,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "analytics-deduplicated-means",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "duplicates",
+            "passed": false,
+            "actual": {
+              "g": {
+                "count": 3,
+                "sum": 6,
+                "mean": 2
+              }
+            },
+            "error": null
+          },
+          {
+            "name": "fraction",
+            "passed": false,
+            "actual": {
+              "g": {
+                "count": 2,
+                "sum": -1,
+                "mean": -1
+              }
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.456338,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "duplicates",
+            "passed": true,
+            "actual": {
+              "g": {
+                "count": 2,
+                "sum": 5,
+                "mean": 2.5
+              }
+            },
+            "error": null
+          },
+          {
+            "name": "fraction",
+            "passed": true,
+            "actual": {
+              "g": {
+                "count": 2,
+                "sum": -1,
+                "mean": -0.5
+              }
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.506276,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.507388,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "analytics-quantile-index",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "median",
+            "passed": false,
+            "actual": 10.0,
+            "error": null
+          },
+          {
+            "name": "max",
+            "passed": false,
+            "actual": null,
+            "error": "IndexError"
+          }
+        ],
+        "elapsed_s": 0.558498,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "median",
+            "passed": true,
+            "actual": 5.0,
+            "error": null
+          },
+          {
+            "name": "max",
+            "passed": true,
+            "actual": 2,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.505627,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.507558,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "analytics-reporting-recovery",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "combined summary",
+            "passed": false,
+            "actual": {
+              "g": {
+                "count": 4,
+                "sum": 106,
+                "mean": 26
+              }
+            },
+            "error": null
+          },
+          {
+            "name": "tail",
+            "passed": false,
+            "actual": [
+              {
+                "start": 0,
+                "end": 6,
+                "count": 0,
+                "sum": 0
+              }
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.507407,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "combined summary",
+            "passed": true,
+            "actual": {
+              "g": {
+                "count": 2,
+                "sum": 5,
+                "mean": 2.5
+              }
+            },
+            "error": null
+          },
+          {
+            "name": "tail",
+            "passed": true,
+            "actual": [
+              {
+                "start": 0,
+                "end": 6,
+                "count": 0,
+                "sum": 0
+              },
+              {
+                "start": 6,
+                "end": 10,
+                "count": 1,
+                "sum": 4
+              }
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.504948,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 5,
+        "total": 5,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-5",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.696949,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "workflows-cycle-validation",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "cycle",
+            "passed": false,
+            "actual": [
+              "a",
+              "b"
+            ],
+            "error": null
+          },
+          {
+            "name": "self cycle",
+            "passed": false,
+            "actual": {
+              "ready": [],
+              "blocked": [],
+              "running": [],
+              "done": [],
+              "failed": [],
+              "complete": false
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.969426,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "cycle",
+            "passed": true,
+            "actual": null,
+            "error": "ValueError"
+          },
+          {
+            "name": "self cycle",
+            "passed": true,
+            "actual": null,
+            "error": "ValueError"
+          }
+        ],
+        "elapsed_s": 0.863293,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.660777,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "workflows-readiness-gates",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "root",
+            "passed": false,
+            "actual": {
+              "ready": [],
+              "blocked": [],
+              "running": [],
+              "done": [],
+              "failed": [],
+              "complete": false
+            },
+            "error": null
+          },
+          {
+            "name": "partial",
+            "passed": false,
+            "actual": {
+              "ready": [
+                "c"
+              ],
+              "blocked": [],
+              "running": [],
+              "done": [
+                "a"
+              ],
+              "failed": [],
+              "complete": false
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.556944,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "root",
+            "passed": true,
+            "actual": {
+              "ready": [
+                "a"
+              ],
+              "blocked": [],
+              "running": [],
+              "done": [],
+              "failed": [],
+              "complete": false
+            },
+            "error": null
+          },
+          {
+            "name": "partial",
+            "passed": true,
+            "actual": {
+              "ready": [
+                "b"
+              ],
+              "blocked": [],
+              "running": [],
+              "done": [
+                "a"
+              ],
+              "failed": [],
+              "complete": false
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.507012,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.506308,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "workflows-failure-propagation",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "chain",
+            "passed": false,
+            "actual": {
+              "ready": [],
+              "blocked": [
+                "b"
+              ],
+              "running": [],
+              "done": [],
+              "failed": [
+                "a"
+              ],
+              "complete": false
+            },
+            "error": null
+          },
+          {
+            "name": "branch",
+            "passed": false,
+            "actual": {
+              "ready": [
+                "z"
+              ],
+              "blocked": [
+                "b"
+              ],
+              "running": [],
+              "done": [],
+              "failed": [
+                "a"
+              ],
+              "complete": false
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.504826,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "chain",
+            "passed": true,
+            "actual": {
+              "ready": [],
+              "blocked": [
+                "b",
+                "c"
+              ],
+              "running": [],
+              "done": [],
+              "failed": [
+                "a"
+              ],
+              "complete": false
+            },
+            "error": null
+          },
+          {
+            "name": "branch",
+            "passed": true,
+            "actual": {
+              "ready": [
+                "z"
+              ],
+              "blocked": [
+                "b",
+                "c"
+              ],
+              "running": [],
+              "done": [],
+              "failed": [
+                "a"
+              ],
+              "complete": false
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.555688,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.555767,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "workflows-canonical-order",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "roots",
+            "passed": false,
+            "actual": [
+              "z",
+              "a"
+            ],
+            "error": null
+          },
+          {
+            "name": "new ready",
+            "passed": false,
+            "actual": [
+              "b",
+              "a",
+              "aa"
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.506208,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "roots",
+            "passed": true,
+            "actual": [
+              "a",
+              "z"
+            ],
+            "error": null
+          },
+          {
+            "name": "new ready",
+            "passed": true,
+            "actual": [
+              "a",
+              "aa",
+              "b"
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.706687,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.757456,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "workflows-coordinator-recovery",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "recovery",
+            "passed": false,
+            "actual": {
+              "ready": [],
+              "blocked": [
+                "b"
+              ],
+              "running": [],
+              "done": [],
+              "failed": [
+                "a"
+              ],
+              "complete": false
+            },
+            "error": null
+          },
+          {
+            "name": "cycle",
+            "passed": false,
+            "actual": {
+              "ready": [],
+              "blocked": [],
+              "running": [],
+              "done": [],
+              "failed": [],
+              "complete": false
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.506247,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "recovery",
+            "passed": true,
+            "actual": {
+              "ready": [
+                "z"
+              ],
+              "blocked": [
+                "b",
+                "c"
+              ],
+              "running": [],
+              "done": [],
+              "failed": [
+                "a"
+              ],
+              "complete": false
+            },
+            "error": null
+          },
+          {
+            "name": "cycle",
+            "passed": true,
+            "actual": null,
+            "error": "ValueError"
+          }
+        ],
+        "elapsed_s": 0.504559,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 5,
+        "total": 5,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-5",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.556313,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "search-case-normalization",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "title uppercase",
+            "passed": false,
+            "actual": {
+              "total": 0,
+              "items": []
+            },
+            "error": null
+          },
+          {
+            "name": "query uppercase",
+            "passed": false,
+            "actual": {
+              "total": 0,
+              "items": []
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.457101,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "title uppercase",
+            "passed": true,
+            "actual": {
+              "total": 1,
+              "items": [
+                {
+                  "id": "a",
+                  "title": "HELLO",
+                  "score": 1
+                }
+              ]
+            },
+            "error": null
+          },
+          {
+            "name": "query uppercase",
+            "passed": true,
+            "actual": {
+              "total": 1,
+              "items": [
+                {
+                  "id": "a",
+                  "title": "hello",
+                  "score": 1
+                }
+              ]
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.654763,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.506155,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "search-frequency-ranking",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "frequency",
+            "passed": false,
+            "actual": {
+              "total": 1,
+              "items": [
+                {
+                  "id": "a",
+                  "title": "x x",
+                  "score": 1
+                }
+              ]
+            },
+            "error": null
+          },
+          {
+            "name": "query repeated",
+            "passed": false,
+            "actual": {
+              "total": 1,
+              "items": [
+                {
+                  "id": "a",
+                  "title": "x y",
+                  "score": 3
+                }
+              ]
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.504351,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "frequency",
+            "passed": true,
+            "actual": {
+              "total": 1,
+              "items": [
+                {
+                  "id": "a",
+                  "title": "x x",
+                  "score": 3
+                }
+              ]
+            },
+            "error": null
+          },
+          {
+            "name": "query repeated",
+            "passed": true,
+            "actual": {
+              "total": 1,
+              "items": [
+                {
+                  "id": "a",
+                  "title": "x y",
+                  "score": 2
+                }
+              ]
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.454971,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.504929,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "search-label-semantics",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "all labels",
+            "passed": false,
+            "actual": {
+              "total": 2,
+              "items": [
+                {
+                  "id": "a",
+                  "title": "x",
+                  "score": 1
+                },
+                {
+                  "id": "b",
+                  "title": "x",
+                  "score": 1
+                }
+              ]
+            },
+            "error": null
+          },
+          {
+            "name": "facets",
+            "passed": false,
+            "actual": {
+              "A": 3,
+              "B": 1
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.454619,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "all labels",
+            "passed": true,
+            "actual": {
+              "total": 1,
+              "items": [
+                {
+                  "id": "b",
+                  "title": "x",
+                  "score": 1
+                }
+              ]
+            },
+            "error": null
+          },
+          {
+            "name": "facets",
+            "passed": true,
+            "actual": {
+              "A": 2,
+              "B": 1
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.505866,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.5566,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "search-ranked-pagination",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "descending",
+            "passed": false,
+            "actual": {
+              "total": 2,
+              "items": [
+                {
+                  "id": "a",
+                  "title": "x",
+                  "score": 1
+                },
+                {
+                  "id": "b",
+                  "title": "x x",
+                  "score": 2
+                }
+              ]
+            },
+            "error": null
+          },
+          {
+            "name": "offset",
+            "passed": false,
+            "actual": {
+              "total": 3,
+              "items": []
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.506853,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "descending",
+            "passed": true,
+            "actual": {
+              "total": 2,
+              "items": [
+                {
+                  "id": "b",
+                  "title": "x x",
+                  "score": 2
+                },
+                {
+                  "id": "a",
+                  "title": "x",
+                  "score": 1
+                }
+              ]
+            },
+            "error": null
+          },
+          {
+            "name": "offset",
+            "passed": true,
+            "actual": {
+              "total": 3,
+              "items": [
+                {
+                  "id": "b",
+                  "title": "x",
+                  "score": 1
+                }
+              ]
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.45362,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.506488,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "search-search-release",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "combined",
+            "passed": false,
+            "actual": {
+              "total": 0,
+              "items": []
+            },
+            "error": null
+          },
+          {
+            "name": "facets",
+            "passed": false,
+            "actual": {
+              "A": 2
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.405092,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "combined",
+            "passed": true,
+            "actual": {
+              "total": 2,
+              "items": [
+                {
+                  "id": "a",
+                  "title": "X",
+                  "score": 1
+                }
+              ]
+            },
+            "error": null
+          },
+          {
+            "name": "facets",
+            "passed": true,
+            "actual": {
+              "A": 1
+            },
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.455826,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 5,
+        "total": 5,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-5",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.505316,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "federation-clock-components",
+      "verified": true,
+      "baseline": {
+        "passed": 1,
+        "total": 2,
+        "cases": [
+          {
+            "name": "new component",
+            "passed": false,
+            "actual": 0,
+            "error": null
+          },
+          {
+            "name": "concurrent",
+            "passed": true,
+            "actual": 0,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.455153,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "new component",
+            "passed": true,
+            "actual": 1,
+            "error": null
+          },
+          {
+            "name": "concurrent",
+            "passed": true,
+            "actual": 0,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.455361,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.455302,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "federation-tombstone-policy",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "concurrent deletion",
+            "passed": false,
+            "actual": [
+              {
+                "key": "k",
+                "value": "live",
+                "deleted": false,
+                "clock": {
+                  "A": 1,
+                  "B": 1
+                },
+                "winner": "z",
+                "conflict": true
+              }
+            ],
+            "error": null
+          },
+          {
+            "name": "equal clocks",
+            "passed": false,
+            "actual": [
+              {
+                "key": "k",
+                "value": "live",
+                "deleted": false,
+                "clock": {
+                  "A": 1
+                },
+                "winner": "z",
+                "conflict": true
+              }
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.454975,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "concurrent deletion",
+            "passed": true,
+            "actual": [
+              {
+                "key": "k",
+                "value": null,
+                "deleted": true,
+                "clock": {
+                  "A": 1,
+                  "B": 1
+                },
+                "winner": "a",
+                "conflict": true
+              }
+            ],
+            "error": null
+          },
+          {
+            "name": "equal clocks",
+            "passed": true,
+            "actual": [
+              {
+                "key": "k",
+                "value": null,
+                "deleted": true,
+                "clock": {
+                  "A": 1
+                },
+                "winner": "a",
+                "conflict": true
+              }
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.505728,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.4544,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "federation-clock-join",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "same component",
+            "passed": false,
+            "actual": [
+              {
+                "key": "k",
+                "value": "v",
+                "deleted": false,
+                "clock": {
+                  "A": 3
+                },
+                "winner": "b",
+                "conflict": false
+              }
+            ],
+            "error": null
+          },
+          {
+            "name": "concurrent",
+            "passed": false,
+            "actual": [
+              {
+                "key": "k",
+                "value": "v",
+                "deleted": false,
+                "clock": {
+                  "A": 3,
+                  "B": 3
+                },
+                "winner": "b",
+                "conflict": true
+              }
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.504059,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "same component",
+            "passed": true,
+            "actual": [
+              {
+                "key": "k",
+                "value": "v",
+                "deleted": false,
+                "clock": {
+                  "A": 2
+                },
+                "winner": "b",
+                "conflict": false
+              }
+            ],
+            "error": null
+          },
+          {
+            "name": "concurrent",
+            "passed": true,
+            "actual": [
+              {
+                "key": "k",
+                "value": "v",
+                "deleted": false,
+                "clock": {
+                  "A": 2,
+                  "B": 2
+                },
+                "winner": "b",
+                "conflict": true
+              }
+            ],
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.506629,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.507097,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "federation-strict-frontier",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "singleton",
+            "passed": false,
+            "actual": null,
+            "error": "ValueError"
+          },
+          {
+            "name": "bool clock",
+            "passed": false,
+            "actual": 1,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.554646,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "singleton",
+            "passed": true,
+            "actual": [
+              {
+                "key": "k",
+                "value": "v",
+                "deleted": false,
+                "clock": {
+                  "A": 1
+                },
+                "winner": "a",
+                "conflict": false
+              }
+            ],
+            "error": null
+          },
+          {
+            "name": "bool clock",
+            "passed": true,
+            "actual": null,
+            "error": "ValueError"
+          }
+        ],
+        "elapsed_s": 0.505974,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 4,
+        "total": 4,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.456265,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    },
+    {
+      "task_id": "federation-replica-recovery",
+      "verified": true,
+      "baseline": {
+        "passed": 0,
+        "total": 2,
+        "cases": [
+          {
+            "name": "combined",
+            "passed": false,
+            "actual": null,
+            "error": "ValueError"
+          },
+          {
+            "name": "new replica",
+            "passed": false,
+            "actual": 0,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.507809,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_public": {
+        "passed": 2,
+        "total": 2,
+        "cases": [
+          {
+            "name": "combined",
+            "passed": true,
+            "actual": [
+              {
+                "key": "k",
+                "value": null,
+                "deleted": true,
+                "clock": {
+                  "A": 2,
+                  "B": 1
+                },
+                "winner": "a",
+                "conflict": true
+              }
+            ],
+            "error": null
+          },
+          {
+            "name": "new replica",
+            "passed": true,
+            "actual": 1,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.507566,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      },
+      "reference_hidden": {
+        "passed": 5,
+        "total": 5,
+        "cases": [
+          {
+            "name": "heldout-1",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-2",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-3",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-4",
+            "passed": true,
+            "actual": null,
+            "error": null
+          },
+          {
+            "name": "heldout-5",
+            "passed": true,
+            "actual": null,
+            "error": null
+          }
+        ],
+        "elapsed_s": 0.507505,
+        "execution_error": null,
+        "security": {
+          "backend": "rootless-docker",
+          "network": "none",
+          "read_only": true,
+          "non_root": true,
+          "host_mounts": false,
+          "expected_outputs_in_container": false,
+          "memory_mb": 128,
+          "cpu_limit": 0.5,
+          "pids_limit": 32,
+          "timeout_s": 8.0
+        }
+      }
+    }
+  ]
+}
