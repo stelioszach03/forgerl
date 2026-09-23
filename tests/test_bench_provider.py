@@ -11,18 +11,56 @@ from forgerl.store import Store
 
 @pytest.fixture
 def task():
-    return SimpleNamespace(title="A repair", description="Return an integer.", success_criterion="All checks pass.", entrypoint="service:run", files={"service.py": "def run(x):\n    return 0\n", "rules.py": "def rule(x):\n    return x\n"}, allowed_edit_files=("service.py",), public_cases=({"name": "visible", "args": [1], "kwargs": {}, "expected": 1},), hidden_cases=({"expected": "PRIVATE_HELDOUT_SENTINEL"},), reference_files={"service.py": "REFERENCE_PATCH_SENTINEL"})
+    return SimpleNamespace(
+        title="A repair",
+        description="Return an integer.",
+        success_criterion="All checks pass.",
+        entrypoint="service:run",
+        files={
+            "service.py": "def run(x):\n    return 0\n",
+            "rules.py": "def rule(x):\n    return x\n",
+        },
+        allowed_edit_files=("service.py",),
+        public_cases=({"name": "visible", "args": [1], "kwargs": {}, "expected": 1},),
+        hidden_cases=({"expected": "PRIVATE_HELDOUT_SENTINEL"},),
+        reference_files={"service.py": "REFERENCE_PATCH_SENTINEL"},
+    )
 
 
 def reply(**overrides):
-    data = {"id": "fake-response", "provider": "CoreWeave", "model": "openai/gpt-oss-20b", "usage": {"prompt_tokens": 120, "completion_tokens": 30, "total_tokens": 150, "cost": 0.0000101}, "choices": [{"finish_reason": "stop", "message": {"content": json.dumps({"files": {"service.py": "def run(x):\n    return x\n"}}), "reasoning": "NOT_A_PUBLIC_TRAJECTORY"}}]}
+    data = {
+        "id": "fake-response",
+        "provider": "CoreWeave",
+        "model": "openai/gpt-oss-20b",
+        "usage": {
+            "prompt_tokens": 120,
+            "completion_tokens": 30,
+            "total_tokens": 150,
+            "cost": 0.0000101,
+        },
+        "choices": [
+            {
+                "finish_reason": "stop",
+                "message": {
+                    "content": json.dumps(
+                        {"files": {"service.py": "def run(x):\n    return x\n"}}
+                    ),
+                    "reasoning": "NOT_A_PUBLIC_TRAJECTORY",
+                },
+            }
+        ],
+    }
     data.update(overrides)
     return data
 
 
 def transport(monkeypatch, handler):
     original = httpx.AsyncClient
-    monkeypatch.setattr(httpx, "AsyncClient", lambda **kwargs: original(transport=httpx.MockTransport(handler), **kwargs))
+    monkeypatch.setattr(
+        httpx,
+        "AsyncClient",
+        lambda **kwargs: original(transport=httpx.MockTransport(handler), **kwargs),
+    )
 
 
 def test_prompt_has_only_visible_task_information(task):
@@ -33,19 +71,32 @@ def test_prompt_has_only_visible_task_information(task):
 
 
 def test_protected_file_and_invalid_json_are_rejected(task):
-    for content in ['{"files":{"../escape.py":"x"}}', '{"files":{"rules.py":"x"}}', '{"files":[]}', 'not JSON']:
+    for content in [
+        '{"files":{"../escape.py":"x"}}',
+        '{"files":{"rules.py":"x"}}',
+        '{"files":[]}',
+        "not JSON",
+    ]:
         with pytest.raises(ProviderError):
             extract_files(content, task, task.files)
-    fixed = extract_files('```json\n{"files":{"service.py":"def run(x): return x"}}\n```', task, task.files)
+    fixed = extract_files(
+        '```json\n{"files":{"service.py":"def run(x): return x"}}\n```',
+        task,
+        task.files,
+    )
     assert fixed["rules.py"] == task.files["rules.py"]
 
 
 @pytest.mark.asyncio
-async def test_openrouter_pins_provider_and_accounts_reported_cost(tmp_path, monkeypatch, task):
+async def test_openrouter_pins_provider_and_accounts_reported_cost(
+    tmp_path, monkeypatch, task
+):
     calls = []
+
     def handler(request):
         calls.append(json.loads(request.content))
         return httpx.Response(200, json=reply())
+
     transport(monkeypatch, handler)
     store = Store(tmp_path / "ledger.sqlite")
     provider = RepoProvider(store, "test-only-not-a-real-key")
@@ -63,8 +114,18 @@ async def test_openrouter_pins_provider_and_accounts_reported_cost(tmp_path, mon
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("usage", [{"prompt_tokens": 2}, {"prompt_tokens": True, "completion_tokens": 2, "cost": 0}, {"prompt_tokens": 2, "completion_tokens": 3, "cost": -1}, "malformed"])
-async def test_uncertain_usage_retains_exact_reservation(tmp_path, monkeypatch, task, usage):
+@pytest.mark.parametrize(
+    "usage",
+    [
+        {"prompt_tokens": 2},
+        {"prompt_tokens": True, "completion_tokens": 2, "cost": 0},
+        {"prompt_tokens": 2, "completion_tokens": 3, "cost": -1},
+        "malformed",
+    ],
+)
+async def test_uncertain_usage_retains_exact_reservation(
+    tmp_path, monkeypatch, task, usage
+):
     transport(monkeypatch, lambda _: httpx.Response(200, json=reply(usage=usage)))
     store = Store(tmp_path / "ledger.sqlite")
     provider = RepoProvider(store, "test-only")
@@ -77,8 +138,13 @@ async def test_uncertain_usage_retains_exact_reservation(tmp_path, monkeypatch, 
 
 
 @pytest.mark.asyncio
-async def test_wrong_provider_keeps_actual_cost_but_rejects_candidate(tmp_path, monkeypatch, task):
-    transport(monkeypatch, lambda _: httpx.Response(200, json=reply(provider="Unexpected provider")))
+async def test_wrong_provider_keeps_actual_cost_but_rejects_candidate(
+    tmp_path, monkeypatch, task
+):
+    transport(
+        monkeypatch,
+        lambda _: httpx.Response(200, json=reply(provider="Unexpected provider")),
+    )
     store = Store(tmp_path / "ledger.sqlite")
     with pytest.raises(ProviderError, match="Pinned provider") as caught:
         await RepoProvider(store, "test-only").generate(task, task.files, {}, "cheap")
@@ -88,8 +154,15 @@ async def test_wrong_provider_keeps_actual_cost_but_rejects_candidate(tmp_path, 
 
 
 @pytest.mark.asyncio
-async def test_bad_json_keeps_actual_cost_and_raw_visible_response(tmp_path, monkeypatch, task):
-    transport(monkeypatch, lambda _: httpx.Response(200, json=reply(choices=[{"message": {"content": "invalid JSON"}}])))
+async def test_bad_json_keeps_actual_cost_and_raw_visible_response(
+    tmp_path, monkeypatch, task
+):
+    transport(
+        monkeypatch,
+        lambda _: httpx.Response(
+            200, json=reply(choices=[{"message": {"content": "invalid JSON"}}])
+        ),
+    )
     store = Store(tmp_path / "ledger.sqlite")
     with pytest.raises(ProviderError) as caught:
         await RepoProvider(store, "test-only").generate(task, task.files, {}, "cheap")
@@ -99,7 +172,10 @@ async def test_bad_json_keeps_actual_cost_and_raw_visible_response(tmp_path, mon
 
 @pytest.mark.asyncio
 async def test_auth_failure_stops_future_spending(tmp_path, monkeypatch, task):
-    transport(monkeypatch, lambda _: httpx.Response(401, json={"error": "DO_NOT_EXPOSE_UPSTREAM"}))
+    transport(
+        monkeypatch,
+        lambda _: httpx.Response(401, json={"error": "DO_NOT_EXPOSE_UPSTREAM"}),
+    )
     store = Store(tmp_path / "ledger.sqlite")
     with pytest.raises(ProviderError) as caught:
         await RepoProvider(store, "test-only").generate(task, task.files, {}, "cheap")

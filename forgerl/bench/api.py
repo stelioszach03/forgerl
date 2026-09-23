@@ -1,4 +1,5 @@
 """Read-only published-artifact endpoints. No model or executor credentials."""
+
 from __future__ import annotations
 
 import json
@@ -24,10 +25,16 @@ POLICIES = [
 
 
 def artifact_root():
-    return Path(os.environ.get("FORGEBENCH_ARTIFACT_DIR", str(ROOT / "artifacts/forgebench/v0.2")))
+    return Path(
+        os.environ.get(
+            "FORGEBENCH_ARTIFACT_DIR", str(ROOT / "artifacts/forgebench/v0.2")
+        )
+    )
 
 
-def unavailable(code="artifact", message="Published artifact is unavailable.", status=404):
+def unavailable(
+    code="artifact", message="Published artifact is unavailable.", status=404
+):
     return HTTPException(status, detail={"code": code, "message": message})
 
 
@@ -47,7 +54,16 @@ def read_json(filename: str, modified: int, size: int):
 def scrub(value):
     # Defense in depth against accidentally publishing a task dataclass or an
     # internal provenance object; real hidden grading emits only case counts.
-    denied = {"hidden_cases", "reference_files", "hidden_inputs", "hidden_expected", "api_key", "authorization", "session_hash", "ip_hash"}
+    denied = {
+        "hidden_cases",
+        "reference_files",
+        "hidden_inputs",
+        "hidden_expected",
+        "api_key",
+        "authorization",
+        "session_hash",
+        "ip_hash",
+    }
     if isinstance(value, dict):
         return {k: scrub(v) for k, v in value.items() if k.lower() not in denied}
     if isinstance(value, list):
@@ -66,13 +82,39 @@ def load(path):
 def benchmark():
     path = artifact_root() / "benchmark.json"
     catalog = list_tasks()
-    catalog_metadata = {"task_count": len(catalog), "family_count": len({t.family for t in catalog}), "task_manifest_hash": task_manifest_hash(), "public_mode": "recorded_only"}
+    catalog_metadata = {
+        "task_count": len(catalog),
+        "family_count": len({t.family for t in catalog}),
+        "task_manifest_hash": task_manifest_hash(),
+        "public_mode": "recorded_only",
+    }
     if path.is_file():
         result = dict(load(path))
         result["catalog"] = catalog_metadata
         result.setdefault("policies", POLICIES)
         return result
-    return {"version": "0.2", "status": "not_run", "generated_at": None, "task_count": len(catalog), "catalog": catalog_metadata, "models": [], "policies": POLICIES, "summary": [], "coverage": {"planned": 0, "completed": 0, "missing": 0}, "runs": [], "limitations": ["The catalog is implemented; this release has no published model evaluation yet.", "These are authored miniature repositories, not real-world long-horizon task evidence."], "provenance": {"task_manifest_hash": task_manifest_hash()}, "links": {"source": "https://github.com/stelioszach03/forgerl", "methodology": "https://github.com/stelioszach03/forgerl/blob/main/docs/forgebench/PROTOCOL.md", "pilot": "index.html#experiments"}}
+    return {
+        "version": "0.2",
+        "status": "not_run",
+        "generated_at": None,
+        "task_count": len(catalog),
+        "catalog": catalog_metadata,
+        "models": [],
+        "policies": POLICIES,
+        "summary": [],
+        "coverage": {"planned": 0, "completed": 0, "missing": 0},
+        "runs": [],
+        "limitations": [
+            "The catalog is implemented; this release has no published model evaluation yet.",
+            "These are authored miniature repositories, not real-world long-horizon task evidence.",
+        ],
+        "provenance": {"task_manifest_hash": task_manifest_hash()},
+        "links": {
+            "source": "https://github.com/stelioszach03/forgerl",
+            "methodology": "https://github.com/stelioszach03/forgerl/blob/main/docs/forgebench/PROTOCOL.md",
+            "pilot": "index.html#experiments",
+        },
+    }
 
 
 @router.get("/tasks")

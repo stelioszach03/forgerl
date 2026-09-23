@@ -1,55 +1,67 @@
 # ForgeRL
 
-**Inspect how a coding agent spends its next attempt.**
+**An ongoing research platform for adaptive routing and coding-agent evaluation.**
 
-ForgeRL is a research workbench for bounded Python repair. A visitor selects an authored regression task, follows real model-generated edits and isolated test execution, and inspects the final patch, held-out checks and request accounting. A separately trained controller chooses between request configurations or stops; the hosted language-model weights stay unchanged.
+[Evidence dashboard](https://stelioszach.com/demos/forgerl/) · [ForgeBench protocol](docs/forgebench/PROTOCOL.md) · [Task catalog](docs/forgebench/CATALOG.md) · [Operations](docs/forgebench/OPERATIONS.md) · [v0.1 pilot](docs/PILOT_FINDINGS.md)
 
-[Open the demo](https://stelioszach.com/demos/forgerl/) · [Methodology](docs/METHODOLOGY.md) · [Pilot findings](docs/PILOT_FINDINGS.md) · [Operations](docs/OPERATIONS.md) · [Benchmark artifact](artifacts/benchmark.json)
+| Research status | Evidence |
+| --- | --- |
+| Last completed benchmark | September 2026 · v0.1 pilot |
+| Current catalog | ForgeBench v0.2 · 50 authored scenarios / 10 miniature repository families |
+| Current evaluation | Three seeds predeclared: 17, 29, 43; v0.2 collection in progress |
+| Models in the v0.2 protocol | GPT-OSS-20B and GPT-OSS-120B through a pinned OpenRouter provider |
+| Latest published release | [v0.1.0](https://github.com/stelioszach03/forgerl/releases/tag/v0.1.0) |
 
-## What is implemented
+ForgeRL asks when a bounded coding agent should retry, repair, escalate to another model, roll back an edit, or stop. ForgeBench is its versioned task suite. The research pipeline collects actual model proposals and isolated test results; the public product lets readers inspect the stored evidence without spending API credits.
 
-- **Repair episodes:** visible-test feedback, complete replacement modules, bounded attempts, final held-out grading and downloadable patch/JSON traces.
-- **Controller experiment:** tabular fitted-Q learning from actual training transitions, compared with fixed short-budget, deliberate-only and heuristic policies.
-- **Evidence workbench:** responsive source, patch, test and event views; recorded runs and explicit unavailable/partial states.
-- **Finite inference spending:** durable SQLite reservations, separate research/public allowances and conservative accounting for uncertain requests.
-- **Restricted execution:** a dedicated Unix-socket broker invokes disposable rootless-Docker containers in production. The web service has neither a Docker socket nor access to the executor account.
+This is a research engineering project, not a claim of a new state-of-the-art routing algorithm or proven long-horizon autonomy. The hosted language-model weights remain unchanged. A separate tabular fitted-Q controller learns from training trajectories.
 
-The current provider adapter uses Runpod-hosted IBM Granite 4.0 H-Small for the short configuration and GPT-OSS 120B for the extended configuration. Request names describe configured budgets; task performance is measured rather than assumed. No always-running GPU is required.
+## What runs
+
+- **50 authored scenarios:** bug fixing, multi-file changes, features, behavioral refactoring, failing tests and multi-requirement stress tasks. Ten related families have fixed family-disjoint training/validation/test splits of 30/10/10.
+- **Five policies:** strong-only, cheap-only, cheap-to-strong after failure, a hand-written router, and an offline learned router with explicit fallback on unsupported states.
+- **Observable trajectories:** task and provider prompts, supplied files, actual harness tool calls, proposed patches, visible tests, errors, retries, model changes, rollback and final hidden grading. No private model reasoning is recorded.
+- **Measured outcomes:** success, hidden-test pass rate, accounted cost, tokens, latency, tool calls, attempts, visible regressions, success after repair, escalation and a clearly labeled reference-scope edit proxy.
+- **Inspectable product:** responsive leaderboard, cost/success plot, task explorer, source/diff/test views, downloadable complete runs and a separate v0.1 archive.
+- **Reproducible artifacts:** frozen task/configuration/source/image hashes, per-seed controllers, original trajectories, CSV exports, scientific figures and report-generation scripts.
+
+All 50 starter/reference fixture pairs have been checked in real rootless Docker: every starter exposes a visible failure, and each reference passes both visible and hidden checks. The [verification receipt](evidence/forgebench-catalog-verification.json) records those checks; fixture verification is **not** a model benchmark score.
 
 ## Read the evidence correctly
 
-The suite contains **24 authored tasks**, separated by family into **12 training, 6 validation and 6 test tasks**. It is a controlled repair pilot, not SWE-bench or arbitrary repository execution.
+The current suite comprises **50 scenarios in 10 miniature repositories**, not 50 independent production repositories. Five variants share each family. A `long_horizon` tag means a small integrated task with multiple requirements; it does not demonstrate hours of autonomous work. Refactoring is checked behaviorally, without proving maintainability.
 
-Three predeclared seeds—**17, 29 and 43**—repeat the study. Full coverage produces **18 evaluation episodes per policy on six unique held-out tasks from two families**. Seed repetitions are not additional independent tasks. Each seed trains its own controller; the production artifact is fixed to seed 17 before evaluating results. Hosted-model sampling is not guaranteed to be deterministic.
+Hidden tests are withheld from model prompts and run only after routing ends. Their definitions are released with the source for reproducibility, so they are not a permanently private or contamination-resistant test set. Public test passes are never substituted for hidden-test success.
 
-The [benchmark artifact](artifacts/benchmark.json) is the result source of record. Read its `status`, coverage, failures, per-task/seed rows and manifest hashes before comparing means. Missing work remains partial. The completed pilot recorded **11/18 held-out successes for the learned controller and 18/18 for deliberate-only**, across the same six tasks and three seeds; it did not establish an improvement over that baseline. See [pilot findings](docs/PILOT_FINDINGS.md) for the full comparison and failure analysis. The [methodology](docs/METHODOLOGY.md) explains training rewards, hidden-test separation, prospective evaluation and the limits of this small sample.
+The v0.2 protocol freezes each controller before prospective evaluation. Validation does not tune its parameters; test results do not choose a favorable seed. Failed calls, uncertain charges, partial coverage and unmeasured values remain visible. Repeated seeds do not create new independent task families. With only two held-out families, the report does not assert a population-level confidence interval or broad superiority.
 
-Cost estimates use a conservative common $10/million-token rate because the provider’s published Granite prices conflicted. Economic comparisons are conditional on that rate, not verified invoice savings.
+The archived v0.1 pilot recorded **11/18 held-out successes for its learned controller versus 18/18 for deliberate-only**, on six unique tasks across three seeds. That negative finding is preserved. V0.1 and v0.2 results are different experiments and must not be pooled.
 
-Live inference uses a finite prepaid allowance. Recorded evidence remains useful when new model requests are paused or the allowance is exhausted; replay is labeled separately from fresh inference.
-
-## System layout
+## Research and public serving are separate
 
 ```text
-Browser
-  │ same-origin HTTPS
-Nginx → FastAPI + one queue worker → Runpod hosted inference
-                │
-                ├─ SQLite: jobs, events, persistent spending reservations
-                ├─ frozen controller + published experiment artifacts
-                └─ restricted Unix socket
-                         │
-                  dedicated executor UID
-                         │
-                  rootless Docker
-                  no network · no host mounts · read-only filesystem
+Operator-run research
+  frozen protocol → hosted model API → proposed edits
+                       │                    │
+               durable spend ledger   restricted executor broker
+                                            │
+                                 disposable rootless Docker
+                                 no network / no host mounts
+                                            │
+                          actual trajectories + final grading
+                                            │
+                           immutable CSV / JSONL / figures
+                                            │
+Public VPS 24/7: Nginx → read-only FastAPI → evidence dashboard
 ```
 
-The API/data owner and executor use different Unix identities. Production containers run as an unprivileged user with CPU, memory, PID, output and wall-time limits. Expected test outputs stay in the trusted grader. Container isolation shares the host kernel; this is not a microVM boundary or a claim that arbitrary hostile code is safe.
+The public site cannot start inference, accept repository uploads or invoke a shell. Model credentials stay in private systemd credentials on the research host. There is no permanently allocated GPU. OpenRouter controlled runs pin the provider endpoint and quantization and disable fallback; the development `:floor` profile is a separate treatment. Provider checkpoint revisions remain unspecified when the service does not expose them.
 
-## Run locally without inference
+Limits are enforced at the provider key, persistent ledger, study and episode levels. Default episodes allow at most six model calls, ten routing decisions, two repeat actions, three invalid candidates and a conservative 100,000-token bound. Existing charges survive restarts. Credit purchase fees are not included in per-call inference accounting. There is no automatic budget reset.
 
-Use Python 3.12 and Node 24. Node is only needed for frontend development checks; the browser app itself has no bundled runtime dependencies.
+Container isolation is the execution boundary; AST screening is additional validation. A container shares the host kernel and is not a microVM. Only curated, bounded pure-Python module collections are supported. See [architecture](ARCHITECTURE.md).
+
+## Reproduce without spending
 
 ```sh
 python3.12 -m venv .venv
@@ -57,73 +69,41 @@ python3.12 -m venv .venv
 python -m pip install -r requirements.lock
 python -m pip install --no-deps -e .
 python -m pytest -q
-npm ci
+npm ci --ignore-scripts
 npm run test:frontend
+python scripts/forgebench.py --seed 17
 ```
 
-Preview the UI with the queue worker disabled:
+The final command prints the complete plan without reading credentials or starting inference. To run real container checks:
 
 ```sh
-FORGERL_WORKER=0 FORGERL_PUBLIC_ORIGIN=http://127.0.0.1:8000 \
+docker build -t forgerl-sandbox:v2 sandbox
+FORGERL_SANDBOX_IMAGE=forgerl-sandbox:v2 \
+FORGERL_RUN_DOCKER_TESTS=1 FORGERL_DOCKER_TESTS=1 python -m pytest -q
+```
+
+Preview the read-only dashboard:
+
+```sh
+FORGERL_PUBLIC_INFERENCE=0 FORGERL_WORKER=0 \
   python -m uvicorn forgerl.app:app --host 127.0.0.1 --port 8000
 ```
 
-Open `http://127.0.0.1:8000`. Without a signing key, provider credential and execution broker, fresh paid runs stay unavailable. Published artifacts can still be inspected if included in the checkout. This preview does not execute model code.
-
-### Real sandbox acceptance
-
-A configured Docker context is required for the explicitly enabled integration checks:
+Paid research is deliberately explicit and uses an **existing** durable ledger. Follow [the protocol](docs/forgebench/PROTOCOL.md) and [operations](docs/forgebench/OPERATIONS.md) rather than creating a fresh budget database or copying keys into a command.
 
 ```sh
-docker build -t forgerl-sandbox:v1 sandbox
-FORGERL_RUN_DOCKER_TESTS=1 python -m pytest -q
+python scripts/aggregate_forgebench.py \
+  --study 17=artifacts/forgebench/studies/seed17 \
+  --study 29=artifacts/forgebench/studies/seed29 \
+  --study 43=artifacts/forgebench/studies/seed43 \
+  --output artifacts/forgebench/v0.2
+python scripts/report_forgebench.py --input artifacts/forgebench/v0.2 --pdf
 ```
 
-These checks run the authored buggy modules, trusted reference implementations and bounded timeout/output fixtures. They do not call a model provider. The configured local Docker context may differ from production's rootless setup; deployment isolation is checked separately with `scripts/verify_isolation.py`.
+Report generation requires Matplotlib and ReportLab; it makes no model calls. A generated technical report is not a peer-reviewed paper or an automatically submitted preprint.
 
-CI runs Python checks with the Docker integration flag enabled on an ephemeral Ubuntu runner, plus locked Node frontend checks. No Runpod key, research execution or deployment credentials are configured in CI. DOM tests cover behavior and escaping; they do not replace visual browser inspection.
+## A living benchmark
 
-## Reproduce the controller study
+See [the maintenance policy](docs/forgebench/MAINTENANCE.md) and [changelog](CHANGELOG.md). New families, model endpoints and ablations receive a new frozen protocol and release. Completed experiments determine the “last benchmark run” field; cosmetic commits and scheduled checks do not update it. The next target is broader task diversity and held-out families before scaling the task count toward 200+.
 
-The safe default prints the protocol and makes no provider request:
-
-```sh
-python scripts/research_run.py
-```
-
-Paid collection requires a configured private credential file, the shared persistent budget database and a working restricted executor. Use one operator process, preserve the ledger across all three seeds, and review the [operations guide](docs/OPERATIONS.md) first. Example configuration uses placeholders:
-
-```sh
-export RUNPOD_API_KEY_FILE=/path/to/private/provider-key
-export FORGERL_DB=/path/to/persistent/forgerl.sqlite3
-export FORGERL_EXECUTOR_SOCKET=/path/to/private/executor.sock
-python scripts/research_run.py --execute-research --seed 17 --output evidence/seed17
-python scripts/research_run.py --execute-research --seed 29 --output evidence/seed29
-python scripts/research_run.py --execute-research --seed 43 --output evidence/seed43
-python scripts/aggregate_studies.py \
-  --study 17=evidence/seed17 --study 29=evidence/seed29 --study 43=evidence/seed43 \
-  --output artifacts/benchmark.json
-```
-
-The same ledger enforces **$12 research + $8 public inference**, leaving **$5 reserve** from the original $25 allowance. These are one-time limits, not a monthly subscription. Costs use provider token counts and conservative pricing estimates, not invoices. Timeouts with uncertain billing retain their reservations. Do not use a new database to bypass exhausted limits.
-
-Each study saves a manifest, raw JSONL trajectories, training transitions, a frozen controller and summary files. The aggregator checks split/policy identity, fingerprints and duplicate rows. It never substitutes the best-scoring seed for the predeclared production controller.
-
-## Repository map
-
-| Path | Purpose |
-|---|---|
-| `forgerl/tasks.py` | Authored tasks and public/held-out case separation |
-| `forgerl/controller.py` | Observable-state encoding, baselines and tabular fitted-Q learning |
-| `forgerl/orchestrator.py` | Actual model/test episodes and event traces |
-| `forgerl/provider.py` / `store.py` | Provider adapter, durable queue and spending ledger |
-| `forgerl/sandbox.py` / `sandbox/` | Restricted executor, Docker boundary and trusted grading |
-| `forgerl/research.py` / `scripts/` | Collection, prospective evaluation, aggregation and deployment tools |
-| `static/` | Dependency-free browser interface |
-| `tests/` / `frontend-tests/` | Offline, execution-boundary and browser-behavior checks |
-
-## License and attribution
-
-Original code, authored task fixtures and documentation are available under the [MIT License](LICENSE). The SZ logo and personal branding are excluded; see [NOTICE](NOTICE) before reusing the interface. Hosted model weights are not distributed here and retain their respective upstream licenses and service terms.
-
-Created by [Stelios Zacharioudakis](https://stelioszach.com/).
+Code and authored benchmark fixtures are MIT licensed. Existing SZ branding is excluded; see [NOTICE](NOTICE).

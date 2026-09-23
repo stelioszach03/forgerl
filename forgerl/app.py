@@ -21,6 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict
 
 from . import __version__
+from .archive import ReadOnlyArchive
 from .orchestrator import Episode
 from .provider import MODELS, BudgetExceeded, ProviderError, make_provider
 from .store import AdmissionError, Store
@@ -174,8 +175,12 @@ async def worker(app):
 
 @asynccontextmanager
 async def lifespan(app):
-    app.state.store = Store()
     enabled = os.environ.get("FORGERL_PUBLIC_INFERENCE", "0") == "1"
+    app.state.store = (
+        Store()
+        if enabled
+        else ReadOnlyArchive(os.environ.get("FORGERL_DB", "data/archive.sqlite3"))
+    )
     app.state.secret = load_secret() if enabled else None
     if enabled:
         app.state.store.recover()

@@ -1,0 +1,40 @@
+[Unit]
+Description=ForgeRL recorded research evidence (no inference credentials)
+After=network-online.target
+
+[Service]
+Type=simple
+User=forgerl-viewer
+Group=forgerl-viewer
+WorkingDirectory=/srv/forgerl/public-v02
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=FORGERL_PUBLIC_INFERENCE=0
+Environment=FORGERL_WORKER=0
+Environment=FORGERL_DB=/var/lib/forgerl-public/archive.sqlite3
+Environment=FORGERL_BENCHMARK_FILE=/srv/forgerl/public-v02/artifacts/benchmark.json
+Environment=FORGEBENCH_ARTIFACT_DIR=/srv/forgerl/public-v02/artifacts/forgebench/v0.2
+ExecStart=/srv/forgerl/public-v02/.venv/bin/python -m uvicorn forgerl.app:app --host 127.0.0.1 --port 18406 --workers 1 --proxy-headers --forwarded-allow-ips 127.0.0.1 --no-access-log
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=15
+UMask=0077
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+ProtectProc=invisible
+IPAddressDeny=any
+IPAddressAllow=localhost
+MemoryMax=512M
+CPUQuota=100%
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

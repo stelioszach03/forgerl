@@ -5,6 +5,7 @@ Set FORGERL_DOCKER_TESTS=1 with the rebuilt repository-v2 runner for behavioral
 checks. A fixture passes only when its golden passes BOTH groups and its starter
 has an actual visible failure, rather than being a solved/no-op task.
 """
+
 import ast
 from collections import Counter, defaultdict
 import json
@@ -23,7 +24,11 @@ def test_catalog_has_fifty_unique_scenarios_and_fixed_family_splits():
     assert len(TASKS) == 50
     assert len({task.id for task in TASKS}) == 50
     assert len({task.title for task in TASKS}) == 50
-    assert Counter(task.split for task in TASKS) == {"train": 30, "validation": 10, "test": 10}
+    assert Counter(task.split for task in TASKS) == {
+        "train": 30,
+        "validation": 10,
+        "test": 10,
+    }
     families = defaultdict(set)
     for task in TASKS:
         families[task.family].add(task.split)
@@ -31,7 +36,12 @@ def test_catalog_has_fifty_unique_scenarios_and_fixed_family_splits():
     assert all(len(splits) == 1 for splits in families.values())
     assert set(Counter(task.family for task in TASKS).values()) == {5}
     assert {task.category for task in TASKS} == {
-        "bug_fix", "feature", "multi_file", "refactor", "failing_tests", "long_horizon"
+        "bug_fix",
+        "feature",
+        "multi_file",
+        "refactor",
+        "failing_tests",
+        "long_horizon",
     }
 
 
@@ -46,7 +56,9 @@ def test_repository_fixture_contract(task):
     assert 4 <= len(task.hidden_cases) <= 24
     assert len(task.description) > 250
     assert task.success_criterion
-    changed = {name for name in task.files if task.files[name] != task.reference_files[name]}
+    changed = {
+        name for name in task.files if task.files[name] != task.reference_files[name]
+    }
     assert changed <= set(task.allowed_edit_files)
     if task.category in {"multi_file", "long_horizon"}:
         assert len(changed) >= 2
@@ -73,7 +85,10 @@ def test_repository_fixture_contract(task):
     for hidden in (False, True):
         cases = list(task.hidden_cases if hidden else task.public_cases)
         execution, _ = payload(task.reference_files, task.entrypoint, cases)
-        assert all("expected" not in item and "expected_error" not in item for item in execution["cases"])
+        assert all(
+            "expected" not in item and "expected_error" not in item
+            for item in execution["cases"]
+        )
 
 
 def test_public_serialization_excludes_solutions_and_holdouts():
@@ -100,7 +115,10 @@ def test_manifest_is_complete_and_stable():
     int(digest, 16)
 
 
-@pytest.mark.skipif(os.environ.get("FORGERL_DOCKER_TESTS") != "1", reason="real rebuilt Docker sandbox opt-in")
+@pytest.mark.skipif(
+    os.environ.get("FORGERL_DOCKER_TESTS") != "1",
+    reason="real rebuilt Docker sandbox opt-in",
+)
 @pytest.mark.parametrize("task", TASKS, ids=lambda task: task.id)
 def test_reference_and_reproduction_inside_docker(task):
     for hidden in (False, True):
@@ -109,4 +127,8 @@ def test_reference_and_reproduction_inside_docker(task):
         assert result["passed"] == result["total"], (task.id, hidden, result)
     initial = evaluate(task, task.files)
     assert initial["execution_error"] is None, (task.id, initial)
-    assert initial["passed"] < initial["total"], (task.id, "starter already solved", initial)
+    assert initial["passed"] < initial["total"], (
+        task.id,
+        "starter already solved",
+        initial,
+    )
