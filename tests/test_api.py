@@ -1,4 +1,5 @@
 import importlib
+from types import SimpleNamespace
 
 import pytest
 from fastapi.testclient import TestClient
@@ -22,6 +23,8 @@ def client(tmp_path, monkeypatch):
 
     module = importlib.reload(forgerl.app)
     with TestClient(module.app) as test:
+        # Admission tests model a ready worker without performing paid work.
+        test.app.state.worker_task = SimpleNamespace(done=lambda: False)
         yield test
 
 
@@ -116,3 +119,17 @@ def test_no_fake_benchmark_and_headers(client):
     assert "script-src 'self'" in response.headers["content-security-policy"]
     assert client.get("/api/runs/not-a-real-run").status_code == 404
     assert client.get("/../provider.py").status_code == 404
+
+
+def test_paused_or_failed_worker_cannot_accept_live_jobs(client):
+    for worker in (None, SimpleNamespace(done=lambda: True)):
+        client.app.state.worker_task = worker
+        assert client.get("/api/meta").json()["live"]["available"] is False
+        headers = credentials(client)
+        task = client.get("/api/tasks").json()["tasks"][0]["id"]
+        assert (
+            client.post(
+                "/api/runs", json={"task_id": task, "policy": "fixed"}, headers=headers
+            ).status_code
+            == 503
+        )

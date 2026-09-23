@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import secrets
+import sqlite3
 import time
 from functools import lru_cache
 from contextlib import asynccontextmanager
@@ -87,11 +88,19 @@ def problem(status, code, message):
 async def worker(app):
     store = app.state.store
     last_expiry = 0
+    retry_delay = 1
     while True:
-        if time.monotonic() - last_expiry > 3600:
-            await asyncio.to_thread(store.expire_identifiers)
-            last_expiry = time.monotonic()
-        row = await asyncio.to_thread(store.claim)
+        try:
+            if time.monotonic() - last_expiry > 3600:
+                await asyncio.to_thread(store.expire_identifiers)
+                last_expiry = time.monotonic()
+            row = await asyncio.to_thread(store.claim)
+            retry_delay = 1
+        except sqlite3.Error as exc:
+            log.warning("Queue storage temporarily unavailable: %s", type(exc).__name__)
+            await asyncio.sleep(retry_delay)
+            retry_delay = min(30, retry_delay * 2)
+            continue
         if not row:
             await asyncio.sleep(0.7)
             continue
@@ -173,6 +182,7 @@ async def lifespan(app):
         if os.environ.get("FORGERL_WORKER", "1") == "1"
         else None
     )
+    app.state.worker_task = work
     yield
     if work:
         work.cancel()
@@ -253,7 +263,10 @@ def session(request):
 def live_state(request):
     budget = request.app.state.store.budget("public")
     reason = None
-    if not request.app.state.secret:
+    queue_worker = getattr(request.app.state, "worker_task", None)
+    if queue_worker is None or queue_worker.done():
+        reason = "The live queue is temporarily paused. Recorded runs remain available."
+    elif not request.app.state.secret:
         reason = "Live sessions are not configured."
     elif budget["disabled"]:
         reason = "Live inference is temporarily paused. Recorded runs remain available."
