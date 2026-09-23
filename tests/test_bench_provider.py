@@ -181,3 +181,44 @@ async def test_auth_failure_stops_future_spending(tmp_path, monkeypatch, task):
         await RepoProvider(store, "test-only").generate(task, task.files, {}, "cheap")
     assert store.budget("research")["disabled"] is True
     assert "DO_NOT_EXPOSE_UPSTREAM" not in str(caught.value)
+
+
+@pytest.mark.asyncio
+async def test_429_carries_retry_hint_and_retains_its_reservation(
+    tmp_path, monkeypatch, task
+):
+    transport(
+        monkeypatch,
+        lambda _: httpx.Response(
+            429, headers={"Retry-After": "45"}, json={"error": "private upstream body"}
+        ),
+    )
+    store = Store(tmp_path / "ledger.sqlite")
+    provider = RepoProvider(store, "test-only")
+    reserved = provider.estimate_reservation_usd(task, task.files, {}, "cheap")
+    with pytest.raises(ProviderError) as caught:
+        await provider.generate(task, task.files, {}, "cheap")
+    assert caught.value.http_status == 429 and caught.value.retry_after_s == 45
+    assert caught.value.accounting_kind == "retained_reservation"
+    assert store.budget("research")["charged_usd"] == reserved
+    assert "private upstream body" not in str(caught.value)
+
+
+@pytest.mark.parametrize(
+    "header,expected",
+    [
+        ("120", 120),
+        ("NaN", None),
+        ("inf", None),
+        ("-2", None),
+        ("invalid", None),
+        (None, None),
+    ],
+)
+def test_retry_after_rejects_invalid_values_without_shortening_long_waits(
+    header, expected
+):
+    from forgerl.bench.provider import http_error
+
+    assert http_error(429, header).retry_after_s == expected
+    assert http_error(401, header).retry_after_s is None

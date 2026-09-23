@@ -634,3 +634,153 @@ async def test_initial_strong_request_is_not_an_escalation():
     )
     assert result["solved"] and result["escalations"] == 0
     assert provider.calls[0][3] == "strong"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "recover,limit,after,expected_calls,expected_delays",
+    [
+        (True, 6, 45, 2, [45]),
+        (False, 6, None, 3, [30, 60]),
+        (False, 1, None, 1, []),
+        (False, 6, 120, 1, []),
+    ],
+)
+async def test_rate_limit_retry_is_bounded_counted_and_recorded(
+    monkeypatch, recover, limit, after, expected_calls, expected_delays
+):
+    error = ProviderError("Model provider returned HTTP 429", 0.02)
+    error.http_status = 429
+    error.retry_after_s = after
+    error.accounting_kind = "retained_reservation"
+
+    class RateProvider(FakeProvider):
+        async def generate(self, *args, **kwargs):
+            self.error = error if not recover or not self.calls else None
+            return await super().generate(*args, **kwargs)
+
+    provider = RateProvider()
+    delays = []
+
+    async def sleep(delay):
+        delays.append(delay)
+
+    monkeypatch.setattr(engine.asyncio, "sleep", sleep)
+    calls = []
+
+    def evaluate(task, files, hidden):
+        calls.append(hidden)
+        return grade(1 if hidden else 2 if files == task.reference_files else 1, hidden)
+
+    episode = engine.RepoEpisode(
+        Task(),
+        provider,
+        "strong_only",
+        max_steps=limit,
+        evaluator=evaluate,
+        rate_limit_retries=2,
+    )
+    result = await engine.run_episode(episode)
+    assert len(provider.calls) == expected_calls == result["attempts"]
+    assert delays == expected_delays
+    assert all(call[3] == "strong" for call in provider.calls)
+    assert result["provider_retries"] == len(delays)
+    assert result["cost_usd"] == pytest.approx(
+        0.021 if recover else 0.02 * expected_calls
+    )
+    assert len([e for e in result["events"] if e["kind"] == "provider_backoff"]) == len(
+        delays
+    )
+    assert result["tokens"] is None
+    if recover:
+        assert result["solved"] and result["status"] == "completed"
+        assert calls == [False, False, True]
+    else:
+        assert result["status"] == "failed" and result["heldout_passed"] is None
+        assert calls == [False]
+
+
+@pytest.mark.asyncio
+async def test_rate_limit_retry_does_not_bypass_episode_reservation_cap(monkeypatch):
+    error = ProviderError("Model provider returned HTTP 429", 0.009)
+    error.http_status = 429
+    error.retry_after_s = 1
+    provider = FakeProvider(error=error)
+
+    async def sleep(delay):
+        pass
+
+    monkeypatch.setattr(engine.asyncio, "sleep", sleep)
+    episode = engine.RepoEpisode(
+        Task(),
+        provider,
+        "cheap_only",
+        max_cost_usd=0.015,
+        rate_limit_retries=2,
+        evaluator=lambda *args: grade(1),
+    )
+    result = await engine.run_episode(episode)
+    assert len(provider.calls) == 1 and result["cost_usd"] == 0.009
+    assert result["status"] == "budget_exhausted"
+    assert result["provider_retries"] == 0
+
+
+@pytest.mark.asyncio
+async def test_cancelling_backoff_never_issues_another_request(monkeypatch):
+    error = ProviderError("Model provider returned HTTP 429", 0.02)
+    error.http_status = 429
+    provider = FakeProvider(error=error)
+
+    async def cancel(delay):
+        raise engine.asyncio.CancelledError()
+
+    monkeypatch.setattr(engine.asyncio, "sleep", cancel)
+    episode = engine.RepoEpisode(
+        Task(),
+        provider,
+        "cheap_only",
+        rate_limit_retries=2,
+        evaluator=lambda *args: grade(1),
+    )
+    with pytest.raises(engine.asyncio.CancelledError):
+        await engine.run_episode(episode)
+    assert len(provider.calls) == 1 and episode.result()["status"] == "interrupted"
+    assert episode.result()["heldout_passed"] is None
+
+
+def test_retry_protocol_is_explicit_in_the_study_plan():
+    from forgerl.bench.tasks import list_tasks
+
+    original = study.plan(list_tasks())
+    retrying = study.plan(list_tasks(), rate_limit_retries=2)
+    assert original["protocol"] != retrying["protocol"]
+    assert retrying["rate_limit_retries"] == 2
+    assert original["evaluation_ids"] == retrying["evaluation_ids"]
+
+
+@pytest.mark.asyncio
+async def test_unmeasured_request_tokens_remain_reserved_against_the_episode_cap(
+    monkeypatch,
+):
+    error = ProviderError("Model provider returned HTTP 429", 0.02)
+    error.http_status = 429
+    provider = FakeProvider(error=error)
+    provider.estimate_token_bound = lambda *args: 60000
+
+    async def sleep(delay):
+        pass
+
+    monkeypatch.setattr(engine.asyncio, "sleep", sleep)
+    result = await engine.run_episode(
+        engine.RepoEpisode(
+            Task(),
+            provider,
+            "cheap_only",
+            rate_limit_retries=2,
+            evaluator=lambda *args: grade(1),
+        )
+    )
+    assert len(provider.calls) == 1
+    assert result["stop_reason"] == "episode_token_cap"
+    assert result["provider_retries"] == 0
+    assert result["unknown_token_upper_bound"] == 60000 and result["tokens"] is None

@@ -112,7 +112,11 @@ def _configuration_signature(manifest):
         raise ValueError("Study configuration hash mismatch")
     if (
         config.get("version") != "0.2"
-        or config.get("protocol") != "forgebench-v0.2-prespecified"
+        or config.get("protocol")
+        not in (
+            "forgebench-v0.2-prespecified",
+            "forgebench-v0.2-prespecified-rate-limit-retry-v1",
+        )
         or config.get("policies") != list(POLICIES)
     ):
         raise ValueError("Unsupported study version, protocol or policy set")
@@ -159,9 +163,18 @@ def reconcile_training_counters(source, observed, failed):
     source["training_completed_manifest"] = source.get("training_completed", 0)
     source["training_failures_manifest"] = source.get("training_failures", 0)
     mismatches = []
-    for field, value in (("training_completed", observed), ("training_failures", failed)):
+    for field, value in (
+        ("training_completed", observed),
+        ("training_failures", failed),
+    ):
         if source[field + "_manifest"] != value:
-            mismatches.append({"field": field, "manifest": source[field + "_manifest"], "observed": value})
+            mismatches.append(
+                {
+                    "field": field,
+                    "manifest": source[field + "_manifest"],
+                    "observed": value,
+                }
+            )
         source[field] = value
     source["source_counter_mismatches"] = mismatches
     if mismatches and source["status"] == "running":
@@ -312,7 +325,9 @@ def aggregate_studies(studies):
             else:
                 observed_training += 1
                 observed_training_failures += run.get("status") != "completed"
-        reconcile_training_counters(source, observed_training, observed_training_failures)
+        reconcile_training_counters(
+            source, observed_training, observed_training_failures
+        )
         sources.append(source)
     if canonical is None:
         raise ValueError("No study manifest available; publish a not_run view instead")
@@ -363,7 +378,13 @@ def aggregate_studies(studies):
         "training_planned": configuration["planned_training_episodes"]
         * len(EXPECTED_SEEDS),
         "training_completed": sum(s.get("training_completed", 0) for s in sources),
-        "training_unique_tasks": len({record["run"]["task_id"] for record in full_runs if record["phase"] == "train"}),
+        "training_unique_tasks": len(
+            {
+                record["run"]["task_id"]
+                for record in full_runs
+                if record["phase"] == "train"
+            }
+        ),
         "training_count_basis": "Validated indexed training episode artifacts, including failed episodes; not stale manifest counters",
         "evaluated_unique_tasks": len({r["task_id"] for r in evaluation}),
         "catalog_tasks": configuration["task_count"],
@@ -387,8 +408,13 @@ def aggregate_studies(studies):
         "coverage": coverage,
         "runs": [public_summary(r) for r in evaluation],
         "training_runs": [
-            {**public_summary(record["run"]), "phase": "train", "study_seed": record["study_seed"]}
-            for record in full_runs if record["phase"] == "train"
+            {
+                **public_summary(record["run"]),
+                "phase": "train",
+                "study_seed": record["study_seed"],
+            }
+            for record in full_runs
+            if record["phase"] == "train"
         ],
         "paired_differences": bootstraps["comparisons"],
         "limitations": list(LIMITATIONS)

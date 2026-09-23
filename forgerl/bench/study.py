@@ -78,6 +78,7 @@ def plan(
     max_steps=6,
     max_decisions=10,
     max_cost_usd=5.0,
+    rate_limit_retries=0,
 ):
     validate_splits(tasks)
     if (
@@ -87,12 +88,17 @@ def plan(
         or not 1 <= max_steps <= 6
         or not 1 <= max_decisions <= 10
         or not 0 < max_cost_usd <= 10
+        or type(rate_limit_retries) is not int
+        or not 0 <= rate_limit_retries <= 2
     ):
         raise ValueError("Invalid bounded study configuration")
     training = select_tasks([t for t in tasks if t.split == "train"], train_per_family)
     evaluation = select_tasks([t for t in tasks if t.split != "train"], eval_per_family)
     return {
-        "protocol": PROTOCOL,
+        "protocol": PROTOCOL
+        if not rate_limit_retries
+        else PROTOCOL + "-rate-limit-retry-v1",
+        "rate_limit_retries": rate_limit_retries,
         "version": VERSION,
         "seed": seed,
         "task_count": len(tasks),
@@ -313,6 +319,7 @@ async def run_study(
     max_decisions=10,
     max_cost_usd=5.0,
     episode_factory=RepoEpisode,
+    rate_limit_retries=0,
 ):
     configuration = plan(
         tasks,
@@ -323,6 +330,7 @@ async def run_study(
         max_steps=max_steps,
         max_decisions=max_decisions,
         max_cost_usd=max_cost_usd,
+        rate_limit_retries=rate_limit_retries,
     )
     bounded = CappedProvider(provider, max_cost_usd)
     writer = Writer(output)
@@ -378,6 +386,7 @@ async def run_study(
                     seed=stable_seed,
                     max_steps=max_steps,
                     max_decisions=max_decisions,
+                    rate_limit_retries=rate_limit_retries,
                 )
                 episode.event_callback = lambda event, ident=episode.id: writer.append(
                     "events.jsonl", {"run_id": ident, "event": event}
@@ -421,6 +430,7 @@ async def run_study(
                     seed=seed,
                     max_steps=max_steps,
                     max_decisions=max_decisions,
+                    rate_limit_retries=rate_limit_retries,
                 )
                 episode.event_callback = lambda event, ident=episode.id: writer.append(
                     "events.jsonl", {"run_id": ident, "event": event}

@@ -32,6 +32,12 @@ Run requested seeds17,29,43 in separate fresh directories. The CLI takes an excl
 
 ## Publication and rollback
 
+### Rate limits in new studies (runner v0.2.1)
+
+The research CLI defaults to `--rate-limit-retries 2` for new experiments. An explicit HTTP 429 can be retried at most twice within the original six-request, ten-decision, cost and token bounds. Waits use 30/60-second backoff and respect a longer valid `Retry-After` value up to 60 seconds. If the provider requires more than 60 seconds, the episode stops instead of retrying early. Each wait and request is recorded; the pinned provider/model do not change. Unknown charges retain their reservation and unknown token usage remains unknown.
+
+These runs use the distinct `forgebench-v0.2-prespecified-rate-limit-retry-v1` protocol and record the retry limit in configuration. Do not pool them with the completed v0.2 study. Use `--rate-limit-retries 0` to disable the behavior; exact reproduction of published v0.2 uses its frozen source commit `abadaff` and preserved artifacts. The public dashboard remains read-only. It labels historical 429 records and unconfirmed budget reserves and can open the next recorded seed without inference.
+
 1. Preserve study directories unchanged. Copy artifacts, verify source/task/provider/controller hashes and aggregate all predeclared seeds, including incomplete ones.
 2. Build CSV/JSONL, figures and technical report from those same records. Render and inspect the actual PDF; fixture PDF checks do not verify a final report.
 3. Test a new public release on loopback under the public identity, without keys or broker permissions. Verify catalog size, known recorded run, patch/export, provider-disabled admission and the archived v0.1 results.

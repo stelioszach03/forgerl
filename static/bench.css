@@ -1745,3 +1745,21 @@ select:hover {
   display: block;
   padding: 0.65rem 0;
 }
+
+.recorded-next {
+  min-height: 44px;
+  margin: 0 24px 18px;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--accent);
+  cursor: pointer;
+  border-radius: 5px;
+}
+.recorded-next:hover {
+  border-color: var(--accent);
+}
+.recorded-next:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}

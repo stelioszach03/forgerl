@@ -84,6 +84,7 @@ class RepoEpisode:
         seed=17,
         evaluator=None,
         event_callback=None,
+        rate_limit_retries=0,
     ):
         if policy not in router.POLICIES and policy != "exploration":
             raise ValueError("Unknown policy")
@@ -91,6 +92,8 @@ class RepoEpisode:
             not 1 <= max_steps <= 6
             or not 1 <= max_decisions <= 10
             or not 0 < max_cost_usd <= 5
+            or type(rate_limit_retries) is not int
+            or not 0 <= rate_limit_retries <= 2
         ):
             raise ValueError("Episode bounds exceeded")
         self.task, self.provider, self.policy = task, provider, policy
@@ -115,6 +118,10 @@ class RepoEpisode:
         self.unnecessary_edits = None
         self.attempts = self.decisions = self.rollbacks = self.escalations = 0
         self.retries = self.invalid_responses = 0
+        self.rate_limit_retry_limit = rate_limit_retries
+        self.provider_retries = 0
+        self.pending_provider_delay = None
+        self.unknown_token_bound = 0
         self.max_tokens = 100000
         self.tool_calls = self.regressions = self.tokens = 0
         self.cost_usd, self.improvement = 0.0, 0
@@ -289,6 +296,7 @@ class RepoEpisode:
                 else "Produce a complete candidate using the task specification and visible feedback.",
             }
             try:
+                request_token_bound = 0
                 estimator = getattr(self.provider, "estimate_reservation_usd", None)
                 if (
                     estimator
@@ -307,10 +315,13 @@ class RepoEpisode:
                     )
                     return self.observation()
                 token_bound = getattr(self.provider, "estimate_token_bound", None)
+                if token_bound:
+                    request_token_bound = token_bound(
+                        self.task, self.files, feedback, requested_model
+                    )
                 if (
                     token_bound
-                    and self.tokens
-                    + token_bound(self.task, self.files, feedback, requested_model)
+                    and self.tokens + self.unknown_token_bound + request_token_bound
                     > self.max_tokens
                 ):
                     self.status, self.terminal, self.stop_reason = (
@@ -416,6 +427,7 @@ class RepoEpisode:
                     )
                 elif not isinstance(exc, BudgetExceeded):
                     self.tokens_complete = False
+                    self.unknown_token_bound += request_token_bound
                 self.status = (
                     "budget_exhausted"
                     if isinstance(exc, BudgetExceeded)
@@ -445,12 +457,48 @@ class RepoEpisode:
                             exc, "provider_reported_cost_usd", None
                         ),
                         "request_config": getattr(exc, "request_config", None),
+                        "http_status": getattr(exc, "http_status", None),
+                        "retry_after_s": getattr(exc, "retry_after_s", None),
+                        "accounting_kind": getattr(exc, "accounting_kind", None),
                     },
                 )
                 if isinstance(exc, asyncio.CancelledError):
                     raise
                 if isinstance(exc, BudgetExceeded):
                     self.attempts -= 1  # Reservation rejection made no hosted request.
+                elif getattr(exc, "http_status", None) == 429:
+                    # Opt-in transport retries consume the existing request and
+                    # decision caps. Provider and model remain fixed.
+                    delay = max(
+                        30 * (2**self.provider_retries),
+                        getattr(exc, "retry_after_s", None) or 0,
+                    )
+                    if (
+                        self.provider_retries < self.rate_limit_retry_limit
+                        and self.attempts < self.max_steps
+                        and self.decisions < self.max_decisions
+                        and self.cost_usd < self.max_cost_usd
+                        and delay <= 60
+                    ):
+                        self.pending_provider_delay = delay
+                        self.status, self.terminal, self.error, self.stop_reason = (
+                            "running",
+                            False,
+                            None,
+                            None,
+                        )
+                        self.improvement = 0
+                    self.transitions.append(
+                        {
+                            "task_id": self.task.id,
+                            "split": self.task.split,
+                            "action": action,
+                            "state": state,
+                            "next_state": self.observation(),
+                            "cost_usd": self.cost_usd - prior_cost,
+                            "terminal": self.terminal,
+                        }
+                    )
                 elif getattr(exc, "failure_kind", None) == "invalid_candidate":
                     self.invalid_responses += 1
                     self.status, self.terminal, self.error, self.stop_reason = (
@@ -683,6 +731,8 @@ class RepoEpisode:
             "attempts": self.attempts,
             "retries": self.retries,
             "invalid_responses": self.invalid_responses,
+            "provider_retries": self.provider_retries,
+            "unknown_token_upper_bound": self.unknown_token_bound,
             "decisions": self.decisions,
             "regressions_introduced": self.regressions,
             "unnecessary_edits": self.unnecessary_edits,
@@ -713,6 +763,7 @@ class RepoEpisode:
                 "maximum_tokens": self.max_tokens,
                 "maximum_retry_actions": 2,
                 "maximum_invalid_responses": 3,
+                "maximum_rate_limit_retries": self.rate_limit_retry_limit,
             },
         }
 
@@ -721,6 +772,37 @@ async def run_episode(episode, selector=None):
     try:
         await episode.start()
         while not episode.terminal:
+            if episode.pending_provider_delay is not None:
+                delay = episode.pending_provider_delay
+                episode.pending_provider_delay = None
+                await episode.emit(
+                    "provider_backoff",
+                    "Wait before retrying the rate-limited provider",
+                    {
+                        "retry": episode.provider_retries + 1,
+                        "delay_s": delay,
+                        "model_role": episode.current_model,
+                        "note": "Same pinned model/provider; the next request still passes cost, token and attempt checks.",
+                    },
+                )
+                try:
+                    await asyncio.sleep(delay)
+                except asyncio.CancelledError:
+                    episode.status, episode.terminal = "interrupted", True
+                    episode.error, episode.stop_reason = (
+                        "Cancelled while waiting for the rate-limited provider",
+                        "cancelled_during_backoff",
+                    )
+                    await episode.finish()
+                    raise
+                previous_attempts = episode.attempts
+                episode.provider_retries += 1
+                try:
+                    await episode.step("repair", "provider_retry")
+                finally:
+                    if episode.attempts <= previous_attempts:
+                        episode.provider_retries -= 1
+                continue
             selection = (
                 selector(episode.observation())
                 if selector

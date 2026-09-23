@@ -13,6 +13,8 @@ import os
 import re
 import time
 from dataclasses import dataclass
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 
 import httpx
@@ -23,6 +25,26 @@ from ..store import Store
 MAX_CONTEXT_BYTES = 42000
 MAX_RESPONSE_BYTES = 160000
 MAX_FILES_BYTES = 40000
+
+
+def http_error(status, retry_after=None):
+    error = ProviderError(f"Model provider returned HTTP {status}")
+    error.http_status = status
+    error.retry_after_s = None
+    if status == 429 and isinstance(retry_after, str):
+        try:
+            delay = float(retry_after)
+        except ValueError:
+            try:
+                delay = (
+                    parsedate_to_datetime(retry_after) - datetime.now(timezone.utc)
+                ).total_seconds()
+            except (ValueError, TypeError, OverflowError):
+                delay = None
+        if delay is not None and math.isfinite(delay) and delay >= 0:
+            error.retry_after_s = delay
+    return error
+
 
 PROFILES = {
     "openrouter": {
@@ -297,8 +319,8 @@ class RepoProvider:
                                 c.execute(
                                     "INSERT INTO settings(name,value) VALUES('provider_disabled','provider_access') ON CONFLICT(name) DO NOTHING"
                                 )
-                        raise ProviderError(
-                            f"Model provider returned HTTP {response.status_code}"
+                        raise http_error(
+                            response.status_code, response.headers.get("Retry-After")
                         )
                     raw = bytearray()
                     async for chunk in response.aiter_bytes():
@@ -400,6 +422,7 @@ class RepoProvider:
                 request_config,
             )
         except (Exception, asyncio.CancelledError) as exc:
+            retained_reservation = charge is not None
             if charge is not None:
                 self.store.settle(charge, None)
             error = (
@@ -410,6 +433,13 @@ class RepoProvider:
                 )
             )
             error.cost_usd = accounted / 1e6
+            error.accounting_kind = (
+                "retained_reservation"
+                if retained_reservation
+                else "provider_reported"
+                if reported_cost is not None
+                else "token_estimate"
+            )
             error.prompt_tokens, error.completion_tokens = incoming, outgoing
             error.total_tokens = total
             error.prompt_messages, error.response_text = messages, response_text

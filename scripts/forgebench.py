@@ -35,6 +35,13 @@ def parser():
     cli.add_argument("--max-steps", type=int, choices=range(1, 7), default=6)
     cli.add_argument("--max-decisions", type=int, choices=range(1, 11), default=10)
     cli.add_argument("--max-cost-usd", type=float, default=5.0)
+    cli.add_argument(
+        "--rate-limit-retries",
+        type=int,
+        choices=(0, 1, 2),
+        default=2,
+        help="Bounded HTTP 429 retries for new studies; 0 disables them. Published v0.2 records are not rerun.",
+    )
     return cli
 
 
@@ -51,6 +58,7 @@ async def main(args):
         max_steps=args.max_steps,
         max_decisions=args.max_decisions,
         max_cost_usd=args.max_cost_usd,
+        rate_limit_retries=args.rate_limit_retries,
     )
     output = args.output or Path("artifacts/forgebench") / (
         "v0.2-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")

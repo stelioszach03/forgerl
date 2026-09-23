@@ -10,8 +10,8 @@
     />
     <title>ForgeBench — Agent research · Stelios Zacharioudakis</title>
     <link rel="icon" type="image/png" href="assets/personal-logo.png" />
-    <link rel="stylesheet" href="bench.css" />
-    <script src="bench.js" defer></script>
+    <link rel="stylesheet" href="bench.css?v=0.2.1" />
+    <script src="bench.js?v=0.2.1" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to benchmark</a>
@@ -319,6 +319,13 @@ No source loaded.</pre
             </dl>
           </div>
           <div id="run-error" class="notice error" role="alert" hidden></div>
+          <p id="run-context" class="notice" role="status" hidden></p>
+          <button
+            id="next-recorded-seed"
+            class="recorded-next"
+            type="button"
+            hidden
+          ></button>
           <div
             class="inspector-tabs"
             role="tablist"

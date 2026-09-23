@@ -10,7 +10,7 @@
 | Current catalog | ForgeBench v0.2 · 50 authored scenarios / 10 miniature repository families |
 | Current evaluation | Complete · 300/300 evaluation episodes and 180/180 training episodes |
 | Models in the v0.2 protocol | GPT-OSS-20B and GPT-OSS-120B through a pinned OpenRouter provider |
-| Latest published release | [v0.1.0](https://github.com/stelioszach03/forgerl/releases/tag/v0.1.0) |
+| Latest published release | [v0.2.1](https://github.com/stelioszach03/forgerl/releases/tag/v0.2.1) |
 
 ForgeRL asks when a bounded coding agent should retry, repair, escalate to another model, roll back an edit, or stop. ForgeBench is its versioned task suite. The research pipeline collects actual model proposals and isolated test results; the public product lets readers inspect the stored evidence without spending API credits.
 

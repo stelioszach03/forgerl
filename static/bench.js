@@ -101,7 +101,33 @@
       ).format(parsed) + (short ? " UTC" : "")
     );
   }
+  function rateLimited(run) {
+    return (
+      ["failed", "error"].includes(run?.status) &&
+      /\bHTTP 429\b/.test(run?.error || "")
+    );
+  }
+  function retainedReserve(run) {
+    return list(run.events)
+      .filter((event) => event.kind === "error")
+      .reduce((sum, event) => {
+        const data = record(event.data);
+        return (
+          sum +
+          (numeric(data.cost_usd) &&
+          data.cost_usd > 0 &&
+          (data.accounting_kind === "retained_reservation" ||
+            (data.provider_reported_cost_usd === null &&
+              record(data.request_config).provider &&
+              /\bHTTP 429\b/.test(data.error || "")))
+            ? data.cost_usd
+            : 0)
+        );
+      }, 0);
+  }
   function stateOf(run) {
+    if (rateLimited(run))
+      return { label: "Provider rate limit", className: "failed" };
     const statuses = {
       failed: "Infrastructure failure",
       error: "Infrastructure failure",
@@ -584,8 +610,11 @@
       requested = query.get("task");
     const initial =
       state.tasks.find((task) => task.id === requested) ||
-      state.tasks.find((task) => task.split === "test" && task.category === "long_horizon") ||
-      state.tasks.find((task) => task.split === "test") || state.tasks[0];
+      state.tasks.find(
+        (task) => task.split === "test" && task.category === "long_horizon",
+      ) ||
+      state.tasks.find((task) => task.split === "test") ||
+      state.tasks[0];
     if (initial) selectTask(initial.id, query.get("run"));
     else setText("task-title", "No task catalog is available");
   }
@@ -755,12 +784,17 @@
         ),
       ),
     );
-    const selected = runs.find((run) => run.id === requestedRun) || runs.find((run) => run.policy === "adaptive") || runs[0];
+    const selected =
+      runs.find((run) => run.id === requestedRun) ||
+      runs.find((run) => run.policy === "adaptive") ||
+      runs[0];
     select.value = selected.id;
     selectRun(selected.id);
   }
   function clearRun(message) {
     state.run = null;
+    $("run-context").hidden = true;
+    $("next-recorded-seed").hidden = true;
     status("run-status", "Not evaluated");
     setText("run-caption", message);
     setText("run-title", "Inspect a recorded trajectory");
@@ -824,6 +858,46 @@
     const metric = (key) => metricValue(run, key),
       result = stateOf(run),
       events = list(run.events || run.trajectory);
+    const reserve = retainedReserve(run);
+    const reserveOnly =
+      reserve > 0 &&
+      numeric(run.cost_usd) &&
+      Math.abs(reserve - run.cost_usd) < 0.000001;
+    const costLabel = reserveOnly ? "Budget reserve" : "Accounted cost";
+    const context = [];
+    if (rateLimited(run))
+      context.push(
+        "This historical request was rate-limited by the model provider (HTTP 429). The record is retained for audit; opening it does not make a new request to the model.",
+      );
+    if (rateLimited(run) && run.heldout_passed == null)
+      context.push(
+        "No final hidden-test evaluation was completed. A dash means unmeasured, not zero tests passed.",
+      );
+    if (reserve > 0)
+      context.push(
+        `${money(reserve)} was retained conservatively in the experiment budget because the failed request returned no verified billing amount. This reserve is not a confirmed charge.`,
+      );
+    setText("run-context", context.join(" "));
+    $("run-context").hidden = context.length === 0;
+    const nextSeed =
+      rateLimited(run) && numeric(run.seed)
+        ? runsForTask(run.task_id)
+            .filter(
+              (item) =>
+                item.policy === run.policy &&
+                numeric(item.seed) &&
+                item.seed > run.seed,
+            )
+            .sort((a, b) => a.seed - b.seed)[0]
+        : null;
+    $("next-recorded-seed").hidden = !nextSeed;
+    if (nextSeed) {
+      setText("next-recorded-seed", `View recorded seed ${nextSeed.seed}`);
+      $("next-recorded-seed").onclick = () => {
+        $("run-select").value = nextSeed.id;
+        selectRun(nextSeed.id);
+      };
+    } else $("next-recorded-seed").onclick = null;
     status("run-status", result.label, result.className);
     setText(
       "run-title",
@@ -838,7 +912,7 @@
         "Hidden tests",
         ratio(metric("heldout_passed"), metric("heldout_total")),
       ],
-      ["Accounted cost", money(metric("cost_usd"))],
+      [costLabel, money(metric("cost_usd"))],
       ["Tokens", count(metric("tokens"))],
       ["Latency", duration(metric("elapsed_s"))],
     ]);
@@ -869,7 +943,7 @@
         "Hidden tests",
         ratio(metric("heldout_passed"), metric("heldout_total")),
       ],
-      ["Accounted cost", money(metric("cost_usd"))],
+      [costLabel, money(metric("cost_usd"))],
       ["Tokens", count(metric("tokens"))],
       ["Latency", duration(metric("elapsed_s"))],
       ["Tool calls", count(metric("tool_calls"))],

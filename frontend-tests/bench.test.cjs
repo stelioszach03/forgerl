@@ -147,6 +147,66 @@ const settle = async () => {
   for (let i = 0; i < 20; i++)
     await new Promise((resolve) => setImmediate(resolve));
 };
+
+test("a recorded 429 distinguishes rate limiting and unconfirmed budget reserve; next seed is replay only", async () => {
+  const failed = {
+    ...run,
+    status: "failed",
+    solved: false,
+    seed: 17,
+    error: "Model provider returned HTTP 429",
+    heldout_passed: null,
+    tokens: null,
+    tokens_complete: false,
+    cost_usd: 0.001332,
+    events: [
+      {
+        kind: "error",
+        data: {
+          error: "Model provider returned HTTP 429",
+          cost_usd: 0.001332,
+          provider_reported_cost_usd: null,
+          request_config: { provider: { only: ["coreweave/fp4"] } },
+        },
+      },
+    ],
+  };
+  const next = { ...failed, id: "recorded-seed29", seed: 29 };
+  const later = { ...run, id: "recorded-seed43", seed: 43 };
+  const { dom, d, calls } = page(
+    { ...measured, runs: [failed, later, next] },
+    (route) =>
+      route.endsWith(`/runs/${failed.id}`)
+        ? response(failed)
+        : route.endsWith(`/runs/${next.id}`)
+          ? response(next)
+          : undefined,
+  );
+  try {
+    await settle();
+    assert.equal(
+      d.getElementById("run-status").textContent,
+      "Provider rate limit",
+    );
+    assert.match(d.getElementById("run-metrics").textContent, /Budget reserve/);
+    assert.match(
+      d.getElementById("run-context").textContent,
+      /not a confirmed charge/i,
+    );
+    assert.match(d.getElementById("run-context").textContent, /historical/i);
+    assert.match(d.getElementById("next-recorded-seed").textContent, /29/);
+    d.getElementById("next-recorded-seed").click();
+    await settle();
+    assert.equal(d.getElementById("run-select").value, next.id);
+    assert.equal(
+      d.getElementById("run-status").textContent,
+      "Provider rate limit",
+    );
+    assert.ok(calls.every((call) => call.options.method === "GET"));
+  } finally {
+    dom.window.close();
+  }
+});
 function page(benchmark = notRun, custom, suffix = "") {
   const calls = [];
   const dom = new JSDOM(html, {
