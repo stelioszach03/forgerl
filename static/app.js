@@ -2,7 +2,7 @@
 
 // API data is rendered as text, never interpreted as markup or executable code.
 const ForgeUI = (() => {
-  const terminalStates = new Set(['complete', 'completed', 'succeeded', 'failed', 'error', 'cancelled', 'canceled', 'stopped', 'budget_exhausted', 'unavailable', 'solved', 'unsolved']);
+  const terminalStates = new Set(['complete', 'completed', 'succeeded', 'failed', 'error', 'interrupted', 'cancelled', 'canceled', 'stopped', 'budget_exhausted', 'unavailable', 'solved', 'unsolved']);
   const number = value => typeof value === 'number' && Number.isFinite(value) ? value : null;
   const count = value => number(value) === null ? '—' : value.toLocaleString('en-US', {maximumFractionDigits: 0});
   const cost = value => number(value) === null ? '—' : '$' + value.toLocaleString('en-US', {minimumFractionDigits: 4, maximumFractionDigits: 4});
@@ -25,11 +25,15 @@ const ForgeUI = (() => {
   function stateOf(run) {
     if (!run) return {text: 'Not run', className: ''};
     if (!isTerminal(run.status)) return {text: label(run.status || 'queued'), className: 'active'};
+    const failureLabels = {failed: 'Failed', error: 'Failed', interrupted: 'Interrupted', budget_exhausted: 'Budget exhausted', cancelled: 'Cancelled', canceled: 'Cancelled', unavailable: 'Unavailable'};
+    const failure = failureLabels[String(run.status).toLowerCase()];
+    if (failure) return {text: failure, className: 'failure'};
     if (run.solved === true) return {text: 'Solved', className: 'success'};
     if (run.solved === false) return {text: 'Not solved', className: 'failure'};
     return {text: label(run.status), className: ['failed', 'error'].includes(run.status) ? 'failure' : ''};
   }
-  return {number, count, cost, duration, ratio, percentage, label, isTerminal, isRunId, timestamp, safeLink, errorMessage, stateOf};
+  const waitingForModel = (run, events) => String(run?.status).toLowerCase() === 'running' && Array.isArray(events) && events.at(-1)?.kind === 'model';
+  return {number, count, cost, duration, ratio, percentage, label, isTerminal, isRunId, timestamp, safeLink, errorMessage, stateOf, waitingForModel};
 })();
 
 if (typeof module !== 'undefined' && module.exports) module.exports = ForgeUI;
@@ -172,6 +176,7 @@ if (typeof document !== 'undefined') (() => {
     return fields.filter(([key, name]) => data[key] !== undefined && data[key] !== null && !seen.has(name) && seen.add(name)).map(([key, name]) => `${name}: ${key === 'cost_usd' ? cost(data[key]) : key === 'elapsed_s' ? duration(data[key]) : String(data[key]).slice(0, 120)}`);
   }
   function renderEvents() {
+    renderProviderWait();
     text('trace-count', count(state.events.length));
     const list = $('event-list'); list.replaceChildren();
     if (!state.events.length) { list.append(element('li', 'empty-copy', 'No execution events have been recorded yet.')); return; }
@@ -182,6 +187,12 @@ if (typeof document !== 'undefined') (() => {
       list.append(item);
     }
   }
+  function renderProviderWait() { $('provider-wait').hidden = !ForgeUI.waitingForModel(state.run, state.events); }
+  $('inspect-recorded').addEventListener('click', () => {
+    const heading = $('recorded-title');
+    heading.scrollIntoView({behavior: 'instant', block: 'start'});
+    heading.focus({preventScroll: true});
+  });
   function mergeEvents(events) {
     const bySeq = new Map(state.events.map(event => [event.seq, event]));
     for (const event of events || []) if (typeof event.seq === 'number') bySeq.set(event.seq, event);
@@ -200,6 +211,7 @@ if (typeof document !== 'undefined') (() => {
     text('metric-steps', count(run.steps)); text('metric-tokens', count(run.tokens)); text('metric-cost', cost(run.cost_usd)); text('metric-time', duration(run.elapsed_s));
     renderPatch(run.diff); renderSource($('final-source'), run.final_source); renderTests(run);
     if (Array.isArray(run.events)) mergeEvents(run.events);
+    renderProviderWait();
     const reason = run.error || run.stop_reason;
     const costBasis = run.evidence?.cost_basis;
     text('run-explanation', (reason ? `Run outcome: ${String(reason).replace(/_/g, ' ')}` : isTerminal(run.status) ? 'Recorded test results apply to this candidate and task only.' : 'The run is executing. Events and measured results update automatically.') + (costBasis ? ` · Cost: ${costBasis}.` : ''));

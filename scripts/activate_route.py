@@ -5,6 +5,8 @@ import hashlib
 import json
 import os
 import subprocess
+import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -14,10 +16,25 @@ def get(url):
         return response.status, response.read()
 
 
+def ready(url, timeout=20):
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            result = get(url)
+            if result[0] == 200:
+                return result
+        except (urllib.error.URLError, TimeoutError):
+            if time.monotonic() >= deadline:
+                raise
+        if time.monotonic() >= deadline:
+            raise TimeoutError("Service did not become ready")
+        time.sleep(0.25)
+
+
 def main():
     assert os.geteuid() == 0
     root = Path(__file__).resolve().parents[1]
-    assert get("http://127.0.0.1:18405/api/health")[0] == 200
+    assert ready("http://127.0.0.1:18405/api/health")[0] == 200
     candidates = {
         p.resolve()
         for p in Path("/etc/nginx/sites-enabled").iterdir()
@@ -58,7 +75,7 @@ def main():
             temporary.replace(p)
         subprocess.run(["nginx", "-t"], check=True)
         subprocess.run(["systemctl", "reload", "nginx"], check=True)
-        assert get("https://stelioszach.com/demos/forgerl/api/health")[0] == 200
+        assert ready("https://stelioszach.com/demos/forgerl/api/health")[0] == 200
         status, body = get("https://stelioszach.com/demos/forgerl/")
         assert status == 200 and b"ForgeRL" in body
         for name in ("deid", "fraud-graph", "smt-verify", "mta-scan"):

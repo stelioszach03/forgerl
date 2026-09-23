@@ -22,6 +22,18 @@ test('known outcomes distinguish terminal failure from live execution', () => {
   assert.deepEqual(ui.stateOf({status: 'completed', solved: true}), {text: 'Solved', className: 'success'});
   assert.equal(ui.isTerminal('error'), true);
   assert.equal(ui.isTerminal('queued'), false);
+  assert.equal(ui.isTerminal('interrupted'), true);
+  for (const [status, text] of Object.entries({failed: 'Failed', error: 'Failed', interrupted: 'Interrupted', budget_exhausted: 'Budget exhausted', cancelled: 'Cancelled', canceled: 'Cancelled'})) {
+    assert.deepEqual(ui.stateOf({status, solved: false}), {text, className: 'failure'});
+  }
+});
+
+test('provider wait is based on the last real model event and active execution', () => {
+  assert.equal(ui.waitingForModel({status: 'running'}, [{kind: 'model'}]), true);
+  assert.equal(ui.waitingForModel({status: 'running'}, [{kind: 'model'}, {kind: 'tests'}]), false);
+  assert.equal(ui.waitingForModel({status: 'running'}, []), false);
+  assert.equal(ui.waitingForModel({status: 'failed'}, [{kind: 'model'}]), false);
+  assert.equal(ui.waitingForModel({status: 'interrupted'}, [{kind: 'model'}]), false);
 });
 
 test('API-supplied links cannot execute a script or inject a data document', () => {

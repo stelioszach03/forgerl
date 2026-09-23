@@ -94,6 +94,7 @@ class ProviderAccountingTests(unittest.IsolatedAsyncioTestCase):
             self.assertAlmostEqual(result["cost_usd"], budget["charged_usd"], places=6)
             self.assertEqual(result["status"], "failed")
             self.assertTrue(episode.terminal)
+            self.assertIsNone(result["heldout_passed"])
             with store.connect() as connection:
                 charge = dict(connection.execute("SELECT * FROM charges").fetchone())
             return charge, result

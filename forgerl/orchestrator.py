@@ -311,7 +311,7 @@ class Episode:
             self.token_accounting_complete = False
 
     def result(self):
-        hidden = self.hidden or {"passed": 0, "total": len(self.task.hidden_cases)}
+        hidden = self.hidden or {"passed": None, "total": len(self.task.hidden_cases)}
         solved = bool(
             self._finished
             and self.public["total"]

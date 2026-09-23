@@ -140,3 +140,50 @@ test('a partial artifact without outcome rows remains partial and does not manuf
     assert.equal(d.getElementById('benchmark-body').querySelectorAll('td').length, 1);
   } finally { dom.window.close(); }
 });
+
+test('failed and interrupted runs remain infrastructure outcomes with ungraded held-out counts absent and no polling', async () => {
+  for (const status of ['failed', 'interrupted']) {
+    const run = {...completed, status, heldout_passed: null, heldout_total: 2, error: 'The provider did not return a candidate.', events: [{seq: 1, kind: 'model', title: 'Requesting a repair'}]};
+    const dom = page(async url => {
+      const route = new URL(url).pathname;
+      if (route.endsWith('/runs')) return response({runs: [run]});
+      if (route.endsWith('/runs/run-1')) return response(run);
+      return baseHandler(url);
+    });
+    try {
+      let pollsScheduled = 0; const nativeTimeout = dom.window.setTimeout.bind(dom.window);
+      dom.window.setTimeout = (callback, delay, ...args) => { if (delay === 1500) pollsScheduled++; return nativeTimeout(callback, delay, ...args); };
+      await settle(); const d = dom.window.document;
+      d.querySelector('.gallery-run').click(); await settle();
+      assert.equal(d.getElementById('run-status').textContent, status === 'failed' ? 'Failed' : 'Interrupted');
+      assert.equal(d.getElementById('metric-heldout').textContent, '—');
+      const heldout = d.querySelectorAll('.test-group')[1];
+      assert.equal(heldout.querySelector('h3 span').textContent, '—');
+      assert.match(heldout.textContent, /No completed evaluation recorded/);
+      assert.doesNotMatch(heldout.textContent, /0 of 2/);
+      assert.equal(d.getElementById('provider-wait').hidden, true);
+      assert.equal(pollsScheduled, 0);
+    } finally { dom.window.close(); }
+  }
+});
+
+test('a pending hosted-model event offers recorded evidence without starting another paid call', async () => {
+  const pending = {...completed, status: 'running', solved: false, heldout_passed: null, events: [{seq: 1, kind: 'model', title: 'Requesting a repair'}]};
+  let posts = 0;
+  const dom = page(async (url, options) => {
+    if (options.method === 'POST') posts++;
+    const route = new URL(url).pathname;
+    if (route.endsWith('/runs')) return response({runs: [pending]});
+    if (route.endsWith('/runs/run-1')) return response(pending);
+    return baseHandler(url);
+  });
+  try {
+    await settle(); const d = dom.window.document;
+    d.querySelector('.gallery-run').click(); await settle();
+    assert.equal(d.getElementById('provider-wait').hidden, false);
+    assert.match(d.getElementById('provider-wait').textContent, /Waiting for the hosted model response; recorded runs remain available/);
+    d.getElementById('inspect-recorded').click();
+    assert.equal(d.activeElement, d.getElementById('recorded-title'));
+    assert.equal(posts, 0);
+  } finally { dom.window.close(); }
+});

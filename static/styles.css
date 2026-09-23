@@ -13,3 +13,5 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
 /* Coverage remains visible even when only part of a study has completed. */
 .benchmark-intro .coverage-note{margin-top:9px;color:var(--warning);font-size:11px;line-height:1.75}.privacy-note{padding-top:18px;border-top:1px solid var(--line)}.privacy-note p{font-size:11px}
+/* Provider wait is driven by execution events, never by an invented ETA. */
+.provider-wait{margin:0 20px 18px;padding:12px 14px;background:#122a31;border-left:2px solid var(--accent);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.provider-wait p{font-size:11px;line-height:1.75;color:#bad3db;flex:1 1 230px}.provider-wait .button{padding:0 10px;color:var(--accent);font-size:11px;border-color:#325451}.provider-wait .button:hover{border-color:var(--accent)}
