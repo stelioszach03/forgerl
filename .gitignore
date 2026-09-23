@@ -11,5 +11,7 @@ data/
 *.pem
 node_modules/
 artifacts/raw/
+artifacts/forgebench/studies/
+tmp/
 .DS_Store
 *.egg-info/
