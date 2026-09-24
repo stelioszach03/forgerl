@@ -12,6 +12,19 @@ const html = fs.readFileSync(path.join(root, "static/bench.html"), "utf8");
 const response = (body) => ({ ok: true, status: 200, json: async () => body });
 const settle = async () => { for (let i = 0; i < 18; i++) await new Promise(resolve => setImmediate(resolve)); };
 
+test("share preview exists in static HTML with accurate scope and the existing logo", () => {
+  const dom = new JSDOM(html);
+  try {
+    const d = dom.window.document;
+    assert.equal(d.querySelector('link[rel="canonical"]').href, 'https://forge.stelioszach.com/');
+    assert.equal(d.querySelector('meta[property="og:url"]').content, 'https://forge.stelioszach.com/');
+    assert.equal(d.querySelector('meta[property="og:type"]').content, 'website');
+    assert.match(d.querySelector('meta[property="og:description"]').content, /162 recorded.*separate, capped live trial/);
+    assert.equal(d.querySelector('meta[property="og:image"]').content, 'https://forge.stelioszach.com/assets/personal-logo.png');
+    assert.equal(d.querySelector('meta[name="twitter:card"]').content, 'summary');
+  } finally { dom.window.close(); }
+});
+
 function page() {
   const calls = [];
   const dom = new JSDOM(html, { url: "https://forge.stelioszach.com/", runScripts: "outside-only", pretendToBeVisual: true });
