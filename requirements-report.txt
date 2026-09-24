@@ -1,0 +1,4 @@
+# Optional analysis-only environment; not the frozen paid runner environment.
+matplotlib==3.11.2
+reportlab==5.0.1
+httpx==0.28.1

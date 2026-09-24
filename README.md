@@ -48,6 +48,18 @@ The live explorer continues to show the separately preserved v0.2 dataset. The
 pilot report is a technical artifact, not a peer-reviewed paper or submitted
 preprint. The broader v0.3 research backlog remains distinct from this pilot.
 
+Reproduce its analysis without a model key or paid calls (Python 3.12):
+
+```sh
+python -m pip install -r requirements-report.txt
+python scripts/analyze_pilot_forgebench.py artifacts/forgebench/v0.3-pilot1/study --output /tmp/forge-pilot-analysis-new
+python scripts/report_pilot_forgebench.py artifacts/forgebench/v0.3-pilot1/study --output /tmp/forge-pilot-report-new --pdf
+```
+
+Choose fresh output directories; neither command reruns inference or changes the
+recorded study. The analysis-only terminal-label clarification is disclosed in
+the report and preserves every original all-action metric.
+
 The completed v0.2 held-out test summary recorded 24/30 strong-only successes, 27/30 cheap-only, 26/30 escalate-on-failure, 27/30 hand-written-router and 25/30 adaptive-router successes. These are descriptive results from two held-out families; provider failures and related task variants remain in the denominator, and the report makes no broad superiority claim.
 
 ## Stable v0.2 suite
