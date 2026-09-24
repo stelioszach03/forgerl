@@ -23,3 +23,9 @@ The implemented controller uses tabular fitted-Q iteration. Related work,
 methodology and scope are documented in docs/METHODOLOGY.md. This project does
 not claim invention of model routing, fitted-Q learning, or language-model
 architectures. Its authored task suite is not the SWE-bench dataset.
+
+Third-party source-derived pilot track:
+The Boltons mathutils excerpts, adapted tasks and corresponding recorded source
+artifacts retain the BSD-3-Clause notices in THIRD_PARTY_NOTICES.md and the
+vendored source snapshot. The MIT grant for original project code does not
+replace those notices or imply endorsement by the Boltons authors.

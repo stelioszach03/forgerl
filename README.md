@@ -6,19 +6,51 @@
 
 | Research status | Evidence |
 | --- | --- |
-| Last completed benchmark | September 23, 2026 · ForgeBench v0.2 |
-| Current catalog | ForgeBench v0.2 · 50 authored scenarios / 10 miniature repository families |
-| Current evaluation | Complete · 300/300 evaluation episodes and 180/180 training episodes |
+| Last completed benchmark | September 24, 2026 · [prospective v0.3 transfer pilot](artifacts/forgebench/v0.3-pilot1/report/pilot-report.md) |
+| Stable dashboard catalog | ForgeBench v0.2 · 50 authored scenarios / 10 miniature repository families |
+| Latest pilot evaluation | Complete · 162/162 episodes, 24 new authored tasks + 3 licensed source-derived tasks, six policies |
+| Preserved v0.2 evaluation | Complete · 300/300 evaluation episodes and 180/180 training episodes |
 | Models in the v0.2 protocol | GPT-OSS-20B and GPT-OSS-120B through a pinned OpenRouter provider |
-| Latest published release | [v0.2.1](https://github.com/stelioszach03/forgerl/releases/tag/v0.2.1) |
+| Stable public software | [v0.2.1](https://github.com/stelioszach03/forgerl/releases/tag/v0.2.1); new pilot evidence is published separately |
 
 ForgeRL asks when a bounded coding agent should retry, repair, escalate to another model, roll back an edit, or stop. ForgeBench is its versioned task suite. The research pipeline collects actual model proposals and isolated test results; the public product lets readers inspect the stored evidence without spending API credits.
 
 This is a research engineering project, not a claim of a new state-of-the-art routing algorithm or proven long-horizon autonomy. The hosted language-model weights remain unchanged. A separate tabular fitted-Q controller learns from training trajectories.
 
+## Completed prospective transfer pilot
+
+The [frozen v0.3 pilot protocol](docs/forgebench/V03_PILOT_PROTOCOL.md) was committed
+before 162 real model episodes. Six new authored test families contribute 18
+primary tasks per policy; validation and the three Boltons source-derived mutation
+tasks are reported separately. Old inspected families are development material.
+Every policy shares the same supplemental VERIFY rule; it is not learned.
+
+| Primary test policy | Solved / attempted | Mean accounted API cost/task |
+| --- | ---: | ---: |
+| Strong only | 16/18 | $0.000263 |
+| Cheap only | 15/18 | $0.000137 |
+| Escalate on failure | 16/18 | $0.000100 |
+| Hand-written router | 15/18 | $0.000140 |
+| Fitted-Q transfer | 16/18 | $0.000194 |
+| Supervised observed-return baseline | 17/18 | $0.000124 |
+
+One seed and six small authored families do not establish general superiority.
+The simpler baseline's one-task margin is preserved as observed, not advertised
+as a proven advantage. Additional public checks missed 12 failing final candidates
+in the primary split; their limitations remain visible. All outcomes and the
+$0.030646 shared-ledger pilot delta are retained, including uncertain reserves.
+
+[Technical report PDF](artifacts/forgebench/v0.3-pilot1/report/pilot-report.pdf) ·
+[Results and figures](artifacts/forgebench/v0.3-pilot1/report/pilot-report.md) ·
+[Full recorded study](artifacts/forgebench/v0.3-pilot1/study) ·
+[Machine-readable analysis](artifacts/forgebench/v0.3-pilot1/analysis/analysis.json).
+The live explorer continues to show the separately preserved v0.2 dataset. The
+pilot report is a technical artifact, not a peer-reviewed paper or submitted
+preprint. The broader v0.3 research backlog remains distinct from this pilot.
+
 The completed v0.2 held-out test summary recorded 24/30 strong-only successes, 27/30 cheap-only, 26/30 escalate-on-failure, 27/30 hand-written-router and 25/30 adaptive-router successes. These are descriptive results from two held-out families; provider failures and related task variants remain in the denominator, and the report makes no broad superiority claim.
 
-## What runs
+## Stable v0.2 suite
 
 - **50 authored scenarios:** bug fixing, multi-file changes, features, behavioral refactoring, failing tests and multi-requirement stress tasks. Ten related families have fixed family-disjoint training/validation/test splits of 30/10/10.
 - **Five policies:** strong-only, cheap-only, cheap-to-strong after failure, a hand-written router, and an offline learned router with explicit fallback on unsupported states.
@@ -108,9 +140,11 @@ Report generation requires Matplotlib and ReportLab; it makes no model calls. A 
 
 See [the maintenance policy](docs/forgebench/MAINTENANCE.md) and [changelog](CHANGELOG.md). New families, model endpoints and ablations receive a new frozen protocol and release. Completed experiments determine the “last benchmark run” field; cosmetic commits and scheduled checks do not update it. The next target is broader task diversity and held-out families before scaling the task count toward 200+.
 
-Code and authored benchmark fixtures are MIT licensed. Existing SZ branding is excluded; see [NOTICE](NOTICE).
+Code and authored benchmark fixtures are MIT licensed. The separately identified Boltons source-derived track retains its BSD-3-Clause notices. Existing SZ branding is excluded; see [NOTICE](NOTICE).
 
-The opt-in [v0.3 development draft](docs/forgebench/V03_DRAFT.md) adds a bounded
-supplemental public `verify` action and two development fixtures. It is not a
-frozen protocol or evaluated release; [remaining work](docs/forgebench/V03_BACKLOG.md)
-includes new held-out families, external provenance and a simpler learned baseline.
+The earlier [v0.3 development draft](docs/forgebench/V03_DRAFT.md) is preserved as
+design history. The completed transfer pilot above adds fresh families, a licensed
+source-derived track and a simpler learned baseline under its own frozen protocol.
+The broader [research backlog](docs/forgebench/V03_BACKLOG.md) still requires
+prospective exploration with VERIFY support, real-issue external evaluation,
+matched ablations and more seeds; this pilot does not claim those are complete.

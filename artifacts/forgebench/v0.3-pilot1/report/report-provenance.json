@@ -1,0 +1,29 @@
+{
+  "freeze_sha256": "ae5156ee716a6babff6ef2871a988988c0917ec4a63b0f18bc22ad41848dd3ae",
+  "study_status": "complete",
+  "completed": 162,
+  "planned": 162,
+  "report_source_sha256": "4d4b221cd147ee9817372639dbd841eb56e66b7ab72ac5497df8590acea7b49c",
+  "analysis_source_sha256": "4cbea3d1d048218a1941c56f74c463fcd5be4feed4a1a044751fcc10087aa54f",
+  "outputs": {
+    "figures/captions.json": "30353d430cfdf9aa66bdd318af23c4316fab1fe138c1de78fb232b4ed71acbe7",
+    "figures/family-outcomes.pdf": "99e8b0b455cff5294d9c7c9188b30fc927c7894847b855a937bf406f812f0700",
+    "figures/family-outcomes.png": "894df4c5155127de5c88ad109c21fe4d1b8e7fba00f2ec7dbb9c5bb3251a1ce2",
+    "figures/family-outcomes.svg": "7c11b90dd0f7adb0a4d1ba479789e6b5a3658779b639c63abbcbf9b71a9a6d95",
+    "figures/infrastructure-sensitivity.pdf": "71becff186902bb639602ea2bddbf205bd046657d8819e72830f18264c1de271",
+    "figures/infrastructure-sensitivity.png": "83579e56567c2ad4df785ff358049a605e74938f5a3c5fa42b7487eceb339ab3",
+    "figures/infrastructure-sensitivity.svg": "db26153d35a9c01b106e7b1ebc37c98b098ecffc0f33fa384fd50a4e05a366f4",
+    "figures/success-vs-cost.pdf": "a37a5da3adfc2c3bcaa562a1978d36eea51d9ce1d77c19af85aad8d7b2621f7c",
+    "figures/success-vs-cost.png": "b46fd3502a9cae56803d17b15b3d8f5239ac8636d4a89ab7bce6b0f129f98b0f",
+    "figures/success-vs-cost.svg": "3e024028838b5d5052294fc67c93c18ff2a7d3716923e8b520a62a8320bba6de",
+    "figures/verification-and-support.pdf": "ad171e5852501d47358ad8b1a99e70bd56d28c5f39bed760eacf1aad194634b5",
+    "figures/verification-and-support.png": "0781296ae32bc70339ff491e85856e5978aefea413f1a14672704eb500559cd7",
+    "figures/verification-and-support.svg": "14997df3d92998dc262bf2f733ea054d9cc26336d0f0dd844e2674cc9ac46d68",
+    "pilot-report.md": "8ef90cf5f3a8f833a33bdb219fceed356727a62e6bf24e603eb85d5d18a3cae9",
+    "pilot-report.pdf": "d808dd69c949051773aff43ad4f5013af6941854cecfb48cff76c67045aff41b"
+  },
+  "performance_numbers_fabricated": false,
+  "task_scope": "Authored miniature programs and source-derived artificial mutations",
+  "public_inference": false,
+  "publication_status": "Technical artifact; no peer-review or preprint submission claim"
+}

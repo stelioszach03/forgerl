@@ -63,6 +63,13 @@ def metrics(run):
     caught = sum(e["passed"] < e["total"] for e in supplemental)
     success = bool(run["status"] == "completed" and run["solved"])
     decisions = [e["data"] for e in run["events"] if e["kind"] == "decision"]
+    # Post-run diagnostic only: STOP provenance is not logged symmetrically by
+    # the two frozen selectors. Keep the original counts intact below.
+    selections = [d for d in decisions if d["action"] not in ("stop", "verify")]
+    learned_sources = ("learned_q", "learned_supervised_cost")
+    selection_learned = sum(d["selection_source"] in learned_sources for d in selections)
+    selection_fallback = sum(d["selection_source"] == "heuristic_fallback" for d in selections)
+    selection_provider_retry = sum(d["selection_source"] == "provider_retry" for d in selections)
     measured_cost = sum(
         e["data"].get("cost_usd", 0.0)
         for e in run["events"]
@@ -107,6 +114,22 @@ def metrics(run):
         "fallback_decisions": sum(
             d["selection_source"] == "heuristic_fallback" for d in decisions
         ),
+        "stop_decisions": sum(d["action"] == "stop" for d in decisions),
+        "stop_fallback_decisions": sum(
+            d["action"] == "stop" and d["selection_source"] == "heuristic_fallback"
+            for d in decisions
+        ),
+        "stop_constraint_decisions": sum(
+            d["action"] == "stop" and d["selection_source"] == "constraint"
+            for d in decisions
+        ),
+        "verify_decisions": sum(d["action"] == "verify" for d in decisions),
+        "non_stop_non_verify_decisions": len(selections),
+        "non_stop_non_verify_learned_decisions": selection_learned,
+        "non_stop_non_verify_fallback_decisions": selection_fallback,
+        "non_stop_non_verify_provider_retry_decisions": selection_provider_retry,
+        "non_stop_non_verify_other_decisions": len(selections)
+        - selection_learned - selection_fallback - selection_provider_retry,
     }
 
 
@@ -221,6 +244,24 @@ def analyze(directory):
                     "fallback_decisions": sum(
                         r["fallback_decisions"] for r in selected
                     ),
+                    **{
+                        key: sum(r[key] for r in selected)
+                        for key in (
+                            "stop_decisions", "stop_fallback_decisions",
+                            "stop_constraint_decisions", "verify_decisions",
+                            "non_stop_non_verify_decisions",
+                            "non_stop_non_verify_learned_decisions",
+                            "non_stop_non_verify_fallback_decisions",
+                            "non_stop_non_verify_provider_retry_decisions",
+                            "non_stop_non_verify_other_decisions",
+                        )
+                    },
+                    "non_stop_non_verify_learned_fraction": (
+                        sum(r["non_stop_non_verify_learned_decisions"] for r in selected)
+                        / sum(r["non_stop_non_verify_decisions"] for r in selected)
+                        if sum(r["non_stop_non_verify_decisions"] for r in selected)
+                        else None
+                    ),
                     "unconfirmed_reserve_usd": sum(
                         r["unconfirmed_reserve_usd"] for r in selected
                     ),
@@ -285,6 +326,16 @@ def analyze(directory):
         "paired_family_differences": pairs,
         "confidence_intervals": None,
         "significance_claim": False,
+        "post_run_diagnostics": {
+            "selection_coverage": {
+                "added_after_execution": True,
+                "original_learned_and_fallback_counts_preserved": True,
+                "primary_scores_unchanged": True,
+                "definition": "Count recorded decision actions excluding stop and verify. Separately retain learned, heuristic_fallback, provider_retry and other source counts. The fraction denominator includes provider-retry actions; it is not a claim that retries are learned selector opportunities.",
+                "reason": "Frozen fitted-Q logs forced STOP as constraint, while the supervised selector can log the same terminal action as heuristic_fallback. Raw all-action fallback counts alone are not comparable measures of unsupported model-selection states.",
+                "stop_handling": "All STOP counts are reported separately with constraint and heuristic_fallback source counts; no event is relabeled or removed.",
+            }
+        },
         "interpretation": "Single-seed descriptive pilot. Family-weighted means use observed families; incomplete coverage prevents a full-matrix claim. All infrastructure failures retained, graded-only conditional sensitivity separate. External source-derived track never pooled.",
         "source_manifest_sha256": frozen["source_manifest"]["sha256"],
         "analysis_source_sha256": hashlib.sha256(
@@ -348,6 +399,7 @@ def main():
             report["interpretation"],
             "",
             "Full per-run metrics, reserved-cost accounting, verification outcomes and learned/fallback counts are in results.csv and analysis.json.",
+            "The original all-action learned/fallback counts are preserved. A separately labeled post-run diagnostic excludes STOP/VERIFY, reports STOP source counts and separates provider-retry actions; it does not change primary scores or the frozen protocol.",
             "",
             f"Frozen source digest: `{report['source_manifest_sha256']}`.",
             f"Frozen protocol digest: `{report['freeze_sha256']}`.",

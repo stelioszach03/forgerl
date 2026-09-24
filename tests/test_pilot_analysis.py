@@ -138,3 +138,62 @@ def test_metric_disagreement_direction_and_measurement_are_preserved():
     metrics = analysis.metrics(row)
     assert metrics["supplemental_grader_disagreement"] is True
     assert metrics["supplemental_grader_disagreement_direction"] == "false_rejection"
+
+
+def test_post_run_coverage_keeps_original_stop_labels_and_compares_nonterminal_actions():
+    row = result(
+        next(r for r in pilot.plan()["study_order"] if r["split"] == "test"),
+        success=True,
+    )
+
+    def decisions(learned_source, stop_source):
+        return [
+            {"kind": "decision", "data": {"action": "escalate", "selection_source": learned_source}},
+            {"kind": "decision", "data": {"action": "verify", "selection_source": "shared_verify_on_visible_green"}},
+            {"kind": "decision", "data": {"action": "stop", "selection_source": stop_source}},
+        ]
+
+    original_events = list(row["events"])
+    q = analysis.metrics({**row, "events": original_events + decisions("learned_q", "constraint")})
+    supervised = analysis.metrics({**row, "events": original_events + decisions("learned_supervised_cost", "heuristic_fallback")})
+    assert q["learned_decisions"] == supervised["learned_decisions"] == 1
+    assert q["fallback_decisions"] == 0
+    assert supervised["fallback_decisions"] == 1
+    assert q["stop_constraint_decisions"] == supervised["stop_fallback_decisions"] == 1
+    for metric in (q, supervised):
+        assert metric["non_stop_non_verify_decisions"] == 1
+        assert metric["non_stop_non_verify_learned_decisions"] == 1
+        assert metric["non_stop_non_verify_fallback_decisions"] == 0
+        assert metric["verify_decisions"] == metric["stop_decisions"] == 1
+    assert row["events"] == original_events
+
+
+def test_provider_retry_and_actual_repair_fallback_are_separate_diagnostic_sources():
+    row = result(
+        next(r for r in pilot.plan()["study_order"] if r["split"] == "test"),
+        success=False,
+    )
+    row["events"].extend([
+        {"kind": "decision", "data": {"action": "repair", "selection_source": "provider_retry"}},
+        {"kind": "decision", "data": {"action": "repair", "selection_source": "heuristic_fallback"}},
+        {"kind": "decision", "data": {"action": "retry", "selection_source": "baseline"}},
+    ])
+    metric = analysis.metrics(row)
+    assert metric["non_stop_non_verify_decisions"] == 3
+    assert metric["non_stop_non_verify_learned_decisions"] == 0
+    assert metric["non_stop_non_verify_provider_retry_decisions"] == 1
+    assert metric["non_stop_non_verify_fallback_decisions"] == 1
+    assert metric["non_stop_non_verify_other_decisions"] == 1
+    assert metric["fallback_decisions"] == 1
+
+
+def test_coverage_diagnostic_is_labeled_post_run_without_changing_primary_scores(tmp_path):
+    study(tmp_path)
+    report, _ = analysis.analyze(tmp_path)
+    diagnostic = report["post_run_diagnostics"]["selection_coverage"]
+    assert diagnostic["added_after_execution"]
+    assert diagnostic["original_learned_and_fallback_counts_preserved"]
+    assert diagnostic["primary_scores_unchanged"]
+    for summary in report["summary"]:
+        assert summary["non_stop_non_verify_decisions"] == 0
+        assert summary["non_stop_non_verify_learned_fraction"] is None

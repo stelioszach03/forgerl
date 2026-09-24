@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased — v0.3 development foundation
+## v0.3 transfer pilot — 24 September 2026
+
+- Complete 162 prespecified episodes under a committed freeze: six policies, 24 fresh authored tasks and three separately reported BSD-licensed source-derived mutation tasks.
+- Fit the existing Q method and a simpler observed-return baseline on historical training transitions only; keep the shared verification rule explicitly unlearned.
+- Publish every trace, failure, accounted cost, reconciled analysis and a six-page technical report with scientific figures. Primary test successes: strong 16/18, cheap 15/18, escalation 16/18, hand-written 15/18, fitted-Q 16/18, supervised 17/18. One seed and six test families do not establish superiority.
+- Preserve all-action metrics and add a clearly post-run diagnostic to distinguish terminal STOP bookkeeping from nonterminal learned/fallback selections.
+- Keep v0.2 data and public explorer intact; link the new pilot report separately. This is a research pilot, not the full v0.3 agenda or a preprint submission.
+
+## Earlier v0.3 development foundation
 
 - Add an opt-in supplemental public verification action, with candidate-hash binding, per-candidate/episode limits and explicit tool/time accounting; final hidden grading remains separate.
 - Add two development-only fixtures, focused tests, a no-inference plan command and an unfrozen protocol draft/backlog. No new model evaluations or performance claims.
