@@ -1,6 +1,8 @@
 # ForgeBench v0.3 prospective transfer pilot
 
-**Draft pending review and an immutable freeze commit. No pilot model calls yet.**
+**Frozen on 2026-09-24 at 02:30:45 UTC, before pilot model calls.** The
+[immutable freeze artifact](v03-pilot-frozen.json) records the reviewed runtime,
+catalog, trained controllers, provider snapshot and real sandbox fixture receipt.
 This is a small pilot, not completion of the full v0.3 research backlog. Published
 v0.2 source/data/results stay unchanged. All pilot outcomes, including negative
 results and infrastructure failures, must be reported.
