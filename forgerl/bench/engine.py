@@ -166,6 +166,25 @@ class RepoEpisode:
             "retries": self.retries,
         }
 
+    def legal_actions(self, state):
+        return router.allowed_actions(state)
+
+    def stop_after_visible_success(self):
+        """The released v0.2 stopping rule; later protocols opt in separately."""
+        return True
+
+    def feedback(self, action):
+        return {
+            "passed": self.public["passed"],
+            "total": self.public["total"],
+            "cases": bounded_visible_cases(self.public.get("cases", [])),
+            "attempt": self.attempts + 1,
+            "action": action,
+            "instruction": "Repair the visible failures while preserving currently passing behavior."
+            if action == "repair"
+            else "Produce a complete candidate using the task specification and visible feedback.",
+        }
+
     async def check(self, hidden=False):
         self.tool_calls += 1
         await self.emit(
@@ -221,7 +240,7 @@ class RepoEpisode:
         self.public_measured = True
         self.best_public = copy.deepcopy(self.public)
         self.had_visible_failure = self.public["passed"] < self.public["total"]
-        if not self.had_visible_failure:
+        if not self.had_visible_failure and self.stop_after_visible_success():
             self.terminal, self.stop_reason = True, "visible_tests_already_pass"
         return self.observation()
 
@@ -235,7 +254,7 @@ class RepoEpisode:
         if self.terminal:
             return self.observation()
         state = self.observation()
-        if action not in router.allowed_actions(state):
+        if action not in self.legal_actions(state):
             raise ValueError("Illegal bounded routing action")
         self.decisions += 1
         self.learned_decisions += selection_source == "learned_q"
@@ -285,16 +304,7 @@ class RepoEpisode:
                 and self.attempts > 0
                 and self.current_model != "strong"
             )
-            feedback = {
-                "passed": self.public["passed"],
-                "total": self.public["total"],
-                "cases": bounded_visible_cases(self.public.get("cases", [])),
-                "attempt": self.attempts + 1,
-                "action": action,
-                "instruction": "Repair the visible failures while preserving currently passing behavior."
-                if action == "repair"
-                else "Produce a complete candidate using the task specification and visible feedback.",
-            }
+            feedback = self.feedback(action)
             try:
                 request_token_bound = 0
                 estimator = getattr(self.provider, "estimate_reservation_usd", None)
@@ -624,6 +634,7 @@ class RepoEpisode:
                 if (
                     self.public["total"]
                     and self.public["passed"] == self.public["total"]
+                    and self.stop_after_visible_success()
                 ):
                     self.terminal, self.stop_reason = True, "visible_tests_pass"
         if not self.terminal and (

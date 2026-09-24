@@ -109,3 +109,8 @@ Report generation requires Matplotlib and ReportLab; it makes no model calls. A 
 See [the maintenance policy](docs/forgebench/MAINTENANCE.md) and [changelog](CHANGELOG.md). New families, model endpoints and ablations receive a new frozen protocol and release. Completed experiments determine the “last benchmark run” field; cosmetic commits and scheduled checks do not update it. The next target is broader task diversity and held-out families before scaling the task count toward 200+.
 
 Code and authored benchmark fixtures are MIT licensed. Existing SZ branding is excluded; see [NOTICE](NOTICE).
+
+The opt-in [v0.3 development draft](docs/forgebench/V03_DRAFT.md) adds a bounded
+supplemental public `verify` action and two development fixtures. It is not a
+frozen protocol or evaluated release; [remaining work](docs/forgebench/V03_BACKLOG.md)
+includes new held-out families, external provenance and a simpler learned baseline.

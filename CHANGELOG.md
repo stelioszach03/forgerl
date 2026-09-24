@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — v0.3 development foundation
+
+- Add an opt-in supplemental public verification action, with candidate-hash binding, per-candidate/episode limits and explicit tool/time accounting; final hidden grading remains separate.
+- Add two development-only fixtures, focused tests, a no-inference plan command and an unfrozen protocol draft/backlog. No new model evaluations or performance claims.
+- Preserve released v0.2 task fixtures, behavior and evidence; reject reuse of the old learned controller in the new development harness.
+- Audit the preserved three-seed training transitions without fitting a model or reading evaluation outcomes; record observed action support and missing behavior propensities instead of inventing off-policy evidence.
+
 ## v0.2.1
 
 - Clarify historical HTTP 429 failures, unmeasured tests and retained budget reserves in the run inspector.
