@@ -131,6 +131,8 @@ Examples are in `ops/recruiter-broker.service.example` and
 5. Configure the public process only with `FORGERL_RECRUITER_BROKER_SOCKET` and
    the same origins. Preserve `FORGERL_PUBLIC_INFERENCE=0`, `FORGERL_WORKER=0`.
    Apply the example filesystem restrictions after checking real service paths.
+   The optional `-/run/forgebench-executor` restriction tolerates an absent
+   executor runtime directory at boot; UID/group permissions still deny access.
 6. Keep public Uvicorn reachable only through the local trusted reverse proxy.
    Trust forwarded addresses only from that proxy; Nginx should replace
    `X-Forwarded-For` with `$remote_addr` and set the correct HTTPS scheme. The

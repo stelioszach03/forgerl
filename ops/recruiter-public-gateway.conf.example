@@ -7,4 +7,4 @@ Environment=FORGERL_PUBLIC_INFERENCE=0
 Environment=FORGERL_WORKER=0
 Environment=FORGERL_RECRUITER_BROKER_SOCKET=/run/forgerl-recruiter/broker.sock
 Environment=FORGERL_RECRUITER_ORIGINS=https://forge.stelioszach.com,https://stelioszach.com
-InaccessiblePaths=/etc/forgerl /var/lib/forgerl /run/forgebench-executor
+InaccessiblePaths=/etc/forgerl /var/lib/forgerl -/run/forgebench-executor
