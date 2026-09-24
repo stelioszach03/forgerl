@@ -1,7 +1,7 @@
 /* Read-only artifact explorer. No inference, browser execution or HTML from artifacts. */
 (() => {
   "use strict";
-  const POLICIES = [
+  const V2_POLICIES = [
     ["strong_only", "Strong model only", "Same call budget; stronger endpoint"],
     ["cheap_only", "Cheap model only", "Same call budget; cheaper endpoint"],
     [
@@ -16,6 +16,17 @@
     ],
     ["adaptive", "ForgeRL adaptive", "Learned values; declared fallback"],
   ];
+  const PILOT_POLICIES = [
+    ...V2_POLICIES.slice(0, 4),
+    ["adaptive", "Fitted-Q transfer", "Historical training only; shared VERIFY rule"],
+    ["supervised_cost", "Supervised return", "Simpler observed-return baseline; shared VERIFY"],
+  ];
+  let POLICIES = V2_POLICIES;
+  const resolveVersion = (query) => {
+    const explicit = query.get("version");
+    if (["v0.2", "v0.3-pilot1"].includes(explicit)) return explicit;
+    return query.has("task") || query.has("run") ? "v0.2" : "v0.3-pilot1";
+  };
   const CATEGORIES = {
     bug_fix: "Bug fixing",
     multi_file: "Multi-file change",
@@ -28,6 +39,7 @@
     train: "Training",
     validation: "Validation",
     test: "Held-out test",
+    external: "Source-derived",
   };
   const numeric = (value) =>
     typeof value === "number" && Number.isFinite(value);
@@ -156,6 +168,7 @@
     validId,
     stateOf,
     date,
+    resolveVersion,
   };
   if (typeof module !== "undefined" && module.exports) module.exports = helpers;
   if (typeof document === "undefined") return;
@@ -167,9 +180,14 @@
     run: null,
     taskRequest: 0,
     runRequest: 0,
+    loadRequest: 0,
+    version: resolveVersion(new URL(window.location.href).searchParams),
+    comparisonSplit: "test",
+    replayCursor: null,
+    replayTimer: null,
   };
   const base = new URL("./", window.location.href);
-  const apiURL = (route) => new URL(`api/forgebench${route}`, base).href;
+  const apiURL = (route) => new URL(`api/forgebench${state.version === "v0.3-pilot1" ? "/versions/v0.3-pilot1" : ""}${route}`, base).href;
   const node = (tag, text, className) => {
     const el = document.createElement(tag);
     if (text != null) el.textContent = String(text);
@@ -221,7 +239,8 @@
   }
   function showBenchmark(benchmark) {
     state.benchmark = record(benchmark);
-    const summary = list(benchmark.summary),
+    $("result-artifact").href = apiURL("");
+    const summary = comparisonRows(),
       coverage = record(benchmark.coverage),
       provenance = record(benchmark.provenance);
     const measured = summary.filter((row) => numeric(row.n) && row.n > 0);
@@ -276,12 +295,12 @@
     );
     setText(
       "episode-split",
-      numeric(coverage.training_completed)
+      numeric(coverage.training_completed) && coverage.training_completed > 0
         ? `${count(coverage.completed)} evaluation · ${count(coverage.training_completed)} training`
-        : "",
+        : "Recorded evaluation episodes",
     );
     const coverageParts = [];
-    if (numeric(coverage.training_completed))
+    if (numeric(coverage.training_completed) && coverage.training_completed > 0)
       coverageParts.push(
         `${count(coverage.training_completed)} training trajectories are separately inspectable and excluded from the comparison.`,
       );
@@ -324,13 +343,22 @@
           )
           .join(" · "),
       );
-    if (coverage.summary_split === "test") {
-      setText("comparison-title", "Five policies. Held-out test split.");
+    if (state.version === "v0.3-pilot1") {
+      setText("comparison-title", `Six policies. ${state.comparisonSplit === "test" ? "Primary test sample." : state.comparisonSplit === "validation" ? "Validation sample." : "Source-derived sample."}`);
+      setText("comparison-note", "Each sample is shown separately. Primary success and cost are equally family-weighted; related task variants are not independent. VERIFY is a shared fixed rule, not a learned action. A single seed does not establish superiority.");
+      setText("controller-explanation", "Six policies compare retry, repair, escalation, rollback and stopping. Both learned selectors use historical training only. Every policy shares the same verify-on-visible-green rule; VERIFY was not learned. Final hidden grading never guides a repair.");
+    } else {
+      setText("comparison-title", coverage.summary_split === "test" ? "Five policies. Held-out test split." : "Five policies. One protocol.");
       setText(
         "comparison-note",
         "Chart and table show held-out test episodes only. Overall coverage above includes validation. Hidden-test pass rate is per graded check; task success is per attempted episode. After-repair success is conditional on repeated attempts.",
       );
+      setText("controller-explanation", "The policy can retry, repair, escalate, roll back or stop. Language-model weights remain unchanged. A learned controller uses training transitions; unseen states use a declared fallback.");
     }
+    $("verify-column").hidden = state.version !== "v0.3-pilot1";
+    $("comparison-split-control").hidden = state.version !== "v0.3-pilot1";
+    const walkthroughs = record(benchmark.walkthroughs);
+    $("walkthrough-entry").hidden = !walkthroughs.repair || !walkthroughs.verification_miss;
     if (numeric(coverage.evaluated_unique_tasks))
       coverageParts.push(
         `${count(coverage.evaluated_unique_tasks)} unique tasks evaluated.`,
@@ -384,6 +412,9 @@
     }
     $("artifact-downloads").hidden = availableDownloads === 0;
   }
+  function comparisonRows() {
+    return list(record(state.benchmark?.summary_by_split)[state.comparisonSplit] || state.benchmark?.summary);
+  }
   function renderPolicies(summary) {
     const body = $("policy-table");
     body.replaceChildren();
@@ -422,8 +453,11 @@
           cell.append(
             node("small", `${count(row.graded_runs)} / ${count(row.n)} graded`),
           );
+        if (measured && index === 4 && numeric(row.token_measured_episodes ?? row.token_measured_runs))
+          cell.append(node("small", `${count(row.token_measured_episodes ?? row.token_measured_runs)} / ${count(row.n)} measured`));
         tr.append(cell);
       }
+      if (state.version === "v0.3-pilot1") tr.append(node("td", measured ? mean(row.mean_verification_calls) : "—"));
       body.append(tr);
     }
   }
@@ -494,7 +528,7 @@
       top = 25,
       bottom = 231;
     const maxCost =
-      Math.max(...eligible.map((row) => row.mean_cost_usd), 0.001) * 1.12;
+      Math.max(...eligible.map((row) => row.mean_cost_usd), 0.000001) * 1.18;
     for (let i = 0; i <= 4; i++) {
       const y = bottom - ((bottom - top) * i) / 4;
       svg.append(
@@ -587,7 +621,7 @@
       );
     setText(
       "catalog-summary",
-      `${count(state.tasks.length)} authored tasks · ${count(families.size)} families${files ? ` · ${count(files)} source files` : ""}`,
+      `${count(state.tasks.length)} ${state.version === "v0.3-pilot1" ? "recorded tasks" : "authored tasks"} · ${count(families.size)} families${files ? ` · ${count(files)} source files` : ""}`,
     );
     const categories = [
       ...new Set(state.tasks.map((task) => task.category).filter(Boolean)),
@@ -792,6 +826,9 @@
     selectRun(selected.id);
   }
   function clearRun(message) {
+    stopReplay();
+    state.replayCursor = null;
+    $("replay-controls").hidden = true;
     state.run = null;
     $("run-context").hidden = true;
     $("next-recorded-seed").hidden = true;
@@ -877,6 +914,10 @@
       context.push(
         `${money(reserve)} was retained conservatively in the experiment budget because the failed request returned no verified billing amount. This reserve is not a confirmed charge.`,
       );
+    if (run.verification_grader_disagreement_direction === "missed_failure")
+      context.push("Supplemental public checks passed, but the final hidden grader found a failure. This recorded task remains not solved.");
+    else if (run.verification_grader_disagreement_direction === "false_rejection")
+      context.push("Supplemental checks and final grading disagree. Task success follows the original visible checks and final hidden grader; both signals are retained.");
     setText("run-context", context.join(" "));
     $("run-context").hidden = context.length === 0;
     const nextSeed =
@@ -918,6 +959,12 @@
     ]);
     setText("event-count", count(events.length));
     renderEvents(events);
+    $("replay-controls").hidden = !events.length;
+    $("replay-step").max = String(Math.max(1, events.length));
+    $("replay-step").value = "1";
+    $("replay-next").disabled = false;
+    setText("replay-position", `all ${count(events.length)} events`);
+    setText("replay-status", "Playback only. No new model request.");
     renderDiff(
       typeof run.diff === "string"
         ? run.diff
@@ -953,8 +1000,14 @@
       ["Success after repair", yesNo(metric("success_after_repair"))],
       ["Escalations", count(metric("escalations"))],
       ["Rollbacks", count(metric("rollbacks"))],
-      ["Learned decisions", count(metric("learned_decisions"))],
-      ["Fallback decisions", count(metric("fallback_decisions"))],
+      ["All-action learned labels", count(metric("learned_decisions"))],
+      ["All-action fallback labels", count(metric("fallback_decisions"))],
+      ...(state.version === "v0.3-pilot1" ? [
+        ["Supplemental VERIFY calls", count(metric("verification_calls"))],
+        ["Final candidate supplemental checks", ratio(metric("verification_passed"), metric("verification_total"))],
+        ["Supplemental / final disagreement", metric("verification_grader_disagreement") == null ? "Not measured" : metric("verification_grader_disagreement") ? readable(metric("verification_grader_disagreement_direction")) : "No"],
+        ["VERIFY policy", "Shared fixed rule; not learned"],
+      ] : []),
     ]);
     const failures = list(metric("failure_labels"));
     setText(
@@ -1044,6 +1097,7 @@
         body.append(details);
       }
       item.append(body);
+      item.dataset.eventIndex = String(index);
       container.append(item);
     });
   }
@@ -1051,7 +1105,7 @@
     if (kind === "decision")
       return `Action: ${readable(data.action)} · Selection: ${readable(data.selection_source)}`;
     if (kind === "tests")
-      return `${data.visibility === "hidden" ? "Hidden" : "Visible"} checks: ${ratio(data.passed, data.total)}${data.execution_error ? ` · ${data.execution_error}` : ""}`;
+      return `${data.visibility === "hidden" ? "Final hidden" : data.visibility === "public_supplemental" ? "Supplemental public VERIFY" : "Original visible"} checks: ${ratio(data.passed, data.total)}${data.execution_error ? ` · ${data.execution_error}` : ""}`;
     if (kind === "tool_call")
       return `${data.tool || "Recorded tool"} · ${readable(data.visibility)} checks${data.orchestrated ? " · Harness-orchestrated execution" : ""}`;
     if (kind === "inference")
@@ -1100,7 +1154,7 @@
         .filter(
           (event) =>
             event.kind === "tests" &&
-            record(event.data).visibility !== "hidden" &&
+            !["hidden", "public_supplemental"].includes(record(event.data).visibility) &&
             Array.isArray(record(event.data).cases),
         )
         .at(-1),
@@ -1116,7 +1170,8 @@
       );
     const container = $("run-tests");
     container.replaceChildren();
-    for (const [label, result, passed, total, hidden] of [
+    const supplemental = list(run.events).find(event => event.seq === record(run.explorer).final_verification_event_seq && event.kind === "tests" && record(event.data).visibility === "public_supplemental");
+    const groups = [
       [
         "Visible checks",
         publicResult,
@@ -1131,7 +1186,9 @@
         metricValue(run, "heldout_total"),
         true,
       ],
-    ]) {
+    ];
+    if (state.version === "v0.3-pilot1") groups.splice(1, 0, ["Supplemental public VERIFY", numeric(metricValue(run, "verification_passed")) ? record(supplemental?.data) : {}, metricValue(run, "verification_passed"), metricValue(run, "verification_total"), false]);
+    for (const [label, result, passed, total, hidden] of groups) {
       const section = node("section", null, "test-group"),
         heading = node("h4", label);
       heading.append(
@@ -1162,9 +1219,11 @@
       section.append(
         node(
           "p",
-          hidden
+          label === "Supplemental public VERIFY"
+            ? numeric(passed) ? "Author-written public checks on the final candidate. Passing these is not the final success criterion; the hidden grader can still find a failure." : "The final candidate has no recorded supplemental result. Earlier candidate checks, if any, remain in the trajectory."
+            : hidden
             ? numeric(passed ?? result.passed)
-              ? "Final evaluation only. Hidden inputs and expected outputs are not published."
+              ? "Final evaluation only. Hidden inputs and expected outputs are not shown in this explorer; the research source is public."
               : "No completed hidden evaluation recorded. This is not a zero pass rate."
             : list(result.cases).length
               ? "Visible failures may inform the next decision; earlier test executions remain in the trajectory."
@@ -1184,6 +1243,66 @@
       if (selected && focus) tab.focus();
     }
   }
+  function stopReplay() {
+    if (state.replayTimer) window.clearInterval(state.replayTimer);
+    state.replayTimer = null;
+    setText("replay-play", "Play recorded trace");
+  }
+  function replayAt(index) {
+    const events = list(state.run?.events);
+    if (!events.length) return;
+    state.replayCursor = Math.max(0, Math.min(events.length - 1, index));
+    for (const item of $("trajectory").children) {
+      const n = Number(item.dataset.eventIndex);
+      item.hidden = n > state.replayCursor;
+      item.classList.toggle("replay-current", n === state.replayCursor);
+    }
+    $("replay-step").value = String(state.replayCursor + 1);
+    setText("replay-position", `${state.replayCursor + 1} / ${events.length}`);
+    setText("replay-status", `Recorded playback: ${events[state.replayCursor].title || readable(events[state.replayCursor].kind)}. No inference is running.`);
+    $("replay-next").disabled = state.replayCursor >= events.length - 1;
+    if (state.replayCursor >= events.length - 1) stopReplay();
+  }
+  $("replay-play").addEventListener("click", () => {
+    if (state.replayTimer) { stopReplay(); return; }
+    const events = list(state.run?.events);
+    if (!events.length) return;
+    replayAt(state.replayCursor === null || state.replayCursor >= events.length - 1 ? 0 : state.replayCursor);
+    setText("replay-play", "Pause playback");
+    state.replayTimer = window.setInterval(() => replayAt(state.replayCursor + 1), 1400);
+  });
+  $("replay-next").addEventListener("click", () => { stopReplay(); replayAt(state.replayCursor === null ? 0 : state.replayCursor + 1); });
+  $("replay-step").addEventListener("input", () => { stopReplay(); replayAt(Number($("replay-step").value) - 1); });
+  $("replay-all").addEventListener("click", () => {
+    stopReplay(); state.replayCursor = null;
+    for (const item of $("trajectory").children) { item.hidden = false; item.classList.remove("replay-current"); }
+    setText("replay-position", `all ${count(list(state.run?.events).length)} events`);
+    setText("replay-status", "All recorded events shown. No model request.");
+    $("replay-next").disabled = false;
+  });
+  async function walkthrough(kind) {
+    const target = record(record(state.benchmark?.walkthroughs)[kind]);
+    if (!validId(target.task_id) || !validId(target.run_id)) return;
+    $("task-search").value = ""; $("category-filter").value = ""; $("split-filter").value = "";
+    renderTaskList();
+    await selectTask(target.task_id, target.run_id);
+    selectPanel(kind === "verification_miss" ? "tests" : "patch");
+    $("run-title").scrollIntoView({ behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+  }
+  $("walkthrough-repair").addEventListener("click", () => walkthrough("repair"));
+  $("walkthrough-miss").addEventListener("click", () => walkthrough("verification_miss"));
+  $("comparison-split").addEventListener("change", () => {
+    state.comparisonSplit = $("comparison-split").value;
+    showBenchmark(state.benchmark);
+    announce(`Comparison sample: ${$("comparison-split").selectedOptions[0].textContent}.`);
+  });
+  $("study-select").addEventListener("change", () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("version", $("study-select").value);
+    url.searchParams.delete("task"); url.searchParams.delete("run");
+    history.replaceState({}, "", url);
+    init($("study-select").value);
+  });
   $("filter-form").addEventListener("submit", (event) =>
     event.preventDefault(),
   );
@@ -1227,8 +1346,22 @@
       }
     });
   });
-  async function init() {
+  async function init(version = state.version) {
+    const generation = ++state.loadRequest;
+    ++state.taskRequest; ++state.runRequest;
+    state.version = version; state.comparisonSplit = "test";
+    POLICIES = version === "v0.3-pilot1" ? PILOT_POLICIES : V2_POLICIES;
+    state.task = null; state.tasks = []; state.benchmark = null;
+    clearRun("Loading this study’s recorded evidence…");
+    $("study-select").value = version; $("comparison-split").value = "test";
+    $("task-search").value = ""; $("category-filter").value = "";
+    $("split-filter").replaceChildren(new Option("All splits", ""), ...(
+      version === "v0.3-pilot1" ? [["test", "Primary test"], ["validation", "Validation"], ["external", "Source-derived"]] : [["train", "Training"], ["validation", "Validation"], ["test", "Held-out test"]]
+    ).map(([value, label]) => new Option(label, value)));
+    $("load-error").hidden = true;
+    const url = new URL(window.location.href); url.searchParams.set("version", version); history.replaceState({}, "", url);
     const results = await Promise.allSettled([request(""), request("/tasks")]);
+    if (generation !== state.loadRequest) return;
     if (results[0].status === "fulfilled") showBenchmark(results[0].value);
     else {
       showBenchmark({ status: "unavailable", summary: [], runs: [] });
@@ -1261,7 +1394,7 @@
   window.addEventListener("resize", () => {
     if (resizeFrame) cancelAnimationFrame(resizeFrame);
     resizeFrame = requestAnimationFrame(() => {
-      if (state.benchmark) renderChart(list(state.benchmark.summary));
+      if (state.benchmark) renderChart(comparisonRows());
     });
   });
   init();

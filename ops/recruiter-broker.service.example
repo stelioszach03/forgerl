@@ -1,0 +1,41 @@
+[Unit]
+Description=ForgeRL optional private curated recruiter trial
+After=network-online.target forgebench-executor.service
+Requires=forgebench-executor.service
+
+[Service]
+Type=exec
+User=forgerl-api
+Group=forgerl-recruiter-client
+SupplementaryGroups=forgerl-api
+WorkingDirectory=/srv/forgerl/recruiter-code
+ExecStart=/srv/forgerl/app/.venv/bin/python scripts/recruiter_broker.py --socket /run/forgerl-recruiter/broker.sock
+Environment=FORGERL_RECRUITER_WORKER_ENABLED=1
+Environment=FORGERL_RECRUITER_LEDGER=/var/lib/forgerl/forgerl.sqlite3
+Environment=FORGERL_EXECUTOR_SOCKET=/run/forgebench-executor/executor.sock
+Environment=FORGERL_RECRUITER_ORIGINS=https://forge.stelioszach.com,https://stelioszach.com
+Environment=PYTHONDONTWRITEBYTECODE=1
+LoadCredential=openrouter-key:/etc/forgerl/openrouter.key
+LoadCredential=recruiter-session-secret:/etc/forgerl/recruiter-session.secret
+RuntimeDirectory=forgerl-recruiter
+RuntimeDirectoryMode=0750
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/forgerl /run/forgerl-recruiter
+MemoryMax=512M
+CPUQuota=100%
+TasksMax=64
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,10 @@
+# Optional drop-in for the EXISTING read-only public service, after review.
+# The new group grants only the private broker socket, never API keys or the
+# executor socket. Keep the legacy public inference switch disabled.
+[Service]
+SupplementaryGroups=forgerl-recruiter-client
+Environment=FORGERL_PUBLIC_INFERENCE=0
+Environment=FORGERL_WORKER=0
+Environment=FORGERL_RECRUITER_BROKER_SOCKET=/run/forgerl-recruiter/broker.sock
+Environment=FORGERL_RECRUITER_ORIGINS=https://forge.stelioszach.com,https://stelioszach.com
+InaccessiblePaths=/etc/forgerl /var/lib/forgerl /run/forgebench-executor

@@ -1,5 +1,22 @@
 # ForgeBench v0.3 implementation backlog
 
+**Status update, September 24, 2026:** this is the original broad research plan,
+not a list of prerequisites still blocking the recruiter demo. The separately
+frozen [prospective transfer pilot](V03_PILOT_PROTOCOL.md) is complete: 162 real
+episodes, six policies, eight new authored families and one licensed
+source-derived family. It includes shared VERIFY, a train-only supervised
+observed-return baseline, frozen provenance, actual analysis and a technical
+report. The native versioned explorer now presents that evidence alongside v0.2,
+with three test stages, recorded replay, downloads and separate samples; see
+[recruiter serving and optional bounded trial](../RECRUITER_DEMO.md).
+
+The pilot implements bounded versions of F03-01–08 and F03-11–12. It does **not**
+complete adaptive learned verification, real upstream issue evaluation,
+multi-seed external validation, causal/off-policy claims, the predeclared
+ablations in F03-09, independent human failure annotation in F03-10, or a reviewed
+research publication. The original estimates below are historical planning
+ranges for that wider program and must not be reused as remaining-demo effort.
+
 Effort ranges are engineering estimates, not wall-clock promises or permission to
 spend. Evidence and acceptance gates take precedence over a target release date.
 The current release is v0.2.1; its completed v0.2 evidence is already published.

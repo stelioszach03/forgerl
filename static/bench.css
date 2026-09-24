@@ -14,6 +14,94 @@
   --mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
   --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
+
+/* Study selection and replay keep the working surface ahead of presentation. */
+.study-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  align-items: end;
+  margin: 22px 0 30px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+.study-controls label, .replay-controls label {
+  display: block;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+.study-controls select {
+  min-height: 46px;
+  max-width: 100%;
+  padding: 9px 32px 9px 12px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+.recorded-mode { margin-left: auto; color: var(--accent); font-size: 13px; }
+.recorded-mode small { color: var(--muted); font-size: 12px; }
+.mode-dot { display: inline-block; width: 6px; height: 6px; margin-right: 7px; border-radius: 50%; background: var(--accent); }
+.walkthrough-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 0 26px;
+}
+.walkthrough-entry p:not(.eyebrow) { max-width: 530px; color: var(--muted); font-size: 13px; }
+.walkthrough-actions, .replay-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.primary-action, .quiet-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 44px;
+  padding: 10px 15px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 650;
+}
+.primary-action { color: var(--bg); background: var(--accent); border-color: var(--accent); }
+.primary-action:hover { background: #a1ead9; border-color: #a1ead9; }
+.quiet-action { color: var(--text); background: transparent; }
+.quiet-action:hover { border-color: var(--accent); color: var(--accent); }
+.replay-controls { border-bottom: 1px solid var(--line); margin: 0 0 20px; padding: 0 0 20px; }
+.replay-controls label { margin-top: 15px; }
+.replay-controls input[type="range"] { width: min(100%, 580px); accent-color: var(--accent); cursor: pointer; min-height: 32px; }
+.replay-controls p { margin-top: 8px; }
+.trace-event.replay-current { border-left-color: var(--accent); background: rgba(115, 217, 193, 0.04); }
+.trace-event.replay-current .trace-number { color: var(--accent); }
+.live-trial-section { border-top: 1px solid var(--line); padding: 42px 0; }
+.live-trial-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; }
+.live-description { max-width: 540px; color: var(--muted); }
+.live-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 16px; }
+.live-boundaries { margin-top: 22px; color: var(--muted); font-size: 12px; }
+.live-boundaries summary { min-height: 36px; cursor: pointer; color: var(--text); }
+.live-observation { border-left: 1px solid var(--line); padding-left: 26px; min-width: 0; }
+.live-events { padding-left: 19px; color: var(--muted); font-size: 12px; margin-top: 20px; }
+#live-patch-section { margin-top: 24px; }
+#live-patch-section > summary { cursor: pointer; padding: 14px 0; color: var(--accent); }
+#run-title { scroll-margin-top: 110px; }
+@media (max-width: 760px) {
+  .live-trial-layout { grid-template-columns: 1fr; gap: 22px; }
+  .live-observation { border-left: 0; border-top: 1px solid var(--line); padding: 20px 0 0; }
+  .study-controls { gap: 16px; }
+  .study-controls > div { flex: 1 1 190px; min-width: 0; }
+  .study-controls select { width: 100%; }
+  .recorded-mode { margin-left: 0; flex-basis: 100%; }
+  .walkthrough-entry { align-items: start; flex-direction: column; gap: 14px; }
+  .walkthrough-actions { width: 100%; }
+  .walkthrough-actions button { flex: 1 1 170px; }
+  .replay-actions button { flex: 1 1 125px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .trace-event.replay-current { animation: recorded-step-in 180ms ease-out; }
+  @keyframes recorded-step-in { from { opacity: .55; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+}
 * {
   box-sizing: border-box;
 }

@@ -7,7 +7,7 @@
 | Research status | Evidence |
 | --- | --- |
 | Last completed benchmark | September 24, 2026 · [prospective v0.3 transfer pilot](artifacts/forgebench/v0.3-pilot1/report/pilot-report.md) |
-| Stable dashboard catalog | ForgeBench v0.2 · 50 authored scenarios / 10 miniature repository families |
+| Native explorer catalogs | v0.3 transfer pilot · 27 tasks / 9 families; separately preserved v0.2 · 50 scenarios / 10 families |
 | Latest pilot evaluation | Complete · 162/162 episodes, 24 new authored tasks + 3 licensed source-derived tasks, six policies |
 | Preserved v0.2 evaluation | Complete · 300/300 evaluation episodes and 180/180 training episodes |
 | Models in the v0.2 protocol | GPT-OSS-20B and GPT-OSS-120B through a pinned OpenRouter provider |
@@ -44,7 +44,10 @@ $0.030646 shared-ledger pilot delta are retained, including uncertain reserves.
 [Results and figures](artifacts/forgebench/v0.3-pilot1/report/pilot-report.md) ·
 [Full recorded study](artifacts/forgebench/v0.3-pilot1/study) ·
 [Machine-readable analysis](artifacts/forgebench/v0.3-pilot1/analysis/analysis.json).
-The live explorer continues to show the separately preserved v0.2 dataset. The
+The native explorer opens the v0.3 pilot and keeps v0.2 available in its study
+selector. **Inspect a real repair** and **See a verification miss** open actual
+recorded runs; replay makes no model requests. Primary, validation and
+source-derived samples stay separate. The
 pilot report is a technical artifact, not a peer-reviewed paper or submitted
 preprint. The broader v0.3 research backlog remains distinct from this pilot.
 
@@ -101,7 +104,7 @@ Operator-run research
 Public VPS 24/7: Nginx → read-only FastAPI → evidence dashboard
 ```
 
-The public site cannot start inference, accept repository uploads or invoke a shell. Model credentials stay in private systemd credentials on the research host. There is no permanently allocated GPU. OpenRouter controlled runs pin the provider endpoint and quantization and disable fallback; the development `:floor` profile is a separate treatment. Provider checkpoint revisions remain unspecified when the service does not expose them.
+The default public explorer cannot start inference, accept repository uploads or invoke a shell. An optional, disabled-by-default [curated live trial](docs/RECRUITER_DEMO.md) uses a separate private worker for one fixed task and one model request, with persistent $0.05/day and $1/month public allowances inside the original lifetime caps. It is separate from every benchmark result. The public API receives no model credential, ledger access or executor socket. There is no permanently allocated GPU. OpenRouter controlled runs pin the provider endpoint and quantization and disable fallback; the development `:floor` profile is a separate treatment. Provider checkpoint revisions remain unspecified when the service does not expose them.
 
 Limits are enforced at the provider key, persistent ledger, study and episode levels. Default episodes allow at most six model calls, ten routing decisions, two repeat actions, three invalid candidates and a conservative 100,000-token bound. Existing charges survive restarts. Credit purchase fees are not included in per-call inference accounting. There is no automatic budget reset.
 

@@ -536,8 +536,14 @@ def benchmark():
 
 
 from .bench.api import router as bench_router
+from .bench.pilot_view import router as pilot_router
+from .recruiter.gateway import router as recruiter_gateway
+from .recruiter.gateway import RecruiterNoStoreMiddleware
 
 app.include_router(bench_router)
+app.include_router(pilot_router)
+app.include_router(recruiter_gateway)
+app.add_middleware(RecruiterNoStoreMiddleware)
 
 
 @app.get("/", include_in_schema=False)

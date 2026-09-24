@@ -1,0 +1,2260 @@
+{
+  "tasks": [
+    {
+      "allowed_edit_files": [
+        "codec.py",
+        "frame.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Decode alternating (count,value) byte pairs. Every value is a strict integer in [0,255], boolean rejected; count=0 and odd length are errors. Expand runs in order. Validate strict nonnegative integer decoded length and strict integer checksum equal to sum(decoded)%256; any failure raises ValueError. Empty encoded input is valid with length=0/checksum=0.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "binary_protocol",
+      "files": {
+        "codec.py": "def decode(values):\n    if any(type(v) is not int or not 0 <= v <= 255 for v in values):\n        raise ValueError(\"invalid byte\")\n    if len(values) % 2:\n        raise ValueError(\"incomplete run\")\n    result = []\n    for i in range(0, len(values), 2):\n        count, value = values[i:i+2]\n        if count == 0:\n            raise ValueError(\"zero run\")\n        result.extend([value] * (count + 1))\n    return result\n",
+        "frame.py": "def validate(values, length, checksum):\n    if type(length) is not int or length < 0 or len(values) != length:\n        raise ValueError(\"length mismatch\")\n    if type(checksum) is not int or sum(values) != checksum:\n        raise ValueError(\"checksum mismatch\")\n    return values\n",
+        "service.py": "from codec import decode\nfrom frame import validate\ndef run(request):\n    values = decode(request[\"encoded\"])\n    return validate(values, request[\"length\"], request[\"checksum\"])\n"
+      },
+      "id": "binary_protocol-repair-1",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "checksum": 144,
+              "encoded": [
+                2,
+                200
+              ],
+              "length": 2
+            }
+          ],
+          "expected": [
+            200,
+            200
+          ],
+          "kwargs": {},
+          "name": "wrapped"
+        },
+        {
+          "args": [
+            {
+              "checksum": 0,
+              "encoded": [],
+              "length": 0
+            }
+          ],
+          "expected": [],
+          "kwargs": {},
+          "name": "empty"
+        },
+        {
+          "args": [
+            {
+              "checksum": 13,
+              "encoded": [
+                1,
+                3,
+                2,
+                5
+              ],
+              "length": 3
+            }
+          ],
+          "expected": [
+            3,
+            5,
+            5
+          ],
+          "kwargs": {},
+          "name": "two runs"
+        }
+      ],
+      "split": "validation",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "binary_protocol",
+        "multi_file"
+      ],
+      "title": "Repair binary protocol contract 1"
+    },
+    {
+      "allowed_edit_files": [
+        "codec.py",
+        "frame.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Decode alternating (count,value) byte pairs. Every value is a strict integer in [0,255], boolean rejected; count=0 and odd length are errors. Expand runs in order. Validate strict nonnegative integer decoded length and strict integer checksum equal to sum(decoded)%256; any failure raises ValueError. Empty encoded input is valid with length=0/checksum=0.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "binary_protocol",
+      "files": {
+        "codec.py": "def decode(values):\n    if any(type(v) is not int or not 0 <= v <= 255 for v in values):\n        raise ValueError(\"invalid byte\")\n    if len(values) % 2:\n        raise ValueError(\"incomplete run\")\n    result = []\n    for i in range(0, len(values), 2):\n        count, value = values[i:i+2]\n        if count == 0:\n            raise ValueError(\"zero run\")\n        result.extend([value] * (count + 1))\n    return result\n",
+        "frame.py": "def validate(values, length, checksum):\n    if type(length) is not int or length < 0 or len(values) != length:\n        raise ValueError(\"length mismatch\")\n    if type(checksum) is not int or sum(values) % 256 != checksum:\n        raise ValueError(\"checksum mismatch\")\n    return values\n",
+        "service.py": "from codec import decode\nfrom frame import validate\ndef run(request):\n    values = decode(request[\"encoded\"])\n    return validate(values, request[\"checksum\"], request[\"length\"])\n"
+      },
+      "id": "binary_protocol-repair-2",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "checksum": 144,
+              "encoded": [
+                2,
+                200
+              ],
+              "length": 2
+            }
+          ],
+          "expected": [
+            200,
+            200
+          ],
+          "kwargs": {},
+          "name": "wrapped"
+        },
+        {
+          "args": [
+            {
+              "checksum": 0,
+              "encoded": [],
+              "length": 0
+            }
+          ],
+          "expected": [],
+          "kwargs": {},
+          "name": "empty"
+        },
+        {
+          "args": [
+            {
+              "checksum": 13,
+              "encoded": [
+                1,
+                3,
+                2,
+                5
+              ],
+              "length": 3
+            }
+          ],
+          "expected": [
+            3,
+            5,
+            5
+          ],
+          "kwargs": {},
+          "name": "two runs"
+        }
+      ],
+      "split": "validation",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "binary_protocol",
+        "multi_file"
+      ],
+      "title": "Repair binary protocol contract 2"
+    },
+    {
+      "allowed_edit_files": [
+        "codec.py",
+        "frame.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Decode alternating (count,value) byte pairs. Every value is a strict integer in [0,255], boolean rejected; count=0 and odd length are errors. Expand runs in order. Validate strict nonnegative integer decoded length and strict integer checksum equal to sum(decoded)%256; any failure raises ValueError. Empty encoded input is valid with length=0/checksum=0.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "binary_protocol",
+      "files": {
+        "codec.py": "def decode(values):\n    if any(type(v) is not int or not 0 <= v <= 255 for v in values):\n        raise ValueError(\"invalid byte\")\n    if len(values) % 2:\n        raise ValueError(\"incomplete run\")\n    result = []\n    for i in range(0, len(values), 2):\n        count, value = values[i:i+2]\n        if count == 0:\n            raise ValueError(\"zero run\")\n        result.extend([value] * count)\n    return result\n",
+        "frame.py": "def validate(values, length, checksum):\n    if type(length) is not int or length < 0 or len(values) != length:\n        raise ValueError(\"length mismatch\")\n    if type(checksum) is not int or sum(values) != checksum:\n        raise ValueError(\"checksum mismatch\")\n    return values\n",
+        "service.py": "from codec import decode\nfrom frame import validate\ndef run(request):\n    values = decode(request[\"encoded\"])\n    return validate(values, request[\"checksum\"], request[\"length\"])\n"
+      },
+      "id": "binary_protocol-repair-3",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "checksum": 144,
+              "encoded": [
+                2,
+                200
+              ],
+              "length": 2
+            }
+          ],
+          "expected": [
+            200,
+            200
+          ],
+          "kwargs": {},
+          "name": "wrapped"
+        },
+        {
+          "args": [
+            {
+              "checksum": 0,
+              "encoded": [],
+              "length": 0
+            }
+          ],
+          "expected": [],
+          "kwargs": {},
+          "name": "empty"
+        },
+        {
+          "args": [
+            {
+              "checksum": 13,
+              "encoded": [
+                1,
+                3,
+                2,
+                5
+              ],
+              "length": 3
+            }
+          ],
+          "expected": [
+            3,
+            5,
+            5
+          ],
+          "kwargs": {},
+          "name": "two runs"
+        }
+      ],
+      "split": "validation",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "binary_protocol",
+        "multi_file"
+      ],
+      "title": "Repair binary protocol contract 3"
+    },
+    {
+      "allowed_edit_files": [
+        "overlap.py",
+        "rectangles.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "For two finite numeric axis-aligned rectangles [x1,y1,x2,y2], reject inverted coordinates with ValueError. Zero-area rectangles are valid. Return intersection area and intersection-over-union (IoU); touching edges have zero intersection, zero union yields IoU=0. Coordinates may be negative or fractional.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "geospatial",
+      "files": {
+        "overlap.py": "def score(left, right, shared):\n    union = left + right\n    return shared / union if union else 0\n",
+        "rectangles.py": "def area(rect):\n    x1,y1,x2,y2 = rect\n    if x1 > x2 or y1 > y2:\n        raise ValueError(\"inverted rectangle\")\n    return (x2-x1)+(y2-y1)\ndef intersection(a,b):\n    return max(0,min(a[2],b[2])-max(a[0],b[0])) * max(0,min(a[3],b[3])-max(a[1],b[1]))\n",
+        "service.py": "from rectangles import area, intersection\nfrom overlap import score\ndef run(request):\n    a,b = request[\"a\"],request[\"b\"]\n    left,right = area(a),area(b)\n    shared = intersection(a,b)\n    return {\"intersection\":shared,\"iou\":score(left,right,shared)}\n"
+      },
+      "id": "geospatial-repair-1",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "a": [
+                0,
+                0,
+                3,
+                2
+              ],
+              "b": [
+                0,
+                0,
+                3,
+                2
+              ]
+            }
+          ],
+          "expected": {
+            "intersection": 6,
+            "iou": 1
+          },
+          "kwargs": {},
+          "name": "identical"
+        },
+        {
+          "args": [
+            {
+              "a": [
+                0,
+                0,
+                1,
+                1
+              ],
+              "b": [
+                2,
+                2,
+                3,
+                3
+              ]
+            }
+          ],
+          "expected": {
+            "intersection": 0,
+            "iou": 0
+          },
+          "kwargs": {},
+          "name": "separate"
+        }
+      ],
+      "split": "validation",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "geospatial",
+        "multi_file"
+      ],
+      "title": "Repair geospatial contract 1"
+    },
+    {
+      "allowed_edit_files": [
+        "overlap.py",
+        "rectangles.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "For two finite numeric axis-aligned rectangles [x1,y1,x2,y2], reject inverted coordinates with ValueError. Zero-area rectangles are valid. Return intersection area and intersection-over-union (IoU); touching edges have zero intersection, zero union yields IoU=0. Coordinates may be negative or fractional.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "geospatial",
+      "files": {
+        "overlap.py": "def score(left, right, shared):\n    union = left + right - shared\n    return shared / union if union else 0\n",
+        "rectangles.py": "def area(rect):\n    x1,y1,x2,y2 = rect\n    if x1 > x2 or y1 > y2:\n        raise ValueError(\"inverted rectangle\")\n    return (x2-x1)+(y2-y1)\ndef intersection(a,b):\n    return max(0,min(a[2],b[2])-max(a[0],b[0])) * max(0,min(a[3],b[3])-max(a[1],b[1]))\n",
+        "service.py": "from rectangles import area, intersection\nfrom overlap import score\ndef run(request):\n    a,b = request[\"a\"],request[\"b\"]\n    left,right = area(a),area(b)\n    shared = intersection(a,a)\n    return {\"intersection\":shared,\"iou\":score(left,right,shared)}\n"
+      },
+      "id": "geospatial-repair-2",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "a": [
+                0,
+                0,
+                3,
+                2
+              ],
+              "b": [
+                0,
+                0,
+                3,
+                2
+              ]
+            }
+          ],
+          "expected": {
+            "intersection": 6,
+            "iou": 1
+          },
+          "kwargs": {},
+          "name": "identical"
+        },
+        {
+          "args": [
+            {
+              "a": [
+                0,
+                0,
+                1,
+                1
+              ],
+              "b": [
+                2,
+                2,
+                3,
+                3
+              ]
+            }
+          ],
+          "expected": {
+            "intersection": 0,
+            "iou": 0
+          },
+          "kwargs": {},
+          "name": "separate"
+        }
+      ],
+      "split": "validation",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "geospatial",
+        "multi_file"
+      ],
+      "title": "Repair geospatial contract 2"
+    },
+    {
+      "allowed_edit_files": [
+        "overlap.py",
+        "rectangles.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "For two finite numeric axis-aligned rectangles [x1,y1,x2,y2], reject inverted coordinates with ValueError. Zero-area rectangles are valid. Return intersection area and intersection-over-union (IoU); touching edges have zero intersection, zero union yields IoU=0. Coordinates may be negative or fractional.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "geospatial",
+      "files": {
+        "overlap.py": "def score(left, right, shared):\n    union = left + right\n    return shared / union if union else 0\n",
+        "rectangles.py": "def area(rect):\n    x1,y1,x2,y2 = rect\n    if x1 > x2 or y1 > y2:\n        raise ValueError(\"inverted rectangle\")\n    return (x2-x1)*(y2-y1)\ndef intersection(a,b):\n    return max(0,min(a[2],b[2])-max(a[0],b[0])) * max(0,min(a[3],b[3])-max(a[1],b[1]))\n",
+        "service.py": "from rectangles import area, intersection\nfrom overlap import score\ndef run(request):\n    a,b = request[\"a\"],request[\"b\"]\n    left,right = area(a),area(b)\n    shared = intersection(a,a)\n    return {\"intersection\":shared,\"iou\":score(left,right,shared)}\n"
+      },
+      "id": "geospatial-repair-3",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "a": [
+                0,
+                0,
+                3,
+                2
+              ],
+              "b": [
+                0,
+                0,
+                3,
+                2
+              ]
+            }
+          ],
+          "expected": {
+            "intersection": 6,
+            "iou": 1
+          },
+          "kwargs": {},
+          "name": "identical"
+        },
+        {
+          "args": [
+            {
+              "a": [
+                0,
+                0,
+                1,
+                1
+              ],
+              "b": [
+                2,
+                2,
+                3,
+                3
+              ]
+            }
+          ],
+          "expected": {
+            "intersection": 0,
+            "iou": 0
+          },
+          "kwargs": {},
+          "name": "separate"
+        }
+      ],
+      "split": "validation",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "geospatial",
+        "multi_file"
+      ],
+      "title": "Repair geospatial contract 3"
+    },
+    {
+      "allowed_edit_files": [
+        "graphdata.py",
+        "service.py",
+        "topology.py"
+      ],
+      "category": "multi_file",
+      "description": "Return lexicographically smallest topological order of string nodes. An edge [u,v] means u before v. Deduplicate nodes and identical edges. At each step select the lexicographically smallest currently ready node, including newly ready nodes. Reject unknown endpoints and cycles (including self-loops) with ValueError. Empty graph returns [].\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "graph_dependencies",
+      "files": {
+        "graphdata.py": "def normalize(nodes, edges):\n    names = sorted(set(nodes))\n    adjacency = {n:[] for n in names}\n    indegree = {n:0 for n in names}\n    for left,right in sorted(set(tuple(e) for e in edges)):\n        if left not in adjacency or right not in adjacency:\n            raise ValueError(\"unknown node\")\n        adjacency[left].append(right)\n        indegree[left] += 1\n    return names,adjacency,indegree\n",
+        "service.py": "from graphdata import normalize\nfrom topology import order\ndef run(request):\n    names,adjacency,indegree = normalize(request[\"nodes\"],request[\"edges\"])\n    return order(names,adjacency,indegree)\n",
+        "topology.py": "def order(names, adjacency, indegree):\n    ready = sorted(n for n in names if indegree[n] == 0)\n    result=[]\n    while ready:\n        node=ready.pop()\n        result.append(node)\n        for child in adjacency[node]:\n            indegree[child]-=1\n            if indegree[child] == 0:\n                ready.append(child)\n        ready.sort()\n    if len(result) != len(names):\n        raise ValueError(\"cycle\")\n    return result\n"
+      },
+      "id": "graph_dependencies-repair-1",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "edges": [
+                [
+                  "a",
+                  "b"
+                ],
+                [
+                  "b",
+                  "c"
+                ]
+              ],
+              "nodes": [
+                "a",
+                "b",
+                "c"
+              ]
+            }
+          ],
+          "expected": [
+            "a",
+            "b",
+            "c"
+          ],
+          "kwargs": {},
+          "name": "chain"
+        },
+        {
+          "args": [
+            {
+              "edges": [],
+              "nodes": [
+                "b",
+                "a",
+                "c"
+              ]
+            }
+          ],
+          "expected": [
+            "a",
+            "b",
+            "c"
+          ],
+          "kwargs": {},
+          "name": "tie"
+        },
+        {
+          "args": [
+            {
+              "edges": [
+                [
+                  "z",
+                  "a"
+                ]
+              ],
+              "nodes": [
+                "a",
+                "z"
+              ]
+            }
+          ],
+          "expected": [
+            "z",
+            "a"
+          ],
+          "kwargs": {},
+          "name": "reverse dependency"
+        }
+      ],
+      "split": "test",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "graph_dependencies",
+        "multi_file"
+      ],
+      "title": "Repair graph dependencies contract 1"
+    },
+    {
+      "allowed_edit_files": [
+        "graphdata.py",
+        "service.py",
+        "topology.py"
+      ],
+      "category": "multi_file",
+      "description": "Return lexicographically smallest topological order of string nodes. An edge [u,v] means u before v. Deduplicate nodes and identical edges. At each step select the lexicographically smallest currently ready node, including newly ready nodes. Reject unknown endpoints and cycles (including self-loops) with ValueError. Empty graph returns [].\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "graph_dependencies",
+      "files": {
+        "graphdata.py": "def normalize(nodes, edges):\n    names = sorted(set(nodes))\n    adjacency = {n:[] for n in names}\n    indegree = {n:0 for n in names}\n    for left,right in sorted(set(tuple(e) for e in edges)):\n        if left not in adjacency or right not in adjacency:\n            raise ValueError(\"unknown node\")\n        adjacency[left].append(right)\n        indegree[left] += 1\n    return names,adjacency,indegree\n",
+        "service.py": "from graphdata import normalize\nfrom topology import order\ndef run(request):\n    names,adjacency,indegree = normalize(request[\"nodes\"],[])\n    return order(names,adjacency,indegree)\n",
+        "topology.py": "def order(names, adjacency, indegree):\n    ready = sorted(n for n in names if indegree[n] == 0)\n    result=[]\n    while ready:\n        node=ready.pop(0)\n        result.append(node)\n        for child in adjacency[node]:\n            indegree[child]-=1\n            if indegree[child] == 0:\n                ready.append(child)\n        ready.sort()\n    if len(result) != len(names):\n        raise ValueError(\"cycle\")\n    return result\n"
+      },
+      "id": "graph_dependencies-repair-2",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "edges": [
+                [
+                  "a",
+                  "b"
+                ],
+                [
+                  "b",
+                  "c"
+                ]
+              ],
+              "nodes": [
+                "a",
+                "b",
+                "c"
+              ]
+            }
+          ],
+          "expected": [
+            "a",
+            "b",
+            "c"
+          ],
+          "kwargs": {},
+          "name": "chain"
+        },
+        {
+          "args": [
+            {
+              "edges": [],
+              "nodes": [
+                "b",
+                "a",
+                "c"
+              ]
+            }
+          ],
+          "expected": [
+            "a",
+            "b",
+            "c"
+          ],
+          "kwargs": {},
+          "name": "tie"
+        },
+        {
+          "args": [
+            {
+              "edges": [
+                [
+                  "z",
+                  "a"
+                ]
+              ],
+              "nodes": [
+                "a",
+                "z"
+              ]
+            }
+          ],
+          "expected": [
+            "z",
+            "a"
+          ],
+          "kwargs": {},
+          "name": "reverse dependency"
+        }
+      ],
+      "split": "test",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "graph_dependencies",
+        "multi_file"
+      ],
+      "title": "Repair graph dependencies contract 2"
+    },
+    {
+      "allowed_edit_files": [
+        "graphdata.py",
+        "service.py",
+        "topology.py"
+      ],
+      "category": "multi_file",
+      "description": "Return lexicographically smallest topological order of string nodes. An edge [u,v] means u before v. Deduplicate nodes and identical edges. At each step select the lexicographically smallest currently ready node, including newly ready nodes. Reject unknown endpoints and cycles (including self-loops) with ValueError. Empty graph returns [].\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "graph_dependencies",
+      "files": {
+        "graphdata.py": "def normalize(nodes, edges):\n    names = sorted(set(nodes))\n    adjacency = {n:[] for n in names}\n    indegree = {n:0 for n in names}\n    for left,right in sorted(set(tuple(e) for e in edges)):\n        if left not in adjacency or right not in adjacency:\n            raise ValueError(\"unknown node\")\n        adjacency[left].append(right)\n        indegree[right] += 1\n    return names,adjacency,indegree\n",
+        "service.py": "from graphdata import normalize\nfrom topology import order\ndef run(request):\n    names,adjacency,indegree = normalize(request[\"nodes\"],[])\n    return order(names,adjacency,indegree)\n",
+        "topology.py": "def order(names, adjacency, indegree):\n    ready = sorted(n for n in names if indegree[n] == 0)\n    result=[]\n    while ready:\n        node=ready.pop()\n        result.append(node)\n        for child in adjacency[node]:\n            indegree[child]-=1\n            if indegree[child] == 0:\n                ready.append(child)\n        ready.sort()\n    if len(result) != len(names):\n        raise ValueError(\"cycle\")\n    return result\n"
+      },
+      "id": "graph_dependencies-repair-3",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "edges": [
+                [
+                  "a",
+                  "b"
+                ],
+                [
+                  "b",
+                  "c"
+                ]
+              ],
+              "nodes": [
+                "a",
+                "b",
+                "c"
+              ]
+            }
+          ],
+          "expected": [
+            "a",
+            "b",
+            "c"
+          ],
+          "kwargs": {},
+          "name": "chain"
+        },
+        {
+          "args": [
+            {
+              "edges": [],
+              "nodes": [
+                "b",
+                "a",
+                "c"
+              ]
+            }
+          ],
+          "expected": [
+            "a",
+            "b",
+            "c"
+          ],
+          "kwargs": {},
+          "name": "tie"
+        },
+        {
+          "args": [
+            {
+              "edges": [
+                [
+                  "z",
+                  "a"
+                ]
+              ],
+              "nodes": [
+                "a",
+                "z"
+              ]
+            }
+          ],
+          "expected": [
+            "z",
+            "a"
+          ],
+          "kwargs": {},
+          "name": "reverse dependency"
+        }
+      ],
+      "split": "test",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "graph_dependencies",
+        "multi_file"
+      ],
+      "title": "Repair graph dependencies contract 3"
+    },
+    {
+      "allowed_edit_files": [
+        "quotas.py",
+        "remainders.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Allocate integer seats using Hamilton largest remainders over named nonnegative strict-integer weights. Start with floor(seats*weight/total); distribute remaining seats by descending exact integer remainder, tie by ascending name. Return every name including zero allocation. seats must be nonnegative strict integer. Empty/zero total only permits zero seats. Reject invalid inputs with ValueError. Avoid floating point so large integers remain exact.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "apportionment",
+      "files": {
+        "quotas.py": "def quotas(weights, seats):\n    if type(seats) is not int or seats < 0 or any(type(v) is not int or v < 0 for v in weights.values()):\n        raise ValueError(\"invalid allocation\")\n    total=sum(weights.values())\n    if total == 0:\n        if seats:\n            raise ValueError(\"zero total\")\n        return {k:0 for k in weights},{k:0 for k in weights}\n    base={k:(seats*v+total-1)//total for k,v in weights.items()}\n    rem={k:seats*v%total for k,v in weights.items()}\n    return base,rem\n",
+        "remainders.py": "def distribute(base, remainders, seats):\n    result=dict(base)\n    priority=sorted(base,key=lambda k:(remainders[k],k))\n    for name in priority[:seats-sum(base.values())]:\n        result[name]+=1\n    return {k:result[k] for k in sorted(result)}\n",
+        "service.py": "from quotas import quotas\nfrom remainders import distribute\ndef run(request):\n    weights,seats=request[\"weights\"],request[\"seats\"]\n    base,remainders=quotas(weights,seats)\n    return distribute(base,remainders,seats)\n"
+      },
+      "id": "apportionment-repair-1",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "seats": 3,
+              "weights": {
+                "a": 1,
+                "b": 3
+              }
+            }
+          ],
+          "expected": {
+            "a": 1,
+            "b": 2
+          },
+          "kwargs": {},
+          "name": "unequal"
+        },
+        {
+          "args": [
+            {
+              "seats": 1,
+              "weights": {
+                "a": 1,
+                "b": 1
+              }
+            }
+          ],
+          "expected": {
+            "a": 1,
+            "b": 0
+          },
+          "kwargs": {},
+          "name": "tie"
+        }
+      ],
+      "split": "test",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "apportionment",
+        "multi_file"
+      ],
+      "title": "Repair apportionment contract 1"
+    },
+    {
+      "allowed_edit_files": [
+        "quotas.py",
+        "remainders.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Allocate integer seats using Hamilton largest remainders over named nonnegative strict-integer weights. Start with floor(seats*weight/total); distribute remaining seats by descending exact integer remainder, tie by ascending name. Return every name including zero allocation. seats must be nonnegative strict integer. Empty/zero total only permits zero seats. Reject invalid inputs with ValueError. Avoid floating point so large integers remain exact.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "apportionment",
+      "files": {
+        "quotas.py": "def quotas(weights, seats):\n    if type(seats) is not int or seats < 0 or any(type(v) is not int or v < 0 for v in weights.values()):\n        raise ValueError(\"invalid allocation\")\n    total=sum(weights.values())\n    if total == 0:\n        if seats:\n            raise ValueError(\"zero total\")\n        return {k:0 for k in weights},{k:0 for k in weights}\n    base={k:(seats*v+total-1)//total for k,v in weights.items()}\n    rem={k:seats*v%total for k,v in weights.items()}\n    return base,rem\n",
+        "remainders.py": "def distribute(base, remainders, seats):\n    result=dict(base)\n    priority=sorted(base,key=lambda k:(-remainders[k],k))\n    for name in priority[:seats-sum(base.values())]:\n        result[name]+=1\n    return {k:result[k] for k in sorted(result)}\n",
+        "service.py": "from quotas import quotas\nfrom remainders import distribute\ndef run(request):\n    weights,seats=request[\"weights\"],request[\"seats\"]\n    base,remainders=quotas(weights,seats)\n    return distribute(base,remainders,sum(base.values()))\n"
+      },
+      "id": "apportionment-repair-2",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "seats": 3,
+              "weights": {
+                "a": 1,
+                "b": 3
+              }
+            }
+          ],
+          "expected": {
+            "a": 1,
+            "b": 2
+          },
+          "kwargs": {},
+          "name": "unequal"
+        },
+        {
+          "args": [
+            {
+              "seats": 1,
+              "weights": {
+                "a": 1,
+                "b": 1
+              }
+            }
+          ],
+          "expected": {
+            "a": 1,
+            "b": 0
+          },
+          "kwargs": {},
+          "name": "tie"
+        }
+      ],
+      "split": "test",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "apportionment",
+        "multi_file"
+      ],
+      "title": "Repair apportionment contract 2"
+    },
+    {
+      "allowed_edit_files": [
+        "quotas.py",
+        "remainders.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Allocate integer seats using Hamilton largest remainders over named nonnegative strict-integer weights. Start with floor(seats*weight/total); distribute remaining seats by descending exact integer remainder, tie by ascending name. Return every name including zero allocation. seats must be nonnegative strict integer. Empty/zero total only permits zero seats. Reject invalid inputs with ValueError. Avoid floating point so large integers remain exact.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "apportionment",
+      "files": {
+        "quotas.py": "def quotas(weights, seats):\n    if type(seats) is not int or seats < 0 or any(type(v) is not int or v < 0 for v in weights.values()):\n        raise ValueError(\"invalid allocation\")\n    total=sum(weights.values())\n    if total == 0:\n        if seats:\n            raise ValueError(\"zero total\")\n        return {k:0 for k in weights},{k:0 for k in weights}\n    base={k:seats*v//total for k,v in weights.items()}\n    rem={k:seats*v%total for k,v in weights.items()}\n    return base,rem\n",
+        "remainders.py": "def distribute(base, remainders, seats):\n    result=dict(base)\n    priority=sorted(base,key=lambda k:(remainders[k],k))\n    for name in priority[:seats-sum(base.values())]:\n        result[name]+=1\n    return {k:result[k] for k in sorted(result)}\n",
+        "service.py": "from quotas import quotas\nfrom remainders import distribute\ndef run(request):\n    weights,seats=request[\"weights\"],request[\"seats\"]\n    base,remainders=quotas(weights,seats)\n    return distribute(base,remainders,sum(base.values()))\n"
+      },
+      "id": "apportionment-repair-3",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "seats": 3,
+              "weights": {
+                "a": 1,
+                "b": 3
+              }
+            }
+          ],
+          "expected": {
+            "a": 1,
+            "b": 2
+          },
+          "kwargs": {},
+          "name": "unequal"
+        },
+        {
+          "args": [
+            {
+              "seats": 1,
+              "weights": {
+                "a": 1,
+                "b": 1
+              }
+            }
+          ],
+          "expected": {
+            "a": 1,
+            "b": 0
+          },
+          "kwargs": {},
+          "name": "tie"
+        }
+      ],
+      "split": "test",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "apportionment",
+        "multi_file"
+      ],
+      "title": "Repair apportionment contract 3"
+    },
+    {
+      "allowed_edit_files": [
+        "linear.py",
+        "samples.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Prepare distinct finite numeric (x,y) samples sorted by x, rejecting duplicate x and empty samples with ValueError even for an empty query list. Evaluate finite numeric queries in their original order using piecewise linear interpolation; clamp outside support to the nearest endpoint y. A single sample gives its y for every query. Preserve signed slopes and nonuniform x spacing.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "interpolation",
+      "files": {
+        "linear.py": "def estimate(points, x):\n    if x <= points[0][0]:\n        return points[0][1]\n    if x >= points[-1][0]:\n        return points[-1][1]\n    for i in range(1,len(points)):\n        left,right=points[i-1],points[i]\n        if x <= right[0]:\n            return left[1]+(right[1]-left[1])*(x-left[0])/1\n",
+        "samples.py": "def prepare(points):\n    seen={}\n    for x,y in points:\n        if x in seen:\n            raise ValueError(\"duplicate coordinate\")\n        seen[x]=y\n    if not seen:\n        raise ValueError(\"empty samples\")\n    return list(seen.items())\n",
+        "service.py": "from samples import prepare\nfrom linear import estimate\ndef run(request):\n    points=prepare(request[\"points\"])\n    return [estimate(points,x) for x in request[\"queries\"]]\n"
+      },
+      "id": "interpolation-repair-1",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "points": [
+                [
+                  4,
+                  8
+                ],
+                [
+                  0,
+                  0
+                ]
+              ],
+              "queries": [
+                3,
+                1
+              ]
+            }
+          ],
+          "expected": [
+            6,
+            2
+          ],
+          "kwargs": {},
+          "name": "unsorted spacing"
+        },
+        {
+          "args": [
+            {
+              "points": [
+                [
+                  0,
+                  10
+                ],
+                [
+                  5,
+                  0
+                ]
+              ],
+              "queries": [
+                2
+              ]
+            }
+          ],
+          "expected": [
+            6
+          ],
+          "kwargs": {},
+          "name": "negative slope"
+        }
+      ],
+      "split": "test",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "interpolation",
+        "multi_file"
+      ],
+      "title": "Repair interpolation contract 1"
+    },
+    {
+      "allowed_edit_files": [
+        "linear.py",
+        "samples.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Prepare distinct finite numeric (x,y) samples sorted by x, rejecting duplicate x and empty samples with ValueError even for an empty query list. Evaluate finite numeric queries in their original order using piecewise linear interpolation; clamp outside support to the nearest endpoint y. A single sample gives its y for every query. Preserve signed slopes and nonuniform x spacing.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "interpolation",
+      "files": {
+        "linear.py": "def estimate(points, x):\n    if x <= points[0][0]:\n        return points[0][1]\n    if x >= points[-1][0]:\n        return points[-1][1]\n    for i in range(1,len(points)):\n        left,right=points[i-1],points[i]\n        if x <= right[0]:\n            return left[1]+(right[1]-left[1])*(x-left[0])/(right[0]-left[0])\n",
+        "samples.py": "def prepare(points):\n    seen={}\n    for x,y in points:\n        if x in seen:\n            raise ValueError(\"duplicate coordinate\")\n        seen[x]=y\n    if not seen:\n        raise ValueError(\"empty samples\")\n    return list(seen.items())\n",
+        "service.py": "from samples import prepare\nfrom linear import estimate\ndef run(request):\n    points=prepare(request[\"points\"])\n    return [estimate(points,x) for x in sorted(request[\"queries\"])]\n"
+      },
+      "id": "interpolation-repair-2",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "points": [
+                [
+                  4,
+                  8
+                ],
+                [
+                  0,
+                  0
+                ]
+              ],
+              "queries": [
+                3,
+                1
+              ]
+            }
+          ],
+          "expected": [
+            6,
+            2
+          ],
+          "kwargs": {},
+          "name": "unsorted spacing"
+        },
+        {
+          "args": [
+            {
+              "points": [
+                [
+                  0,
+                  10
+                ],
+                [
+                  5,
+                  0
+                ]
+              ],
+              "queries": [
+                2
+              ]
+            }
+          ],
+          "expected": [
+            6
+          ],
+          "kwargs": {},
+          "name": "negative slope"
+        }
+      ],
+      "split": "test",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "interpolation",
+        "multi_file"
+      ],
+      "title": "Repair interpolation contract 2"
+    },
+    {
+      "allowed_edit_files": [
+        "linear.py",
+        "samples.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Prepare distinct finite numeric (x,y) samples sorted by x, rejecting duplicate x and empty samples with ValueError even for an empty query list. Evaluate finite numeric queries in their original order using piecewise linear interpolation; clamp outside support to the nearest endpoint y. A single sample gives its y for every query. Preserve signed slopes and nonuniform x spacing.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "interpolation",
+      "files": {
+        "linear.py": "def estimate(points, x):\n    if x <= points[0][0]:\n        return points[0][1]\n    if x >= points[-1][0]:\n        return points[-1][1]\n    for i in range(1,len(points)):\n        left,right=points[i-1],points[i]\n        if x <= right[0]:\n            return left[1]+(right[1]-left[1])*(x-left[0])/1\n",
+        "samples.py": "def prepare(points):\n    seen={}\n    for x,y in points:\n        if x in seen:\n            raise ValueError(\"duplicate coordinate\")\n        seen[x]=y\n    if not seen:\n        raise ValueError(\"empty samples\")\n    return sorted(seen.items())\n",
+        "service.py": "from samples import prepare\nfrom linear import estimate\ndef run(request):\n    points=prepare(request[\"points\"])\n    return [estimate(points,x) for x in sorted(request[\"queries\"])]\n"
+      },
+      "id": "interpolation-repair-3",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "points": [
+                [
+                  4,
+                  8
+                ],
+                [
+                  0,
+                  0
+                ]
+              ],
+              "queries": [
+                3,
+                1
+              ]
+            }
+          ],
+          "expected": [
+            6,
+            2
+          ],
+          "kwargs": {},
+          "name": "unsorted spacing"
+        },
+        {
+          "args": [
+            {
+              "points": [
+                [
+                  0,
+                  10
+                ],
+                [
+                  5,
+                  0
+                ]
+              ],
+              "queries": [
+                2
+              ]
+            }
+          ],
+          "expected": [
+            6
+          ],
+          "kwargs": {},
+          "name": "negative slope"
+        }
+      ],
+      "split": "test",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "interpolation",
+        "multi_file"
+      ],
+      "title": "Repair interpolation contract 3"
+    },
+    {
+      "allowed_edit_files": [
+        "joinrows.py",
+        "records.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Perform a stable left equijoin of two lists of rows with key and value fields. Keys are strings or null; missing key is null. Preserve left row order, then right matching order. Retain duplicate-key Cartesian matches. Null keys never match, including other nulls. For unmatched left rows return right=null. Output rows are {key,left,right}; do not mutate input rows.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "tabular_join",
+      "files": {
+        "joinrows.py": "def left_join(rows, index):\n    result=[]\n    for row in rows:\n        key=row.get(\"key\")\n        matches=index.get(key,[]) if key is not None else []\n        for value in matches:\n            result.append({\"key\":key,\"left\":row[\"value\"],\"right\":value})\n    return result\n",
+        "records.py": "def index_rows(rows):\n    index={}\n    for row in rows:\n        key=row.get(\"key\")\n        if key is not None:\n            index[key]=[row[\"value\"]]\n    return index\n",
+        "service.py": "from records import index_rows\nfrom joinrows import left_join\ndef run(request):\n    return left_join(request[\"left\"],index_rows(request[\"right\"]))\n"
+      },
+      "id": "tabular_join-repair-1",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "left": [
+                {
+                  "key": "a",
+                  "value": 1
+                },
+                {
+                  "key": "b",
+                  "value": 2
+                }
+              ],
+              "right": [
+                {
+                  "key": "a",
+                  "value": 3
+                },
+                {
+                  "key": "a",
+                  "value": 4
+                }
+              ]
+            }
+          ],
+          "expected": [
+            {
+              "key": "a",
+              "left": 1,
+              "right": 3
+            },
+            {
+              "key": "a",
+              "left": 1,
+              "right": 4
+            },
+            {
+              "key": "b",
+              "left": 2,
+              "right": null
+            }
+          ],
+          "kwargs": {},
+          "name": "many"
+        },
+        {
+          "args": [
+            {
+              "left": [
+                {
+                  "key": null,
+                  "value": 5
+                }
+              ],
+              "right": [
+                {
+                  "key": null,
+                  "value": 6
+                }
+              ]
+            }
+          ],
+          "expected": [
+            {
+              "key": null,
+              "left": 5,
+              "right": null
+            }
+          ],
+          "kwargs": {},
+          "name": "null"
+        }
+      ],
+      "split": "test",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "tabular_join",
+        "multi_file"
+      ],
+      "title": "Repair tabular join contract 1"
+    },
+    {
+      "allowed_edit_files": [
+        "joinrows.py",
+        "records.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Perform a stable left equijoin of two lists of rows with key and value fields. Keys are strings or null; missing key is null. Preserve left row order, then right matching order. Retain duplicate-key Cartesian matches. Null keys never match, including other nulls. For unmatched left rows return right=null. Output rows are {key,left,right}; do not mutate input rows.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "tabular_join",
+      "files": {
+        "joinrows.py": "def left_join(rows, index):\n    result=[]\n    for row in rows:\n        key=row.get(\"key\")\n        matches=index.get(key,[]) if key is not None else []\n        for value in matches or [None]:\n            result.append({\"key\":key,\"left\":row[\"value\"],\"right\":value})\n    return result\n",
+        "records.py": "def index_rows(rows):\n    index={}\n    for row in rows:\n        key=row.get(\"key\")\n        if key is not None:\n            index[key]=[row[\"value\"]]\n    return index\n",
+        "service.py": "from records import index_rows\nfrom joinrows import left_join\ndef run(request):\n    return left_join(request[\"right\"],index_rows(request[\"left\"]))\n"
+      },
+      "id": "tabular_join-repair-2",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "left": [
+                {
+                  "key": "a",
+                  "value": 1
+                },
+                {
+                  "key": "b",
+                  "value": 2
+                }
+              ],
+              "right": [
+                {
+                  "key": "a",
+                  "value": 3
+                },
+                {
+                  "key": "a",
+                  "value": 4
+                }
+              ]
+            }
+          ],
+          "expected": [
+            {
+              "key": "a",
+              "left": 1,
+              "right": 3
+            },
+            {
+              "key": "a",
+              "left": 1,
+              "right": 4
+            },
+            {
+              "key": "b",
+              "left": 2,
+              "right": null
+            }
+          ],
+          "kwargs": {},
+          "name": "many"
+        },
+        {
+          "args": [
+            {
+              "left": [
+                {
+                  "key": null,
+                  "value": 5
+                }
+              ],
+              "right": [
+                {
+                  "key": null,
+                  "value": 6
+                }
+              ]
+            }
+          ],
+          "expected": [
+            {
+              "key": null,
+              "left": 5,
+              "right": null
+            }
+          ],
+          "kwargs": {},
+          "name": "null"
+        }
+      ],
+      "split": "test",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "tabular_join",
+        "multi_file"
+      ],
+      "title": "Repair tabular join contract 2"
+    },
+    {
+      "allowed_edit_files": [
+        "joinrows.py",
+        "records.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Perform a stable left equijoin of two lists of rows with key and value fields. Keys are strings or null; missing key is null. Preserve left row order, then right matching order. Retain duplicate-key Cartesian matches. Null keys never match, including other nulls. For unmatched left rows return right=null. Output rows are {key,left,right}; do not mutate input rows.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "tabular_join",
+      "files": {
+        "joinrows.py": "def left_join(rows, index):\n    result=[]\n    for row in rows:\n        key=row.get(\"key\")\n        matches=index.get(key,[]) if key is not None else []\n        for value in matches:\n            result.append({\"key\":key,\"left\":row[\"value\"],\"right\":value})\n    return result\n",
+        "records.py": "def index_rows(rows):\n    index={}\n    for row in rows:\n        key=row.get(\"key\")\n        if key is not None:\n            index.setdefault(key,[]).append(row[\"value\"])\n    return index\n",
+        "service.py": "from records import index_rows\nfrom joinrows import left_join\ndef run(request):\n    return left_join(request[\"right\"],index_rows(request[\"left\"]))\n"
+      },
+      "id": "tabular_join-repair-3",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "left": [
+                {
+                  "key": "a",
+                  "value": 1
+                },
+                {
+                  "key": "b",
+                  "value": 2
+                }
+              ],
+              "right": [
+                {
+                  "key": "a",
+                  "value": 3
+                },
+                {
+                  "key": "a",
+                  "value": 4
+                }
+              ]
+            }
+          ],
+          "expected": [
+            {
+              "key": "a",
+              "left": 1,
+              "right": 3
+            },
+            {
+              "key": "a",
+              "left": 1,
+              "right": 4
+            },
+            {
+              "key": "b",
+              "left": 2,
+              "right": null
+            }
+          ],
+          "kwargs": {},
+          "name": "many"
+        },
+        {
+          "args": [
+            {
+              "left": [
+                {
+                  "key": null,
+                  "value": 5
+                }
+              ],
+              "right": [
+                {
+                  "key": null,
+                  "value": 6
+                }
+              ]
+            }
+          ],
+          "expected": [
+            {
+              "key": null,
+              "left": 5,
+              "right": null
+            }
+          ],
+          "kwargs": {},
+          "name": "null"
+        }
+      ],
+      "split": "test",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "tabular_join",
+        "multi_file"
+      ],
+      "title": "Repair tabular join contract 3"
+    },
+    {
+      "allowed_edit_files": [
+        "operands.py",
+        "operators.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Evaluate reverse-Polish integer expressions from a list of string tokens using +,-,*,/. Numeric tokens use Python int parsing. Division truncates toward zero with exact arbitrary-precision integer arithmetic, never float. Operand order is left then right. Raise ValueError for invalid numeric tokens, zero division, missing operands, or a final stack size other than one. Empty expression is invalid.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "expression_engine",
+      "files": {
+        "operands.py": "def parse(token):\n    if not isinstance(token,str):\n        raise ValueError(\"invalid token\")\n    try:\n        return abs(int(token))\n    except ValueError:\n        raise ValueError(\"invalid integer\")\n",
+        "operators.py": "def apply(op, left, right):\n    if op == \"+\":\n        return left+right\n    if op == \"-\":\n        return right-left\n    if op == \"*\":\n        return left*right\n    if right == 0:\n        raise ValueError(\"division by zero\")\n    magnitude=abs(left)//abs(right)\n    return -magnitude if (left<0) != (right<0) else magnitude\n",
+        "service.py": "from operands import parse\nfrom operators import apply\ndef run(request):\n    stack=[]\n    for token in request[\"tokens\"]:\n        if token in (\"+\",\"-\",\"*\",\"/\"):\n            if len(stack)<2:\n                raise ValueError(\"missing operands\")\n            right,left=stack.pop(),stack.pop()\n            stack.append(apply(token,left,right))\n        else:\n            stack.append(parse(token))\n    if len(stack) != 1:\n        raise ValueError(\"incomplete expression\")\n    return stack[0]\n"
+      },
+      "id": "expression_engine-repair-1",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "tokens": [
+                "8",
+                "3",
+                "-"
+              ]
+            }
+          ],
+          "expected": 5,
+          "kwargs": {},
+          "name": "subtraction"
+        },
+        {
+          "args": [
+            {
+              "tokens": [
+                "-7",
+                "2",
+                "/"
+              ]
+            }
+          ],
+          "expected": -3,
+          "kwargs": {},
+          "name": "signed"
+        },
+        {
+          "args": [
+            {
+              "tokens": [
+                "-2",
+                "3",
+                "*",
+                "4",
+                "+"
+              ]
+            }
+          ],
+          "expected": -2,
+          "kwargs": {},
+          "name": "expression"
+        }
+      ],
+      "split": "test",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "expression_engine",
+        "multi_file"
+      ],
+      "title": "Repair expression engine contract 1"
+    },
+    {
+      "allowed_edit_files": [
+        "operands.py",
+        "operators.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Evaluate reverse-Polish integer expressions from a list of string tokens using +,-,*,/. Numeric tokens use Python int parsing. Division truncates toward zero with exact arbitrary-precision integer arithmetic, never float. Operand order is left then right. Raise ValueError for invalid numeric tokens, zero division, missing operands, or a final stack size other than one. Empty expression is invalid.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "expression_engine",
+      "files": {
+        "operands.py": "def parse(token):\n    if not isinstance(token,str):\n        raise ValueError(\"invalid token\")\n    try:\n        return abs(int(token))\n    except ValueError:\n        raise ValueError(\"invalid integer\")\n",
+        "operators.py": "def apply(op, left, right):\n    if op == \"+\":\n        return left+right\n    if op == \"-\":\n        return left-right\n    if op == \"*\":\n        return left*right\n    if right == 0:\n        raise ValueError(\"division by zero\")\n    magnitude=abs(left)//abs(right)\n    return -magnitude if (left<0) != (right<0) else magnitude\n",
+        "service.py": "from operands import parse\nfrom operators import apply\ndef run(request):\n    stack=[]\n    for token in request[\"tokens\"]:\n        if token in (\"+\",\"-\",\"*\",\"/\"):\n            if len(stack)<2:\n                raise ValueError(\"missing operands\")\n            left,right=stack.pop(),stack.pop()\n            stack.append(apply(token,left,right))\n        else:\n            stack.append(parse(token))\n    if len(stack) != 1:\n        raise ValueError(\"incomplete expression\")\n    return stack[0]\n"
+      },
+      "id": "expression_engine-repair-2",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "tokens": [
+                "8",
+                "3",
+                "-"
+              ]
+            }
+          ],
+          "expected": 5,
+          "kwargs": {},
+          "name": "subtraction"
+        },
+        {
+          "args": [
+            {
+              "tokens": [
+                "-7",
+                "2",
+                "/"
+              ]
+            }
+          ],
+          "expected": -3,
+          "kwargs": {},
+          "name": "signed"
+        },
+        {
+          "args": [
+            {
+              "tokens": [
+                "-2",
+                "3",
+                "*",
+                "4",
+                "+"
+              ]
+            }
+          ],
+          "expected": -2,
+          "kwargs": {},
+          "name": "expression"
+        }
+      ],
+      "split": "test",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "expression_engine",
+        "multi_file"
+      ],
+      "title": "Repair expression engine contract 2"
+    },
+    {
+      "allowed_edit_files": [
+        "operands.py",
+        "operators.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Evaluate reverse-Polish integer expressions from a list of string tokens using +,-,*,/. Numeric tokens use Python int parsing. Division truncates toward zero with exact arbitrary-precision integer arithmetic, never float. Operand order is left then right. Raise ValueError for invalid numeric tokens, zero division, missing operands, or a final stack size other than one. Empty expression is invalid.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "expression_engine",
+      "files": {
+        "operands.py": "def parse(token):\n    if not isinstance(token,str):\n        raise ValueError(\"invalid token\")\n    try:\n        return int(token)\n    except ValueError:\n        raise ValueError(\"invalid integer\")\n",
+        "operators.py": "def apply(op, left, right):\n    if op == \"+\":\n        return left+right\n    if op == \"-\":\n        return right-left\n    if op == \"*\":\n        return left*right\n    if right == 0:\n        raise ValueError(\"division by zero\")\n    magnitude=abs(left)//abs(right)\n    return -magnitude if (left<0) != (right<0) else magnitude\n",
+        "service.py": "from operands import parse\nfrom operators import apply\ndef run(request):\n    stack=[]\n    for token in request[\"tokens\"]:\n        if token in (\"+\",\"-\",\"*\",\"/\"):\n            if len(stack)<2:\n                raise ValueError(\"missing operands\")\n            left,right=stack.pop(),stack.pop()\n            stack.append(apply(token,left,right))\n        else:\n            stack.append(parse(token))\n    if len(stack) != 1:\n        raise ValueError(\"incomplete expression\")\n    return stack[0]\n"
+      },
+      "id": "expression_engine-repair-3",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "tokens": [
+                "8",
+                "3",
+                "-"
+              ]
+            }
+          ],
+          "expected": 5,
+          "kwargs": {},
+          "name": "subtraction"
+        },
+        {
+          "args": [
+            {
+              "tokens": [
+                "-7",
+                "2",
+                "/"
+              ]
+            }
+          ],
+          "expected": -3,
+          "kwargs": {},
+          "name": "signed"
+        },
+        {
+          "args": [
+            {
+              "tokens": [
+                "-2",
+                "3",
+                "*",
+                "4",
+                "+"
+              ]
+            }
+          ],
+          "expected": -2,
+          "kwargs": {},
+          "name": "expression"
+        }
+      ],
+      "split": "test",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "expression_engine",
+        "multi_file"
+      ],
+      "title": "Repair expression engine contract 3"
+    },
+    {
+      "allowed_edit_files": [
+        "distance.py",
+        "normalization.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Rank candidate strings by unit-cost Levenshtein distance (insertion/deletion/substitution, no transposition) from query. Optional fold=true uses Unicode casefold before distance on both query and candidate; preserve original candidate spelling. Include distances <= strict nonnegative integer maximum. Return {value,distance,position}, sorted by distance then original zero-based position. Retain duplicates. Empty strings valid. Booleans invalid maximum.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "edit_distance",
+      "files": {
+        "distance.py": "def distance(a,b):\n    previous=list(range(len(b)+1))\n    for i,left in enumerate(a,1):\n        current=[i]\n        for j,right in enumerate(b,1):\n            current.append(min(current[-1]+1,previous[j]+1,previous[j-1]+(left==right)))\n        previous=current\n    return previous[-1]\n",
+        "normalization.py": "def normalize(value, fold):\n    return value.lower() if fold else value\n",
+        "service.py": "from normalization import normalize\nfrom distance import distance\ndef run(request):\n    query=normalize(request[\"query\"],request.get(\"fold\",False))\n    maximum=request[\"maximum\"]\n    if type(maximum) is not int or maximum<0:\n        raise ValueError(\"invalid maximum\")\n    result=[]\n    for position,value in enumerate(request[\"candidates\"]):\n        score=distance(query,normalize(value,request.get(\"fold\",False)))\n        if score<=maximum:\n            result.append({\"value\":value,\"distance\":score,\"position\":position})\n    return sorted(result,key=lambda row:(row[\"distance\"],row[\"position\"]))\n"
+      },
+      "id": "edit_distance-repair-1",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "candidates": [
+                "STRASSE",
+                "Stra\u00dfe"
+              ],
+              "fold": true,
+              "maximum": 0,
+              "query": "Stra\u00dfe"
+            }
+          ],
+          "expected": [
+            {
+              "distance": 0,
+              "position": 0,
+              "value": "STRASSE"
+            },
+            {
+              "distance": 0,
+              "position": 1,
+              "value": "Stra\u00dfe"
+            }
+          ],
+          "kwargs": {},
+          "name": "unicode"
+        },
+        {
+          "args": [
+            {
+              "candidates": [
+                "bat",
+                "cat",
+                "cats"
+              ],
+              "maximum": 1,
+              "query": "cat"
+            }
+          ],
+          "expected": [
+            {
+              "distance": 0,
+              "position": 1,
+              "value": "cat"
+            },
+            {
+              "distance": 1,
+              "position": 0,
+              "value": "bat"
+            },
+            {
+              "distance": 1,
+              "position": 2,
+              "value": "cats"
+            }
+          ],
+          "kwargs": {},
+          "name": "edits"
+        }
+      ],
+      "split": "test",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "edit_distance",
+        "multi_file"
+      ],
+      "title": "Repair edit distance contract 1"
+    },
+    {
+      "allowed_edit_files": [
+        "distance.py",
+        "normalization.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Rank candidate strings by unit-cost Levenshtein distance (insertion/deletion/substitution, no transposition) from query. Optional fold=true uses Unicode casefold before distance on both query and candidate; preserve original candidate spelling. Include distances <= strict nonnegative integer maximum. Return {value,distance,position}, sorted by distance then original zero-based position. Retain duplicates. Empty strings valid. Booleans invalid maximum.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "edit_distance",
+      "files": {
+        "distance.py": "def distance(a,b):\n    previous=list(range(len(b)+1))\n    for i,left in enumerate(a,1):\n        current=[i]\n        for j,right in enumerate(b,1):\n            current.append(min(current[-1]+1,previous[j]+1,previous[j-1]+(left!=right)))\n        previous=current\n    return previous[-1]\n",
+        "normalization.py": "def normalize(value, fold):\n    return value.lower() if fold else value\n",
+        "service.py": "from normalization import normalize\nfrom distance import distance\ndef run(request):\n    query=normalize(request[\"query\"],request.get(\"fold\",False))\n    maximum=request[\"maximum\"]\n    if type(maximum) is not int or maximum<0:\n        raise ValueError(\"invalid maximum\")\n    result=[]\n    for position,value in enumerate(request[\"candidates\"]):\n        score=distance(query,normalize(value,request.get(\"fold\",False)))\n        if score<maximum:\n            result.append({\"value\":value,\"distance\":score,\"position\":position})\n    return sorted(result,key=lambda row:(row[\"distance\"],row[\"position\"]))\n"
+      },
+      "id": "edit_distance-repair-2",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "candidates": [
+                "STRASSE",
+                "Stra\u00dfe"
+              ],
+              "fold": true,
+              "maximum": 0,
+              "query": "Stra\u00dfe"
+            }
+          ],
+          "expected": [
+            {
+              "distance": 0,
+              "position": 0,
+              "value": "STRASSE"
+            },
+            {
+              "distance": 0,
+              "position": 1,
+              "value": "Stra\u00dfe"
+            }
+          ],
+          "kwargs": {},
+          "name": "unicode"
+        },
+        {
+          "args": [
+            {
+              "candidates": [
+                "bat",
+                "cat",
+                "cats"
+              ],
+              "maximum": 1,
+              "query": "cat"
+            }
+          ],
+          "expected": [
+            {
+              "distance": 0,
+              "position": 1,
+              "value": "cat"
+            },
+            {
+              "distance": 1,
+              "position": 0,
+              "value": "bat"
+            },
+            {
+              "distance": 1,
+              "position": 2,
+              "value": "cats"
+            }
+          ],
+          "kwargs": {},
+          "name": "edits"
+        }
+      ],
+      "split": "test",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "edit_distance",
+        "multi_file"
+      ],
+      "title": "Repair edit distance contract 2"
+    },
+    {
+      "allowed_edit_files": [
+        "distance.py",
+        "normalization.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Rank candidate strings by unit-cost Levenshtein distance (insertion/deletion/substitution, no transposition) from query. Optional fold=true uses Unicode casefold before distance on both query and candidate; preserve original candidate spelling. Include distances <= strict nonnegative integer maximum. Return {value,distance,position}, sorted by distance then original zero-based position. Retain duplicates. Empty strings valid. Booleans invalid maximum.\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "edit_distance",
+      "files": {
+        "distance.py": "def distance(a,b):\n    previous=list(range(len(b)+1))\n    for i,left in enumerate(a,1):\n        current=[i]\n        for j,right in enumerate(b,1):\n            current.append(min(current[-1]+1,previous[j]+1,previous[j-1]+(left==right)))\n        previous=current\n    return previous[-1]\n",
+        "normalization.py": "def normalize(value, fold):\n    return value.casefold() if fold else value\n",
+        "service.py": "from normalization import normalize\nfrom distance import distance\ndef run(request):\n    query=normalize(request[\"query\"],request.get(\"fold\",False))\n    maximum=request[\"maximum\"]\n    if type(maximum) is not int or maximum<0:\n        raise ValueError(\"invalid maximum\")\n    result=[]\n    for position,value in enumerate(request[\"candidates\"]):\n        score=distance(query,normalize(value,request.get(\"fold\",False)))\n        if score<maximum:\n            result.append({\"value\":value,\"distance\":score,\"position\":position})\n    return sorted(result,key=lambda row:(row[\"distance\"],row[\"position\"]))\n"
+      },
+      "id": "edit_distance-repair-3",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "candidates": [
+                "STRASSE",
+                "Stra\u00dfe"
+              ],
+              "fold": true,
+              "maximum": 0,
+              "query": "Stra\u00dfe"
+            }
+          ],
+          "expected": [
+            {
+              "distance": 0,
+              "position": 0,
+              "value": "STRASSE"
+            },
+            {
+              "distance": 0,
+              "position": 1,
+              "value": "Stra\u00dfe"
+            }
+          ],
+          "kwargs": {},
+          "name": "unicode"
+        },
+        {
+          "args": [
+            {
+              "candidates": [
+                "bat",
+                "cat",
+                "cats"
+              ],
+              "maximum": 1,
+              "query": "cat"
+            }
+          ],
+          "expected": [
+            {
+              "distance": 0,
+              "position": 1,
+              "value": "cat"
+            },
+            {
+              "distance": 1,
+              "position": 0,
+              "value": "bat"
+            },
+            {
+              "distance": 1,
+              "position": 2,
+              "value": "cats"
+            }
+          ],
+          "kwargs": {},
+          "name": "edits"
+        }
+      ],
+      "split": "test",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "edit_distance",
+        "multi_file"
+      ],
+      "title": "Repair edit distance contract 3"
+    },
+    {
+      "allowed_edit_files": [
+        "clipping.py",
+        "rounding.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Source-derived artificial repair task, not an upstream reported bug. Adapted Boltons mathutils clamp/ceil/floor are BSD-3-Clause (Mahmoud Hashemi), immutable revision 4e5faa3d7e4008d89e0d8bf1ea87b6d9a061a16d. Original function bodies and notices are supplied. First clamp finite numeric value into [lower,upper], rejecting upper<lower with ValueError. Then mode=ceil/floor rounds using math.ceil/floor if options is null, or the smallest option >=value / largest option <=value after sorting provided numeric options. Raise ValueError if no such option or unknown mode. Do not mutate request or options. Adapter, artificial faults and all checks are independently newly authored for this pilot (not independently reviewed).\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "external_boltons_math",
+      "files": {
+        "clipping.py": "# Copyright (c) 2013, Mahmoud Hashemi\n#\n# Redistribution and use in source and binary forms, with or without\n# modification, are permitted provided that the following conditions are\n# met:\n#\n#    * Redistributions of source code must retain the above copyright\n#      notice, this list of conditions and the following disclaimer.\n#\n#    * Redistributions in binary form must reproduce the above\n#      copyright notice, this list of conditions and the following\n#      disclaimer in the documentation and/or other materials provided\n#      with the distribution.\n#\n#    * The names of the contributors may not be used to endorse or\n#      promote products derived from this software without specific\n#      prior written permission.\n#\n# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n# \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\n# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\n# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\n# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\n# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\n# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\n# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\n# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\ndef clamp(x, lower=float('-inf'), upper=float('inf')):\n    \"\"\"Limit a value to a given range.\n\n    Args:\n        x (int or float): Number to be clamped.\n        lower (int or float): Minimum value for x.\n        upper (int or float): Maximum value for x.\n\n    The returned value is guaranteed to be between *lower* and\n    *upper*. Integers, floats, and other comparable types can be\n    mixed.\n\n    >>> clamp(1.0, 0, 5)\n    1.0\n    >>> clamp(-1.0, 0, 5)\n    0\n    >>> clamp(101.0, 0, 5)\n    5\n    >>> clamp(123, upper=5)\n    5\n\n    Similar to `numpy's clip`_ function.\n\n    .. _numpy's clip: http://docs.scipy.org/doc/numpy/reference/generated/numpy.clip.html\n\n    \"\"\"\n    if upper < lower:\n        raise ValueError('expected upper bound (%r) >= lower bound (%r)'\n                         % (upper, lower))\n    return max(min(x, lower), upper)\n",
+        "rounding.py": "from math import ceil as _ceil, floor as _floor\nimport bisect\n# Copyright (c) 2013, Mahmoud Hashemi\n#\n# Redistribution and use in source and binary forms, with or without\n# modification, are permitted provided that the following conditions are\n# met:\n#\n#    * Redistributions of source code must retain the above copyright\n#      notice, this list of conditions and the following disclaimer.\n#\n#    * Redistributions in binary form must reproduce the above\n#      copyright notice, this list of conditions and the following\n#      disclaimer in the documentation and/or other materials provided\n#      with the distribution.\n#\n#    * The names of the contributors may not be used to endorse or\n#      promote products derived from this software without specific\n#      prior written permission.\n#\n# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n# \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\n# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\n# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\n# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\n# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\n# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\n# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\n# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\ndef ceil(x, options=None):\n    \"\"\"Return the ceiling of *x*. If *options* is set, return the smallest\n    integer or float from *options* that is greater than or equal to\n    *x*.\n\n    Args:\n        x (int or float): Number to be tested.\n        options (iterable): Optional iterable of arbitrary numbers\n          (ints or floats).\n\n    >>> VALID_CABLE_CSA = [1.5, 2.5, 4, 6, 10, 25, 35, 50]\n    >>> ceil(3.5, options=VALID_CABLE_CSA)\n    4\n    >>> ceil(4, options=VALID_CABLE_CSA)\n    4\n    \"\"\"\n    if options is None:\n        return _ceil(x)\n    options = sorted(options)\n    i = bisect.bisect_right(options, x)\n    if i == len(options):\n        raise ValueError(\"no ceil options greater than or equal to: %r\" % x)\n    return options[i]\n\n# Copyright (c) 2013, Mahmoud Hashemi\n#\n# Redistribution and use in source and binary forms, with or without\n# modification, are permitted provided that the following conditions are\n# met:\n#\n#    * Redistributions of source code must retain the above copyright\n#      notice, this list of conditions and the following disclaimer.\n#\n#    * Redistributions in binary form must reproduce the above\n#      copyright notice, this list of conditions and the following\n#      disclaimer in the documentation and/or other materials provided\n#      with the distribution.\n#\n#    * The names of the contributors may not be used to endorse or\n#      promote products derived from this software without specific\n#      prior written permission.\n#\n# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n# \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\n# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\n# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\n# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\n# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\n# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\n# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\n# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\ndef floor(x, options=None):\n    \"\"\"Return the floor of *x*. If *options* is set, return the largest\n    integer or float from *options* that is less than or equal to\n    *x*.\n\n    Args:\n        x (int or float): Number to be tested.\n        options (iterable): Optional iterable of arbitrary numbers\n          (ints or floats).\n\n    >>> VALID_CABLE_CSA = [1.5, 2.5, 4, 6, 10, 25, 35, 50]\n    >>> floor(3.5, options=VALID_CABLE_CSA)\n    2.5\n    >>> floor(2.5, options=VALID_CABLE_CSA)\n    2.5\n\n    \"\"\"\n    if options is None:\n        return _floor(x)\n    options = sorted(options)\n\n    i = bisect.bisect_right(options, x)\n    if not i:\n        raise ValueError(\"no floor options less than or equal to: %r\" % x)\n    return options[i - 1]\n",
+        "service.py": "from clipping import clamp\nfrom rounding import ceil, floor\ndef run(request):\n    value=clamp(request[\"value\"],request[\"lower\"],request[\"upper\"])\n    options=request.get(\"options\")\n    if request[\"mode\"] == \"ceil\":\n        return ceil(value, options)\n    if request[\"mode\"] == \"floor\":\n        return floor(value, options)\n    raise ValueError(\"unknown mode\")\n"
+      },
+      "id": "external_boltons_math-repair-1",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "lower": 0,
+              "mode": "ceil",
+              "options": [
+                2,
+                4,
+                8
+              ],
+              "upper": 10,
+              "value": 4
+            }
+          ],
+          "expected": 4,
+          "kwargs": {},
+          "name": "exact option"
+        },
+        {
+          "args": [
+            {
+              "lower": 0,
+              "mode": "ceil",
+              "options": null,
+              "upper": 10,
+              "value": -2
+            }
+          ],
+          "expected": 0,
+          "kwargs": {},
+          "name": "clamped low"
+        },
+        {
+          "args": [
+            {
+              "lower": 0,
+              "mode": "floor",
+              "options": null,
+              "upper": 10,
+              "value": 3.8
+            }
+          ],
+          "expected": 3,
+          "kwargs": {},
+          "name": "fraction floor"
+        }
+      ],
+      "split": "external",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "external_boltons_math",
+        "multi_file"
+      ],
+      "title": "Repair external boltons math contract 1"
+    },
+    {
+      "allowed_edit_files": [
+        "clipping.py",
+        "rounding.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Source-derived artificial repair task, not an upstream reported bug. Adapted Boltons mathutils clamp/ceil/floor are BSD-3-Clause (Mahmoud Hashemi), immutable revision 4e5faa3d7e4008d89e0d8bf1ea87b6d9a061a16d. Original function bodies and notices are supplied. First clamp finite numeric value into [lower,upper], rejecting upper<lower with ValueError. Then mode=ceil/floor rounds using math.ceil/floor if options is null, or the smallest option >=value / largest option <=value after sorting provided numeric options. Raise ValueError if no such option or unknown mode. Do not mutate request or options. Adapter, artificial faults and all checks are independently newly authored for this pilot (not independently reviewed).\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "external_boltons_math",
+      "files": {
+        "clipping.py": "# Copyright (c) 2013, Mahmoud Hashemi\n#\n# Redistribution and use in source and binary forms, with or without\n# modification, are permitted provided that the following conditions are\n# met:\n#\n#    * Redistributions of source code must retain the above copyright\n#      notice, this list of conditions and the following disclaimer.\n#\n#    * Redistributions in binary form must reproduce the above\n#      copyright notice, this list of conditions and the following\n#      disclaimer in the documentation and/or other materials provided\n#      with the distribution.\n#\n#    * The names of the contributors may not be used to endorse or\n#      promote products derived from this software without specific\n#      prior written permission.\n#\n# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n# \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\n# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\n# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\n# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\n# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\n# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\n# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\n# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\ndef clamp(x, lower=float('-inf'), upper=float('inf')):\n    \"\"\"Limit a value to a given range.\n\n    Args:\n        x (int or float): Number to be clamped.\n        lower (int or float): Minimum value for x.\n        upper (int or float): Maximum value for x.\n\n    The returned value is guaranteed to be between *lower* and\n    *upper*. Integers, floats, and other comparable types can be\n    mixed.\n\n    >>> clamp(1.0, 0, 5)\n    1.0\n    >>> clamp(-1.0, 0, 5)\n    0\n    >>> clamp(101.0, 0, 5)\n    5\n    >>> clamp(123, upper=5)\n    5\n\n    Similar to `numpy's clip`_ function.\n\n    .. _numpy's clip: http://docs.scipy.org/doc/numpy/reference/generated/numpy.clip.html\n\n    \"\"\"\n    if upper < lower:\n        raise ValueError('expected upper bound (%r) >= lower bound (%r)'\n                         % (upper, lower))\n    return max(min(x, lower), upper)\n",
+        "rounding.py": "from math import ceil as _ceil, floor as _floor\nimport bisect\n# Copyright (c) 2013, Mahmoud Hashemi\n#\n# Redistribution and use in source and binary forms, with or without\n# modification, are permitted provided that the following conditions are\n# met:\n#\n#    * Redistributions of source code must retain the above copyright\n#      notice, this list of conditions and the following disclaimer.\n#\n#    * Redistributions in binary form must reproduce the above\n#      copyright notice, this list of conditions and the following\n#      disclaimer in the documentation and/or other materials provided\n#      with the distribution.\n#\n#    * The names of the contributors may not be used to endorse or\n#      promote products derived from this software without specific\n#      prior written permission.\n#\n# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n# \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\n# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\n# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\n# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\n# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\n# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\n# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\n# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\ndef ceil(x, options=None):\n    \"\"\"Return the ceiling of *x*. If *options* is set, return the smallest\n    integer or float from *options* that is greater than or equal to\n    *x*.\n\n    Args:\n        x (int or float): Number to be tested.\n        options (iterable): Optional iterable of arbitrary numbers\n          (ints or floats).\n\n    >>> VALID_CABLE_CSA = [1.5, 2.5, 4, 6, 10, 25, 35, 50]\n    >>> ceil(3.5, options=VALID_CABLE_CSA)\n    4\n    >>> ceil(4, options=VALID_CABLE_CSA)\n    4\n    \"\"\"\n    if options is None:\n        return _ceil(x)\n    options = sorted(options)\n    i = bisect.bisect_left(options, x)\n    if i == len(options):\n        raise ValueError(\"no ceil options greater than or equal to: %r\" % x)\n    return options[i]\n\n# Copyright (c) 2013, Mahmoud Hashemi\n#\n# Redistribution and use in source and binary forms, with or without\n# modification, are permitted provided that the following conditions are\n# met:\n#\n#    * Redistributions of source code must retain the above copyright\n#      notice, this list of conditions and the following disclaimer.\n#\n#    * Redistributions in binary form must reproduce the above\n#      copyright notice, this list of conditions and the following\n#      disclaimer in the documentation and/or other materials provided\n#      with the distribution.\n#\n#    * The names of the contributors may not be used to endorse or\n#      promote products derived from this software without specific\n#      prior written permission.\n#\n# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n# \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\n# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\n# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\n# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\n# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\n# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\n# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\n# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\ndef floor(x, options=None):\n    \"\"\"Return the floor of *x*. If *options* is set, return the largest\n    integer or float from *options* that is less than or equal to\n    *x*.\n\n    Args:\n        x (int or float): Number to be tested.\n        options (iterable): Optional iterable of arbitrary numbers\n          (ints or floats).\n\n    >>> VALID_CABLE_CSA = [1.5, 2.5, 4, 6, 10, 25, 35, 50]\n    >>> floor(3.5, options=VALID_CABLE_CSA)\n    2.5\n    >>> floor(2.5, options=VALID_CABLE_CSA)\n    2.5\n\n    \"\"\"\n    if options is None:\n        return _floor(x)\n    options = sorted(options)\n\n    i = bisect.bisect_right(options, x)\n    if not i:\n        raise ValueError(\"no floor options less than or equal to: %r\" % x)\n    return options[i - 1]\n",
+        "service.py": "from clipping import clamp\nfrom rounding import ceil, floor\ndef run(request):\n    value=clamp(request[\"value\"],request[\"lower\"],request[\"upper\"])\n    options=request.get(\"options\")\n    if request[\"mode\"] == \"floor\":\n        return ceil(value, options)\n    if request[\"mode\"] == \"floor\":\n        return floor(value, options)\n    raise ValueError(\"unknown mode\")\n"
+      },
+      "id": "external_boltons_math-repair-2",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "lower": 0,
+              "mode": "ceil",
+              "options": [
+                2,
+                4,
+                8
+              ],
+              "upper": 10,
+              "value": 4
+            }
+          ],
+          "expected": 4,
+          "kwargs": {},
+          "name": "exact option"
+        },
+        {
+          "args": [
+            {
+              "lower": 0,
+              "mode": "ceil",
+              "options": null,
+              "upper": 10,
+              "value": -2
+            }
+          ],
+          "expected": 0,
+          "kwargs": {},
+          "name": "clamped low"
+        },
+        {
+          "args": [
+            {
+              "lower": 0,
+              "mode": "floor",
+              "options": null,
+              "upper": 10,
+              "value": 3.8
+            }
+          ],
+          "expected": 3,
+          "kwargs": {},
+          "name": "fraction floor"
+        }
+      ],
+      "split": "external",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "external_boltons_math",
+        "multi_file"
+      ],
+      "title": "Repair external boltons math contract 2"
+    },
+    {
+      "allowed_edit_files": [
+        "clipping.py",
+        "rounding.py",
+        "service.py"
+      ],
+      "category": "multi_file",
+      "description": "Source-derived artificial repair task, not an upstream reported bug. Adapted Boltons mathutils clamp/ceil/floor are BSD-3-Clause (Mahmoud Hashemi), immutable revision 4e5faa3d7e4008d89e0d8bf1ea87b6d9a061a16d. Original function bodies and notices are supplied. First clamp finite numeric value into [lower,upper], rejecting upper<lower with ValueError. Then mode=ceil/floor rounds using math.ceil/floor if options is null, or the smallest option >=value / largest option <=value after sorting provided numeric options. Raise ValueError if no such option or unknown mode. Do not mutate request or options. Adapter, artificial faults and all checks are independently newly authored for this pilot (not independently reviewed).\n\nTask: Restore the complete specified behavior in the supplied modules. Do not mutate the request.",
+      "difficulty": "medium",
+      "entrypoint": "service:run",
+      "family": "external_boltons_math",
+      "files": {
+        "clipping.py": "# Copyright (c) 2013, Mahmoud Hashemi\n#\n# Redistribution and use in source and binary forms, with or without\n# modification, are permitted provided that the following conditions are\n# met:\n#\n#    * Redistributions of source code must retain the above copyright\n#      notice, this list of conditions and the following disclaimer.\n#\n#    * Redistributions in binary form must reproduce the above\n#      copyright notice, this list of conditions and the following\n#      disclaimer in the documentation and/or other materials provided\n#      with the distribution.\n#\n#    * The names of the contributors may not be used to endorse or\n#      promote products derived from this software without specific\n#      prior written permission.\n#\n# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n# \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\n# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\n# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\n# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\n# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\n# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\n# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\n# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\ndef clamp(x, lower=float('-inf'), upper=float('inf')):\n    \"\"\"Limit a value to a given range.\n\n    Args:\n        x (int or float): Number to be clamped.\n        lower (int or float): Minimum value for x.\n        upper (int or float): Maximum value for x.\n\n    The returned value is guaranteed to be between *lower* and\n    *upper*. Integers, floats, and other comparable types can be\n    mixed.\n\n    >>> clamp(1.0, 0, 5)\n    1.0\n    >>> clamp(-1.0, 0, 5)\n    0\n    >>> clamp(101.0, 0, 5)\n    5\n    >>> clamp(123, upper=5)\n    5\n\n    Similar to `numpy's clip`_ function.\n\n    .. _numpy's clip: http://docs.scipy.org/doc/numpy/reference/generated/numpy.clip.html\n\n    \"\"\"\n    if upper < lower:\n        raise ValueError('expected upper bound (%r) >= lower bound (%r)'\n                         % (upper, lower))\n    return min(max(x, lower), upper)\n",
+        "rounding.py": "from math import ceil as _ceil, floor as _floor\nimport bisect\n# Copyright (c) 2013, Mahmoud Hashemi\n#\n# Redistribution and use in source and binary forms, with or without\n# modification, are permitted provided that the following conditions are\n# met:\n#\n#    * Redistributions of source code must retain the above copyright\n#      notice, this list of conditions and the following disclaimer.\n#\n#    * Redistributions in binary form must reproduce the above\n#      copyright notice, this list of conditions and the following\n#      disclaimer in the documentation and/or other materials provided\n#      with the distribution.\n#\n#    * The names of the contributors may not be used to endorse or\n#      promote products derived from this software without specific\n#      prior written permission.\n#\n# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n# \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\n# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\n# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\n# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\n# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\n# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\n# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\n# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\ndef ceil(x, options=None):\n    \"\"\"Return the ceiling of *x*. If *options* is set, return the smallest\n    integer or float from *options* that is greater than or equal to\n    *x*.\n\n    Args:\n        x (int or float): Number to be tested.\n        options (iterable): Optional iterable of arbitrary numbers\n          (ints or floats).\n\n    >>> VALID_CABLE_CSA = [1.5, 2.5, 4, 6, 10, 25, 35, 50]\n    >>> ceil(3.5, options=VALID_CABLE_CSA)\n    4\n    >>> ceil(4, options=VALID_CABLE_CSA)\n    4\n    \"\"\"\n    if options is None:\n        return _ceil(x)\n    options = sorted(options)\n    i = bisect.bisect_right(options, x)\n    if i == len(options):\n        raise ValueError(\"no ceil options greater than or equal to: %r\" % x)\n    return options[i]\n\n# Copyright (c) 2013, Mahmoud Hashemi\n#\n# Redistribution and use in source and binary forms, with or without\n# modification, are permitted provided that the following conditions are\n# met:\n#\n#    * Redistributions of source code must retain the above copyright\n#      notice, this list of conditions and the following disclaimer.\n#\n#    * Redistributions in binary form must reproduce the above\n#      copyright notice, this list of conditions and the following\n#      disclaimer in the documentation and/or other materials provided\n#      with the distribution.\n#\n#    * The names of the contributors may not be used to endorse or\n#      promote products derived from this software without specific\n#      prior written permission.\n#\n# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n# \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\n# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR\n# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\n# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\n# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\n# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\n# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\n# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\ndef floor(x, options=None):\n    \"\"\"Return the floor of *x*. If *options* is set, return the largest\n    integer or float from *options* that is less than or equal to\n    *x*.\n\n    Args:\n        x (int or float): Number to be tested.\n        options (iterable): Optional iterable of arbitrary numbers\n          (ints or floats).\n\n    >>> VALID_CABLE_CSA = [1.5, 2.5, 4, 6, 10, 25, 35, 50]\n    >>> floor(3.5, options=VALID_CABLE_CSA)\n    2.5\n    >>> floor(2.5, options=VALID_CABLE_CSA)\n    2.5\n\n    \"\"\"\n    if options is None:\n        return _floor(x)\n    options = sorted(options)\n\n    i = bisect.bisect_right(options, x)\n    if not i:\n        raise ValueError(\"no floor options less than or equal to: %r\" % x)\n    return options[i - 1]\n",
+        "service.py": "from clipping import clamp\nfrom rounding import ceil, floor\ndef run(request):\n    value=clamp(request[\"value\"],request[\"lower\"],request[\"upper\"])\n    options=request.get(\"options\")\n    if request[\"mode\"] == \"floor\":\n        return ceil(value, options)\n    if request[\"mode\"] == \"floor\":\n        return floor(value, options)\n    raise ValueError(\"unknown mode\")\n"
+      },
+      "id": "external_boltons_math-repair-3",
+      "public_cases": [
+        {
+          "args": [
+            {
+              "lower": 0,
+              "mode": "ceil",
+              "options": [
+                2,
+                4,
+                8
+              ],
+              "upper": 10,
+              "value": 4
+            }
+          ],
+          "expected": 4,
+          "kwargs": {},
+          "name": "exact option"
+        },
+        {
+          "args": [
+            {
+              "lower": 0,
+              "mode": "ceil",
+              "options": null,
+              "upper": 10,
+              "value": -2
+            }
+          ],
+          "expected": 0,
+          "kwargs": {},
+          "name": "clamped low"
+        },
+        {
+          "args": [
+            {
+              "lower": 0,
+              "mode": "floor",
+              "options": null,
+              "upper": 10,
+              "value": 3.8
+            }
+          ],
+          "expected": 3,
+          "kwargs": {},
+          "name": "fraction floor"
+        }
+      ],
+      "split": "external",
+      "success_criterion": "All visible and held-out behavioral checks pass, including compatibility regressions; no edits outside the allowed repository source files.",
+      "summary": "Restore two interacting source-module contracts.",
+      "tags": [
+        "authored",
+        "python",
+        "miniature-repository",
+        "external_boltons_math",
+        "multi_file"
+      ],
+      "title": "Repair external boltons math contract 3"
+    }
+  ]
+}

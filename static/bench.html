@@ -10,8 +10,9 @@
     />
     <title>ForgeBench — Agent research · Stelios Zacharioudakis</title>
     <link rel="icon" type="image/png" href="assets/personal-logo.png" />
-    <link rel="stylesheet" href="bench.css?v=0.2.1" />
-    <script src="bench.js?v=0.2.1" defer></script>
+    <link rel="stylesheet" href="bench.css?v=0.3-explorer1" />
+    <script src="bench.js?v=0.3-explorer1" defer></script>
+    <script src="recruiter-live.js?v=1" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to benchmark</a>
@@ -41,10 +42,10 @@
         <div class="page-heading">
           <div>
             <p class="eyebrow">ForgeRL / Agent research</p>
-            <h1 id="page-title">The evidence behind the router.</h1>
+            <h1 id="page-title">Inspect the decision.<br />Check the result.</h1>
             <p class="lede">
-              Recorded coding-agent experiments. Compare policies, inspect the
-              patch, follow every decision.
+              Coding-agent experiments with the source, patches and test results
+              kept together. Start with a real recorded run.
             </p>
           </div>
           <div class="publication-status">
@@ -52,12 +53,19 @@
             <p id="last-run">Last benchmark run: —</p>
           </div>
         </div>
-        <p class="notice">
-          <strong>New research: v0.3 transfer pilot.</strong>
-          162 recorded episodes across six policies.
-          <a href="https://github.com/stelioszach03/forgerl/blob/main/artifacts/forgebench/v0.3-pilot1/report/pilot-report.md">Read the separate results and full traces</a>.
-          The explorer below preserves the v0.2 study.
-        </p>
+        <div class="study-controls">
+          <div><label for="study-select">Recorded study</label>
+            <select id="study-select"><option value="v0.3-pilot1">v0.3 transfer pilot · latest</option><option value="v0.2">v0.2 · preserved study</option></select>
+          </div>
+          <div id="comparison-split-control"><label for="comparison-split">Compare a sample</label>
+            <select id="comparison-split"><option value="test">Primary test</option><option value="validation">Validation</option><option value="external">Source-derived tasks</option></select>
+          </div>
+          <p class="recorded-mode"><span class="mode-dot" aria-hidden="true"></span>Recorded evidence<br /><small>Browsing and replay spend no API credits.</small></p>
+        </div>
+        <div class="walkthrough-entry" id="walkthrough-entry" hidden>
+          <div><p class="eyebrow">A quick look at the system</p><p id="walkthrough-description">Follow a real repair, then inspect a case where verification missed a failure.</p></div>
+          <div class="walkthrough-actions"><button type="button" id="walkthrough-repair" class="primary-action">Inspect a real repair <span aria-hidden="true">→</span></button><button type="button" id="walkthrough-miss" class="quiet-action">See a verification miss</button></div>
+        </div>
         <div class="notice error" id="load-error" role="alert" hidden></div>
         <dl class="study-strip" aria-label="Study overview">
           <div>
@@ -117,8 +125,8 @@
               <div>
                 <dt>Execution</dt>
                 <dd>
-                  Research runs only. Browsing this page does not start
-                  inference.
+                  Recorded research results. Browsing and replay do not start
+                  inference; an optional live trial is separate.
                 </dd>
               </div>
               <div>
@@ -131,6 +139,7 @@
             </dl>
             <a
               class="text-link"
+              id="result-artifact"
               href="api/forgebench"
               target="_blank"
               rel="noopener"
@@ -169,7 +178,8 @@
                 <th scope="col">Attempts</th>
                 <th scope="col">Regressions</th>
                 <th scope="col">After repair</th>
-                <th scope="col">Escalations</th>
+              <th scope="col">Escalations</th>
+              <th scope="col" id="verify-column" hidden>VERIFY / task</th>
               </tr>
             </thead>
             <tbody id="policy-table">
@@ -399,6 +409,12 @@ No source loaded.</pre
               Observable prompts, supplied files, orchestration, patches and
               outcomes. Private model reasoning is not recorded.
             </p>
+            <div class="replay-controls" id="replay-controls" hidden>
+              <div class="replay-actions"><button id="replay-play" class="primary-action" type="button">Play recorded trace</button><button id="replay-next" class="quiet-action" type="button">Next event</button><button id="replay-all" class="quiet-action" type="button">Show all events</button></div>
+              <label for="replay-step">Recorded event <span id="replay-position">—</span></label>
+              <input id="replay-step" type="range" min="1" max="1" value="1" />
+              <p id="replay-status" class="annotation" role="status">Playback only. No new model request.</p>
+            </div>
             <ol class="trajectory" id="trajectory">
               <li class="empty-copy">No recorded run selected.</li>
             </ol>
@@ -493,6 +509,20 @@ No recorded candidate selected.</pre
         </section>
       </section>
 
+      <section class="live-trial-section" id="live-trial" aria-labelledby="live-title" hidden>
+        <div class="section-heading"><div><p class="eyebrow">Optional fresh trial</p><h2 id="live-title">Try one new candidate.</h2></div><span class="status-label" id="live-status">Checking availability</span></div>
+        <div class="live-trial-layout">
+          <div><p class="live-description">One published repair task, one new model request, then isolated test checks. This trial does not change the benchmark.</p>
+            <p id="live-availability" class="annotation" role="status">Recorded replay remains available.</p>
+            <div class="live-actions"><button type="button" id="live-start" class="primary-action" disabled>Run one fresh trial</button><button type="button" id="live-recorded" class="quiet-action">Explore a recorded repair</button><button type="button" id="live-refresh" class="quiet-action" hidden>Refresh trial status</button></div>
+            <a id="live-task-link" class="text-link" href="?version=v0.3-pilot1&amp;task=binary_protocol-repair-1#explorer">Inspect the fixed task <span aria-hidden="true">↗</span></a>
+            <details class="live-boundaries"><summary>Limits and privacy</summary><p>One trial per client network each UTC day. The shared allowance is at most $0.05 per UTC day and $1 per UTC month, within the original project budget. No custom prompts, uploaded code or account registration. Session cookies and a privately salted network identifier enforce admission limits. Model credentials stay in the private worker.</p></details>
+          </div>
+          <div class="live-observation" aria-live="polite"><p id="live-progress">A fresh trial starts only when you press the button.</p><dl id="live-metrics" class="detail-metrics" hidden></dl><ol id="live-events" class="live-events"></ol></div>
+        </div>
+        <details id="live-patch-section" hidden><summary>Inspect this live trial’s recorded patch</summary><pre class="diff-code" id="live-patch" tabindex="0"></pre></details>
+      </section>
+
       <section
         class="protocol-section"
         id="protocol"
@@ -514,7 +544,7 @@ No recorded candidate selected.</pre
         <div class="protocol-grid">
           <div>
             <h3>What the controller chooses</h3>
-            <p>
+            <p id="controller-explanation">
               The policy can retry, repair, escalate, roll back or stop. The
               language models remain unchanged. A learned controller uses
               training transitions; unseen states use a declared fallback.

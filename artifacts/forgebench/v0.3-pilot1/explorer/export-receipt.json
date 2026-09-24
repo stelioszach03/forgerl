@@ -1,0 +1,12 @@
+{
+  "export_source_sha256": "291fc90d4c64588c55799ba8caf8f7eee03867fd6027d0143a33e241ea8368f8",
+  "outputs": {
+    "benchmark.json": "801817b5aaa7f5b816da5c3738ff9477ab3d5bf8019a83184083796cde1ba769",
+    "tasks.json": "7f1c65bd2b0b9b3366ccdccb12e5c08ce8eececb8bec261e62529de6ade69bf6",
+    "trajectories.jsonl": "dfcc4441f763ea49112a96f50c60d0c2b214c5318fcf5ee47e8ead8264f451a2"
+  },
+  "recorded_runs": 162,
+  "source_freeze_sha256": "ae5156ee716a6babff6ef2871a988988c0917ec4a63b0f18bc22ad41848dd3ae",
+  "source_manifest_sha256": "e054238c12ab851bd28b5dfd2608c13a2db840463d75695fd30c9c3ceebf0ee6",
+  "tasks": 27
+}

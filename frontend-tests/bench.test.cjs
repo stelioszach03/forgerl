@@ -210,7 +210,7 @@ test("a recorded 429 distinguishes rate limiting and unconfirmed budget reserve;
 function page(benchmark = notRun, custom, suffix = "") {
   const calls = [];
   const dom = new JSDOM(html, {
-    url: `https://stelioszach.com/demos/forgerl/bench.html${suffix}`,
+    url: `https://stelioszach.com/demos/forgerl/bench.html${suffix || "?version=v0.2"}`,
     runScripts: "outside-only",
     pretendToBeVisual: true,
   });
