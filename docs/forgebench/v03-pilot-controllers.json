@@ -1,0 +1,574 @@
+{
+  "evaluation_used_for_fit": false,
+  "fitted_q": {
+    "action_counts": {
+      "forgebench-state-v2|none|0|3|cheap|unchanged|False|False|normal": {
+        "escalate": 71,
+        "retry": 81
+      },
+      "forgebench-state-v2|none|1|3|cheap|unchanged|False|False|normal": {
+        "escalate": 4,
+        "repair": 2,
+        "retry": 3
+      },
+      "forgebench-state-v2|none|1|3|strong|unchanged|False|False|normal": {
+        "retry": 2
+      },
+      "forgebench-state-v2|none|2|3|cheap|unchanged|False|False|normal": {
+        "repair": 1,
+        "retry": 1,
+        "stop": 1
+      },
+      "forgebench-state-v2|none|3|3|cheap|unchanged|False|False|normal": {
+        "stop": 1
+      },
+      "forgebench-state-v2|some|0|3|cheap|unchanged|False|False|normal": {
+        "escalate": 8,
+        "retry": 9
+      },
+      "forgebench-state-v2|some|1|3|cheap|improved|False|False|normal": {
+        "escalate": 1,
+        "repair": 4,
+        "retry": 3
+      },
+      "forgebench-state-v2|some|1|3|cheap|unchanged|False|False|normal": {
+        "escalate": 1,
+        "repair": 1
+      },
+      "forgebench-state-v2|some|1|3|strong|improved|False|False|normal": {
+        "retry": 3
+      },
+      "forgebench-state-v2|some|2|3|strong|improved|False|False|normal": {
+        "stop": 1
+      },
+      "forgebench-state-v2|some|3|2|cheap|unchanged|False|False|normal": {
+        "stop": 1
+      },
+      "forgebench-state-v2|some|3|3|cheap|improved|False|False|normal": {
+        "repair": 1
+      }
+    },
+    "algorithm": "offline_tabular_fitted_q",
+    "diagnostics": {
+      "evaluation_used_for_fit": false,
+      "fallback": "hand-written router for untrained artifacts or unseen states/actions",
+      "minimum_samples": 12,
+      "tasks": 30,
+      "transitions": 200
+    },
+    "feature_version": "forgebench-state-v2",
+    "gamma": 0.9,
+    "language_model_weights_updated": false,
+    "q_values": {
+      "forgebench-state-v2|none|0|3|cheap|unchanged|False|False|normal": {
+        "escalate": 0.9500445985915492,
+        "retry": 0.9288749660493827
+      },
+      "forgebench-state-v2|none|1|3|cheap|unchanged|False|False|normal": {
+        "escalate": 0.7494237499999999,
+        "repair": 0.9993725,
+        "retry": -0.00049
+      },
+      "forgebench-state-v2|none|1|3|strong|unchanged|False|False|normal": {
+        "retry": 0.9993974999999999
+      },
+      "forgebench-state-v2|none|2|3|cheap|unchanged|False|False|normal": {
+        "repair": -0.000595,
+        "retry": -0.0012425000000000001,
+        "stop": 0.0
+      },
+      "forgebench-state-v2|none|3|3|cheap|unchanged|False|False|normal": {
+        "stop": 0.0
+      },
+      "forgebench-state-v2|some|0|3|cheap|unchanged|False|False|normal": {
+        "escalate": 0.9992675,
+        "retry": 0.9769198888888889
+      },
+      "forgebench-state-v2|some|1|3|cheap|improved|False|False|normal": {
+        "escalate": 0.999525,
+        "repair": 0.9987425,
+        "retry": 0.9994183333333333
+      },
+      "forgebench-state-v2|some|1|3|cheap|unchanged|False|False|normal": {
+        "escalate": 0.999155,
+        "repair": 0.998235
+      },
+      "forgebench-state-v2|some|1|3|strong|improved|False|False|normal": {
+        "retry": 0.9994133333333334
+      },
+      "forgebench-state-v2|some|2|3|strong|improved|False|False|normal": {
+        "stop": 0.0
+      },
+      "forgebench-state-v2|some|3|2|cheap|unchanged|False|False|normal": {
+        "stop": 0.0
+      },
+      "forgebench-state-v2|some|3|3|cheap|improved|False|False|normal": {
+        "repair": -0.0006750000000000001
+      }
+    },
+    "trained": true,
+    "training_digest": "542e080a96a3a64371e2b5c98b4148a08143289cdc04fa660431cdfe20d43364"
+  },
+  "kind": "frozen_observational_transfer_controllers",
+  "sha256": "be42ddeb7ef27bbe054abbcef5ae79400eb62dd56cce87ac08eda77f06764d50",
+  "supervised_cost": {
+    "action_counts": {
+      "forgebench-state-v2|none|0|3|cheap|unchanged|False|False|normal": {
+        "escalate": 71,
+        "retry": 81
+      },
+      "forgebench-state-v2|none|1|3|cheap|unchanged|False|False|normal": {
+        "escalate": 4,
+        "repair": 2,
+        "retry": 3
+      },
+      "forgebench-state-v2|none|1|3|strong|unchanged|False|False|normal": {
+        "retry": 2
+      },
+      "forgebench-state-v2|none|2|3|cheap|unchanged|False|False|normal": {
+        "repair": 1,
+        "retry": 1,
+        "stop": 1
+      },
+      "forgebench-state-v2|none|3|3|cheap|unchanged|False|False|normal": {
+        "stop": 1
+      },
+      "forgebench-state-v2|some|0|3|cheap|unchanged|False|False|normal": {
+        "escalate": 8,
+        "retry": 9
+      },
+      "forgebench-state-v2|some|1|3|cheap|improved|False|False|normal": {
+        "escalate": 1,
+        "repair": 4,
+        "retry": 3
+      },
+      "forgebench-state-v2|some|1|3|cheap|unchanged|False|False|normal": {
+        "escalate": 1,
+        "repair": 1
+      },
+      "forgebench-state-v2|some|1|3|strong|improved|False|False|normal": {
+        "retry": 3
+      },
+      "forgebench-state-v2|some|2|3|strong|improved|False|False|normal": {
+        "stop": 1
+      },
+      "forgebench-state-v2|some|3|2|cheap|unchanged|False|False|normal": {
+        "stop": 1
+      },
+      "forgebench-state-v2|some|3|3|cheap|improved|False|False|normal": {
+        "repair": 1
+      }
+    },
+    "algorithm": "observed_discounted_return_cell_means",
+    "cost_weight": 5.0,
+    "counterfactual_labels": false,
+    "feature_version": "forgebench-state-v2",
+    "gamma": 0.9,
+    "importance_weighting": false,
+    "selection_bias": "Only completed historical training episodes; absent actions are unsupported, not negative labels.",
+    "target": "discounted sum of logged rewards (terminal actual success minus 5 * actual accounted action cost)",
+    "trained": true,
+    "training_digest": "db9cf2f0b23ebd6edf09f8ea385e1d44b2531ad3b8384e291b67da0553dabe03",
+    "values": {
+      "forgebench-state-v2|none|0|3|cheap|unchanged|False|False|normal": {
+        "escalate": 0.9500445985915492,
+        "retry": 0.8843806743827161
+      },
+      "forgebench-state-v2|none|1|3|cheap|unchanged|False|False|normal": {
+        "escalate": 0.7494237499999999,
+        "repair": 0.9993725,
+        "retry": -0.00104125
+      },
+      "forgebench-state-v2|none|1|3|strong|unchanged|False|False|normal": {
+        "retry": 0.9993974999999999
+      },
+      "forgebench-state-v2|none|2|3|cheap|unchanged|False|False|normal": {
+        "repair": -0.000595,
+        "retry": -0.0012425000000000001,
+        "stop": 0.0
+      },
+      "forgebench-state-v2|none|3|3|cheap|unchanged|False|False|normal": {
+        "stop": 0.0
+      },
+      "forgebench-state-v2|some|0|3|cheap|unchanged|False|False|normal": {
+        "escalate": 0.9992675,
+        "retry": 0.9768278888888889
+      },
+      "forgebench-state-v2|some|1|3|cheap|improved|False|False|normal": {
+        "escalate": 0.999525,
+        "repair": 0.9987425,
+        "retry": 0.9994183333333333
+      },
+      "forgebench-state-v2|some|1|3|cheap|unchanged|False|False|normal": {
+        "escalate": 0.999155,
+        "repair": 0.998235
+      },
+      "forgebench-state-v2|some|1|3|strong|improved|False|False|normal": {
+        "retry": 0.9994133333333334
+      },
+      "forgebench-state-v2|some|2|3|strong|improved|False|False|normal": {
+        "stop": 0.0
+      },
+      "forgebench-state-v2|some|3|2|cheap|unchanged|False|False|normal": {
+        "stop": 0.0
+      },
+      "forgebench-state-v2|some|3|3|cheap|improved|False|False|normal": {
+        "repair": -0.0006750000000000001
+      }
+    },
+    "verify_selection": "shared deterministic verify-on-visible-green",
+    "verify_support": 0
+  },
+  "training_catalog_sha256": "ccb6b8e3996e067e24ecfb4b2f14d6ffb543380b10acb7bcfbc4f19d6b6f116b",
+  "training_inputs": [
+    {
+      "evaluation_artifacts_read": false,
+      "manifest_sha256": "963d6b7c15771aaf5354ed02c32749719c977265e1b33f2cadb6bcee2cf7cd65",
+      "protocol": "forgebench-v0.2-prespecified",
+      "runtime_source_sha256": "3151c7aabf76e10f17aa680749f14584cc5383490257f86d2b356617e4624458",
+      "seed": 17,
+      "source_failed_training_episodes": 3,
+      "source_id": "forgebench-v02-seed17",
+      "source_training_episodes": 60,
+      "task_manifest_sha256": "ccb6b8e3996e067e24ecfb4b2f14d6ffb543380b10acb7bcfbc4f19d6b6f116b",
+      "training_transitions": 63,
+      "transitions_sha256": "1f704bdf61c751c1ad6304a5f16fc9ce094ccc00bae2f3c99d9e2a849f249476"
+    },
+    {
+      "evaluation_artifacts_read": false,
+      "manifest_sha256": "98792b3c5ffc70c3e53e36b4a0462f58940c89d7c32438ace0302dcfc079426e",
+      "protocol": "forgebench-v0.2-prespecified",
+      "runtime_source_sha256": "3151c7aabf76e10f17aa680749f14584cc5383490257f86d2b356617e4624458",
+      "seed": 29,
+      "source_failed_training_episodes": 7,
+      "source_id": "forgebench-v02-seed29",
+      "source_training_episodes": 60,
+      "task_manifest_sha256": "ccb6b8e3996e067e24ecfb4b2f14d6ffb543380b10acb7bcfbc4f19d6b6f116b",
+      "training_transitions": 63,
+      "transitions_sha256": "3eca4dc1a8734aa17a10168f2619f417cc8d9d9d6570491e74f046297d58a1e6"
+    },
+    {
+      "evaluation_artifacts_read": false,
+      "manifest_sha256": "20b291d73eaf30df7d86903ed74be3e10788e8954644265f91df84b9978d6553",
+      "protocol": "forgebench-v0.2-prespecified",
+      "runtime_source_sha256": "3151c7aabf76e10f17aa680749f14584cc5383490257f86d2b356617e4624458",
+      "seed": 43,
+      "source_failed_training_episodes": 1,
+      "source_id": "forgebench-v02-seed43",
+      "source_training_episodes": 60,
+      "task_manifest_sha256": "ccb6b8e3996e067e24ecfb4b2f14d6ffb543380b10acb7bcfbc4f19d6b6f116b",
+      "training_transitions": 74,
+      "transitions_sha256": "c0a6531685756b32fd2490154eced2ecc84a1691e599afd7471341abf3d10e58"
+    }
+  ],
+  "training_support": {
+    "action_counts": {
+      "escalate": 85,
+      "repair": 9,
+      "retry": 102,
+      "stop": 4
+    },
+    "audit_source_sha256": "94cf2b024c8a2ca05d811b17bc964c170f1c1d4ddad1511c87f857d8df226614",
+    "causal_or_off_policy_estimate": null,
+    "encoded_states": 12,
+    "evaluation_rows_used": 0,
+    "family_transition_counts": {
+      "billing": 39,
+      "delivery": 32,
+      "inventory": 31,
+      "permissions": 37,
+      "publishing": 28,
+      "scheduling": 33
+    },
+    "feature_version": "forgebench-state-v2",
+    "inputs": [
+      {
+        "evaluation_artifacts_read": false,
+        "manifest_sha256": "963d6b7c15771aaf5354ed02c32749719c977265e1b33f2cadb6bcee2cf7cd65",
+        "protocol": "forgebench-v0.2-prespecified",
+        "runtime_source_sha256": "3151c7aabf76e10f17aa680749f14584cc5383490257f86d2b356617e4624458",
+        "seed": 17,
+        "source_failed_training_episodes": 3,
+        "source_id": "forgebench-v02-seed17",
+        "source_training_episodes": 60,
+        "task_manifest_sha256": "ccb6b8e3996e067e24ecfb4b2f14d6ffb543380b10acb7bcfbc4f19d6b6f116b",
+        "training_transitions": 63,
+        "transitions_sha256": "1f704bdf61c751c1ad6304a5f16fc9ce094ccc00bae2f3c99d9e2a849f249476"
+      },
+      {
+        "evaluation_artifacts_read": false,
+        "manifest_sha256": "98792b3c5ffc70c3e53e36b4a0462f58940c89d7c32438ace0302dcfc079426e",
+        "protocol": "forgebench-v0.2-prespecified",
+        "runtime_source_sha256": "3151c7aabf76e10f17aa680749f14584cc5383490257f86d2b356617e4624458",
+        "seed": 29,
+        "source_failed_training_episodes": 7,
+        "source_id": "forgebench-v02-seed29",
+        "source_training_episodes": 60,
+        "task_manifest_sha256": "ccb6b8e3996e067e24ecfb4b2f14d6ffb543380b10acb7bcfbc4f19d6b6f116b",
+        "training_transitions": 63,
+        "transitions_sha256": "3eca4dc1a8734aa17a10168f2619f417cc8d9d9d6570491e74f046297d58a1e6"
+      },
+      {
+        "evaluation_artifacts_read": false,
+        "manifest_sha256": "20b291d73eaf30df7d86903ed74be3e10788e8954644265f91df84b9978d6553",
+        "protocol": "forgebench-v0.2-prespecified",
+        "runtime_source_sha256": "3151c7aabf76e10f17aa680749f14584cc5383490257f86d2b356617e4624458",
+        "seed": 43,
+        "source_failed_training_episodes": 1,
+        "source_id": "forgebench-v02-seed43",
+        "source_training_episodes": 60,
+        "task_manifest_sha256": "ccb6b8e3996e067e24ecfb4b2f14d6ffb543380b10acb7bcfbc4f19d6b6f116b",
+        "training_transitions": 74,
+        "transitions_sha256": "c0a6531685756b32fd2490154eced2ecc84a1691e599afd7471341abf3d10e58"
+      }
+    ],
+    "interpretation": [
+      "This is observed training support, not an estimate of any new policy's performance.",
+      "Missing logged propensities block supported importance-weighted off-policy claims from these logs; propensities were not reconstructed from rollout pseudocode.",
+      "Missing propensities do not prevent ordinary supervised/observational policy fitting, but such a policy still needs declared training targets and fresh prospective evaluation.",
+      "Even complete propensities would not by themselves establish causal identification or sufficient support.",
+      "Unchosen actions have no observed counterfactual reward and are never labeled as failed actions.",
+      "Counts use the current v0.2 state encoding; legal actions are unioned within each observed bin, not estimates of coverage of all possible states.",
+      "Training terminal rewards may include final correctness; no validation/test labels or trajectories were loaded."
+    ],
+    "kind": "descriptive_training_support_audit",
+    "legal_pairs_in_observed_state_bins": 41,
+    "logged_propensities": 0,
+    "missing_propensities": 200,
+    "models_fitted": 0,
+    "observed_state_action_pairs": 21,
+    "propensity_prerequisite_satisfied": false,
+    "states": [
+      {
+        "encoded_state": "forgebench-state-v2|none|0|3|cheap|unchanged|False|False|normal",
+        "legal_action_union": [
+          "escalate",
+          "retry",
+          "stop"
+        ],
+        "observed_action_counts": {
+          "escalate": 71,
+          "retry": 81
+        },
+        "unobserved_legal_actions": [
+          "stop"
+        ]
+      },
+      {
+        "encoded_state": "forgebench-state-v2|none|1|3|cheap|unchanged|False|False|normal",
+        "legal_action_union": [
+          "escalate",
+          "repair",
+          "retry",
+          "stop"
+        ],
+        "observed_action_counts": {
+          "escalate": 4,
+          "repair": 2,
+          "retry": 3
+        },
+        "unobserved_legal_actions": [
+          "stop"
+        ]
+      },
+      {
+        "encoded_state": "forgebench-state-v2|none|1|3|strong|unchanged|False|False|normal",
+        "legal_action_union": [
+          "repair",
+          "retry",
+          "stop"
+        ],
+        "observed_action_counts": {
+          "retry": 2
+        },
+        "unobserved_legal_actions": [
+          "repair",
+          "stop"
+        ]
+      },
+      {
+        "encoded_state": "forgebench-state-v2|none|2|3|cheap|unchanged|False|False|normal",
+        "legal_action_union": [
+          "escalate",
+          "repair",
+          "retry",
+          "stop"
+        ],
+        "observed_action_counts": {
+          "repair": 1,
+          "retry": 1,
+          "stop": 1
+        },
+        "unobserved_legal_actions": [
+          "escalate"
+        ]
+      },
+      {
+        "encoded_state": "forgebench-state-v2|none|3|3|cheap|unchanged|False|False|normal",
+        "legal_action_union": [
+          "escalate",
+          "repair",
+          "retry",
+          "stop"
+        ],
+        "observed_action_counts": {
+          "stop": 1
+        },
+        "unobserved_legal_actions": [
+          "escalate",
+          "repair",
+          "retry"
+        ]
+      },
+      {
+        "encoded_state": "forgebench-state-v2|some|0|3|cheap|unchanged|False|False|normal",
+        "legal_action_union": [
+          "escalate",
+          "retry",
+          "stop"
+        ],
+        "observed_action_counts": {
+          "escalate": 8,
+          "retry": 9
+        },
+        "unobserved_legal_actions": [
+          "stop"
+        ]
+      },
+      {
+        "encoded_state": "forgebench-state-v2|some|1|3|cheap|improved|False|False|normal",
+        "legal_action_union": [
+          "escalate",
+          "repair",
+          "retry",
+          "stop"
+        ],
+        "observed_action_counts": {
+          "escalate": 1,
+          "repair": 4,
+          "retry": 3
+        },
+        "unobserved_legal_actions": [
+          "stop"
+        ]
+      },
+      {
+        "encoded_state": "forgebench-state-v2|some|1|3|cheap|unchanged|False|False|normal",
+        "legal_action_union": [
+          "escalate",
+          "repair",
+          "retry",
+          "stop"
+        ],
+        "observed_action_counts": {
+          "escalate": 1,
+          "repair": 1
+        },
+        "unobserved_legal_actions": [
+          "retry",
+          "stop"
+        ]
+      },
+      {
+        "encoded_state": "forgebench-state-v2|some|1|3|strong|improved|False|False|normal",
+        "legal_action_union": [
+          "repair",
+          "retry",
+          "stop"
+        ],
+        "observed_action_counts": {
+          "retry": 3
+        },
+        "unobserved_legal_actions": [
+          "repair",
+          "stop"
+        ]
+      },
+      {
+        "encoded_state": "forgebench-state-v2|some|2|3|strong|improved|False|False|normal",
+        "legal_action_union": [
+          "repair",
+          "retry",
+          "stop"
+        ],
+        "observed_action_counts": {
+          "stop": 1
+        },
+        "unobserved_legal_actions": [
+          "repair",
+          "retry"
+        ]
+      },
+      {
+        "encoded_state": "forgebench-state-v2|some|3|2|cheap|unchanged|False|False|normal",
+        "legal_action_union": [
+          "escalate",
+          "repair",
+          "stop"
+        ],
+        "observed_action_counts": {
+          "stop": 1
+        },
+        "unobserved_legal_actions": [
+          "escalate",
+          "repair"
+        ]
+      },
+      {
+        "encoded_state": "forgebench-state-v2|some|3|3|cheap|improved|False|False|normal",
+        "legal_action_union": [
+          "escalate",
+          "repair",
+          "stop"
+        ],
+        "observed_action_counts": {
+          "repair": 1
+        },
+        "unobserved_legal_actions": [
+          "escalate",
+          "stop"
+        ]
+      }
+    ],
+    "states_with_only_one_observed_action": 6,
+    "task_transition_counts": {
+      "billing-checkout-recovery": 12,
+      "billing-coupon-idempotency": 6,
+      "billing-credit-order": 6,
+      "billing-shared-validation": 9,
+      "billing-tax-rounding": 6,
+      "delivery-backoff-index": 5,
+      "delivery-delivery-recovery": 7,
+      "delivery-idempotent-selection": 6,
+      "delivery-queue-ordering": 6,
+      "delivery-rate-limit-retries": 8,
+      "inventory-atomic-reservations": 7,
+      "inventory-event-replay": 6,
+      "inventory-shipment-regression": 5,
+      "inventory-stock-projection": 5,
+      "inventory-warehouse-recovery": 8,
+      "permissions-deny-precedence": 6,
+      "permissions-policy-migration": 7,
+      "permissions-role-inheritance": 6,
+      "permissions-safe-export": 8,
+      "permissions-segment-wildcards": 10,
+      "publishing-cms-release": 5,
+      "publishing-feed-continuation": 5,
+      "publishing-partial-translations": 5,
+      "publishing-shared-excerpts": 7,
+      "publishing-text-escaping": 6,
+      "scheduling-adjacent-bookings": 6,
+      "scheduling-availability-union": 7,
+      "scheduling-calendar-recovery": 7,
+      "scheduling-reject-empty-slots": 5,
+      "scheduling-resource-scope": 8
+    },
+    "terminal_transitions": 169,
+    "training_families": 6,
+    "training_transitions": 200,
+    "training_unique_tasks": 30,
+    "transition_selection": "Completed graded training episodes only, following the v0.2 fitter; infrastructure-failed episodes remain in the original archive but do not supply training transitions."
+  },
+  "verify_support": 0,
+  "version": "0.3-pilot1"
+}

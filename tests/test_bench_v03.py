@@ -199,6 +199,56 @@ async def test_success_definition_does_not_depend_on_whether_verifier_was_invoke
     result = await episode.finish()
     assert result["solved"] and result["verification_passed"] == 0
     assert result["verification_grader_disagreement"] is True
+    assert result["verification_grader_disagreement_direction"] == "false_rejection"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "supplemental_pass,hidden_pass,disagreement,direction",
+    [
+        (True, False, True, "missed_failure"),
+        (False, True, True, "false_rejection"),
+        (True, True, False, None),
+        (False, False, False, None),
+    ],
+)
+async def test_disagreement_is_bidirectional(
+    supplemental_pass, hidden_pass, disagreement, direction
+):
+    spec, _, evaluate, _ = fixture()
+
+    def grading(task, files, hidden=False):
+        result = evaluate(task, files, hidden)
+        if hidden:
+            result["passed"] = result["total"] if hidden_pass else 0
+        elif task.public_cases == spec.verification_cases:
+            result["passed"] = result["total"] if supplemental_pass else 0
+        return result
+
+    episode = VerificationEpisode(
+        spec, Provider([spec.task.reference_files]), evaluator=grading
+    )
+    await episode.step("retry")
+    await episode.step("verify")
+    await episode.step("stop")
+    result = await episode.finish()
+    assert result["verification_grader_disagreement"] is disagreement
+    assert result["verification_grader_disagreement_direction"] == direction
+
+
+@pytest.mark.asyncio
+async def test_missing_hidden_grade_has_unknown_verifier_disagreement():
+    spec, _, evaluate, _ = fixture()
+    episode = VerificationEpisode(
+        spec, Provider([spec.task.reference_files]), evaluator=evaluate
+    )
+    await episode.step("retry")
+    await episode.step("verify")
+    episode.status = "failed"
+    result = await episode.finish()
+    assert result["heldout_passed"] is None
+    assert result["verification_grader_disagreement"] is None
+    assert result["verification_grader_disagreement_direction"] is None
 
 
 def test_rejects_verification_cases_reusing_hidden_or_public_input():

@@ -1,0 +1,117 @@
+{
+  "retrieved_at": "2026-09-24T02:21:16.018376+00:00",
+  "request_type": "public GET; no inference; no key",
+  "endpoint_records": [
+    {
+      "source_url": "https://openrouter.ai/api/v1/models/openai/gpt-oss-20b/endpoints",
+      "response_sha256": "2211e713287f4c20dbba3f51587365e19e6a8f19c3417c50420d3000040994b5",
+      "selected_endpoint": {
+        "name": "CoreWeave | openai/gpt-oss-20b",
+        "model_id": "openai/gpt-oss-20b",
+        "model_name": "OpenAI: gpt-oss-20b",
+        "context_length": 131072,
+        "pricing": {
+          "prompt": "0.00000003",
+          "completion": "0.00000013",
+          "input_cache_read": "0.00000003",
+          "discount": 0
+        },
+        "provider_name": "CoreWeave",
+        "tag": "coreweave/fp4",
+        "quantization": "fp4",
+        "max_completion_tokens": 117964,
+        "max_prompt_tokens": null,
+        "supported_parameters": [
+          "reasoning",
+          "include_reasoning",
+          "structured_outputs",
+          "response_format",
+          "max_tokens",
+          "temperature",
+          "top_p",
+          "top_k",
+          "repetition_penalty",
+          "frequency_penalty",
+          "presence_penalty",
+          "stop",
+          "seed",
+          "tools",
+          "tool_choice",
+          "logprobs",
+          "top_logprobs",
+          "reasoning_effort"
+        ],
+        "supports_tool_choice": {
+          "none": true,
+          "auto": true,
+          "required": true,
+          "function": true
+        },
+        "status": 0,
+        "uptime_last_30m": 99.99749812359269,
+        "uptime_last_5m": 100,
+        "uptime_last_1d": 99.99525531895519,
+        "supports_implicit_caching": false,
+        "supports_voice_cloning": false,
+        "latency_last_30m": null,
+        "throughput_last_30m": null
+      }
+    },
+    {
+      "source_url": "https://openrouter.ai/api/v1/models/openai/gpt-oss-120b/endpoints",
+      "response_sha256": "8df3e530e0d6ba845256d112f65f8039358886bb50a2e9352d3f6f0abb743114",
+      "selected_endpoint": {
+        "name": "CoreWeave | openai/gpt-oss-120b",
+        "model_id": "openai/gpt-oss-120b",
+        "model_name": "OpenAI: gpt-oss-120b",
+        "context_length": 131072,
+        "pricing": {
+          "prompt": "0.00000003",
+          "completion": "0.00000017",
+          "input_cache_read": "0.00000003",
+          "discount": 0
+        },
+        "provider_name": "CoreWeave",
+        "tag": "coreweave/fp4",
+        "quantization": "fp4",
+        "max_completion_tokens": 117964,
+        "max_prompt_tokens": null,
+        "supported_parameters": [
+          "reasoning",
+          "include_reasoning",
+          "structured_outputs",
+          "response_format",
+          "max_tokens",
+          "temperature",
+          "top_p",
+          "top_k",
+          "repetition_penalty",
+          "frequency_penalty",
+          "presence_penalty",
+          "stop",
+          "seed",
+          "tools",
+          "tool_choice",
+          "logprobs",
+          "top_logprobs",
+          "reasoning_effort"
+        ],
+        "supports_tool_choice": {
+          "none": true,
+          "auto": true,
+          "required": true,
+          "function": true
+        },
+        "status": 0,
+        "uptime_last_30m": 99.97262102363148,
+        "uptime_last_5m": 100,
+        "uptime_last_1d": 99.93940459046013,
+        "supports_implicit_caching": false,
+        "supports_voice_cloning": false,
+        "latency_last_30m": null,
+        "throughput_last_30m": null
+      }
+    }
+  ],
+  "availability_interpretation": "Catalog availability snapshot only; does not guarantee later requests or a fixed hosted checkpoint."
+}

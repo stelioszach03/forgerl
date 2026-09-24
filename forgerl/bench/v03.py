@@ -32,8 +32,8 @@ def _inputs(cases):
     return {json.dumps([c["args"], c.get("kwargs", {})], sort_keys=True) for c in cases}
 
 
-def validate_spec(spec):
-    if spec.task.split != "development":
+def validate_spec(spec, allowed_splits=("development",)):
+    if spec.task.split not in allowed_splits:
         raise ValueError("This foundation accepts development tasks only")
     if not 1 <= len(spec.verification_cases) <= 24:
         raise ValueError("One to 24 supplemental checks required")
@@ -55,10 +55,12 @@ def validate_spec(spec):
 
 
 class VerificationEpisode(RepoEpisode):
+    allowed_splits = ("development",)
+
     def __init__(
         self, spec, provider, policy="static_router", *, max_verifications=2, **kwargs
     ):
-        validate_spec(spec)
+        validate_spec(spec, self.allowed_splits)
         if type(max_verifications) is not int or max_verifications not in (1, 2):
             raise ValueError("Maximum verifications must be 1 or 2")
         if kwargs.get("artifact") is not None or policy == "adaptive":
@@ -230,6 +232,19 @@ class VerificationEpisode(RepoEpisode):
     def result(self):
         result = super().result()
         verification = self.current_verification()
+        disagreement = None
+        disagreement_direction = None
+        if (
+            result["status"] == "completed"
+            and result["heldout_passed"] is not None
+            and verification is not None
+        ):
+            verifier_accepted = verification["passed"] == verification["total"]
+            disagreement = verifier_accepted != result["solved"]
+            if disagreement:
+                disagreement_direction = (
+                    "missed_failure" if verifier_accepted else "false_rejection"
+                )
         result.update(
             version=VERSION,
             protocol=PROTOCOL,
@@ -239,11 +254,8 @@ class VerificationEpisode(RepoEpisode):
             verification_total=verification["total"] if verification else None,
             verification_elapsed_s=round(self.verification_elapsed_s, 6),
             verification_inference_cost_usd=0.0,
-            verification_grader_disagreement=bool(
-                result["solved"]
-                and verification is not None
-                and verification["passed"] != verification["total"]
-            ),
+            verification_grader_disagreement=disagreement,
+            verification_grader_disagreement_direction=disagreement_direction,
         )
         result["evidence"]["maximum_verification_calls"] = self.max_verifications
         result["evidence"]["verification"] = (

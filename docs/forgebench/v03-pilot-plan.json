@@ -1,0 +1,1195 @@
+{
+  "version": "0.3-pilot1",
+  "protocol": "forgebench-v0.3-prospective-transfer-pilot1",
+  "status": "draft_pending_review_and_freeze",
+  "frozen": false,
+  "inference_enabled": false,
+  "prior_inspected_development_families": 10,
+  "fresh_authored_families": 8,
+  "fresh_validation_families": 2,
+  "fresh_test_families": 6,
+  "fresh_authored_tasks": 24,
+  "external_source_derived_tasks": 3,
+  "task_manifest_sha256": "d5b6c496bbb7c4409361ed48a482ba15f76f2b1be1185d3741778285e3a74504",
+  "controllers_sha256": "be42ddeb7ef27bbe054abbcef5ae79400eb62dd56cce87ac08eda77f06764d50",
+  "seed": 17,
+  "policies": [
+    "strong_only",
+    "cheap_only",
+    "escalate_on_failure",
+    "static_router",
+    "adaptive",
+    "supervised_cost"
+  ],
+  "study_order": [
+    {
+      "task_id": "apportionment-repair-1",
+      "family": "apportionment",
+      "split": "test",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "apportionment-repair-1",
+      "family": "apportionment",
+      "split": "test",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "apportionment-repair-1",
+      "family": "apportionment",
+      "split": "test",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "apportionment-repair-1",
+      "family": "apportionment",
+      "split": "test",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "apportionment-repair-1",
+      "family": "apportionment",
+      "split": "test",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "apportionment-repair-1",
+      "family": "apportionment",
+      "split": "test",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "apportionment-repair-2",
+      "family": "apportionment",
+      "split": "test",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "apportionment-repair-2",
+      "family": "apportionment",
+      "split": "test",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "apportionment-repair-2",
+      "family": "apportionment",
+      "split": "test",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "apportionment-repair-2",
+      "family": "apportionment",
+      "split": "test",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "apportionment-repair-2",
+      "family": "apportionment",
+      "split": "test",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "apportionment-repair-2",
+      "family": "apportionment",
+      "split": "test",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "apportionment-repair-3",
+      "family": "apportionment",
+      "split": "test",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "apportionment-repair-3",
+      "family": "apportionment",
+      "split": "test",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "apportionment-repair-3",
+      "family": "apportionment",
+      "split": "test",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "apportionment-repair-3",
+      "family": "apportionment",
+      "split": "test",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "apportionment-repair-3",
+      "family": "apportionment",
+      "split": "test",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "apportionment-repair-3",
+      "family": "apportionment",
+      "split": "test",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "binary_protocol-repair-1",
+      "family": "binary_protocol",
+      "split": "validation",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "binary_protocol-repair-1",
+      "family": "binary_protocol",
+      "split": "validation",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "binary_protocol-repair-1",
+      "family": "binary_protocol",
+      "split": "validation",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "binary_protocol-repair-1",
+      "family": "binary_protocol",
+      "split": "validation",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "binary_protocol-repair-1",
+      "family": "binary_protocol",
+      "split": "validation",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "binary_protocol-repair-1",
+      "family": "binary_protocol",
+      "split": "validation",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "binary_protocol-repair-2",
+      "family": "binary_protocol",
+      "split": "validation",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "binary_protocol-repair-2",
+      "family": "binary_protocol",
+      "split": "validation",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "binary_protocol-repair-2",
+      "family": "binary_protocol",
+      "split": "validation",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "binary_protocol-repair-2",
+      "family": "binary_protocol",
+      "split": "validation",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "binary_protocol-repair-2",
+      "family": "binary_protocol",
+      "split": "validation",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "binary_protocol-repair-2",
+      "family": "binary_protocol",
+      "split": "validation",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "binary_protocol-repair-3",
+      "family": "binary_protocol",
+      "split": "validation",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "binary_protocol-repair-3",
+      "family": "binary_protocol",
+      "split": "validation",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "binary_protocol-repair-3",
+      "family": "binary_protocol",
+      "split": "validation",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "binary_protocol-repair-3",
+      "family": "binary_protocol",
+      "split": "validation",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "binary_protocol-repair-3",
+      "family": "binary_protocol",
+      "split": "validation",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "binary_protocol-repair-3",
+      "family": "binary_protocol",
+      "split": "validation",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "edit_distance-repair-1",
+      "family": "edit_distance",
+      "split": "test",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "edit_distance-repair-1",
+      "family": "edit_distance",
+      "split": "test",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "edit_distance-repair-1",
+      "family": "edit_distance",
+      "split": "test",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "edit_distance-repair-1",
+      "family": "edit_distance",
+      "split": "test",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "edit_distance-repair-1",
+      "family": "edit_distance",
+      "split": "test",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "edit_distance-repair-1",
+      "family": "edit_distance",
+      "split": "test",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "edit_distance-repair-2",
+      "family": "edit_distance",
+      "split": "test",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "edit_distance-repair-2",
+      "family": "edit_distance",
+      "split": "test",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "edit_distance-repair-2",
+      "family": "edit_distance",
+      "split": "test",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "edit_distance-repair-2",
+      "family": "edit_distance",
+      "split": "test",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "edit_distance-repair-2",
+      "family": "edit_distance",
+      "split": "test",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "edit_distance-repair-2",
+      "family": "edit_distance",
+      "split": "test",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "edit_distance-repair-3",
+      "family": "edit_distance",
+      "split": "test",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "edit_distance-repair-3",
+      "family": "edit_distance",
+      "split": "test",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "edit_distance-repair-3",
+      "family": "edit_distance",
+      "split": "test",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "edit_distance-repair-3",
+      "family": "edit_distance",
+      "split": "test",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "edit_distance-repair-3",
+      "family": "edit_distance",
+      "split": "test",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "edit_distance-repair-3",
+      "family": "edit_distance",
+      "split": "test",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "expression_engine-repair-1",
+      "family": "expression_engine",
+      "split": "test",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "expression_engine-repair-1",
+      "family": "expression_engine",
+      "split": "test",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "expression_engine-repair-1",
+      "family": "expression_engine",
+      "split": "test",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "expression_engine-repair-1",
+      "family": "expression_engine",
+      "split": "test",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "expression_engine-repair-1",
+      "family": "expression_engine",
+      "split": "test",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "expression_engine-repair-1",
+      "family": "expression_engine",
+      "split": "test",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "expression_engine-repair-2",
+      "family": "expression_engine",
+      "split": "test",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "expression_engine-repair-2",
+      "family": "expression_engine",
+      "split": "test",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "expression_engine-repair-2",
+      "family": "expression_engine",
+      "split": "test",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "expression_engine-repair-2",
+      "family": "expression_engine",
+      "split": "test",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "expression_engine-repair-2",
+      "family": "expression_engine",
+      "split": "test",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "expression_engine-repair-2",
+      "family": "expression_engine",
+      "split": "test",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "expression_engine-repair-3",
+      "family": "expression_engine",
+      "split": "test",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "expression_engine-repair-3",
+      "family": "expression_engine",
+      "split": "test",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "expression_engine-repair-3",
+      "family": "expression_engine",
+      "split": "test",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "expression_engine-repair-3",
+      "family": "expression_engine",
+      "split": "test",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "expression_engine-repair-3",
+      "family": "expression_engine",
+      "split": "test",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "expression_engine-repair-3",
+      "family": "expression_engine",
+      "split": "test",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "external_boltons_math-repair-1",
+      "family": "external_boltons_math",
+      "split": "external",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "external_boltons_math-repair-1",
+      "family": "external_boltons_math",
+      "split": "external",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "external_boltons_math-repair-1",
+      "family": "external_boltons_math",
+      "split": "external",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "external_boltons_math-repair-1",
+      "family": "external_boltons_math",
+      "split": "external",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "external_boltons_math-repair-1",
+      "family": "external_boltons_math",
+      "split": "external",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "external_boltons_math-repair-1",
+      "family": "external_boltons_math",
+      "split": "external",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "external_boltons_math-repair-2",
+      "family": "external_boltons_math",
+      "split": "external",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "external_boltons_math-repair-2",
+      "family": "external_boltons_math",
+      "split": "external",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "external_boltons_math-repair-2",
+      "family": "external_boltons_math",
+      "split": "external",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "external_boltons_math-repair-2",
+      "family": "external_boltons_math",
+      "split": "external",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "external_boltons_math-repair-2",
+      "family": "external_boltons_math",
+      "split": "external",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "external_boltons_math-repair-2",
+      "family": "external_boltons_math",
+      "split": "external",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "external_boltons_math-repair-3",
+      "family": "external_boltons_math",
+      "split": "external",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "external_boltons_math-repair-3",
+      "family": "external_boltons_math",
+      "split": "external",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "external_boltons_math-repair-3",
+      "family": "external_boltons_math",
+      "split": "external",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "external_boltons_math-repair-3",
+      "family": "external_boltons_math",
+      "split": "external",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "external_boltons_math-repair-3",
+      "family": "external_boltons_math",
+      "split": "external",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "external_boltons_math-repair-3",
+      "family": "external_boltons_math",
+      "split": "external",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "geospatial-repair-1",
+      "family": "geospatial",
+      "split": "validation",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "geospatial-repair-1",
+      "family": "geospatial",
+      "split": "validation",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "geospatial-repair-1",
+      "family": "geospatial",
+      "split": "validation",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "geospatial-repair-1",
+      "family": "geospatial",
+      "split": "validation",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "geospatial-repair-1",
+      "family": "geospatial",
+      "split": "validation",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "geospatial-repair-1",
+      "family": "geospatial",
+      "split": "validation",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "geospatial-repair-2",
+      "family": "geospatial",
+      "split": "validation",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "geospatial-repair-2",
+      "family": "geospatial",
+      "split": "validation",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "geospatial-repair-2",
+      "family": "geospatial",
+      "split": "validation",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "geospatial-repair-2",
+      "family": "geospatial",
+      "split": "validation",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "geospatial-repair-2",
+      "family": "geospatial",
+      "split": "validation",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "geospatial-repair-2",
+      "family": "geospatial",
+      "split": "validation",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "geospatial-repair-3",
+      "family": "geospatial",
+      "split": "validation",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "geospatial-repair-3",
+      "family": "geospatial",
+      "split": "validation",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "geospatial-repair-3",
+      "family": "geospatial",
+      "split": "validation",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "geospatial-repair-3",
+      "family": "geospatial",
+      "split": "validation",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "geospatial-repair-3",
+      "family": "geospatial",
+      "split": "validation",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "geospatial-repair-3",
+      "family": "geospatial",
+      "split": "validation",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "graph_dependencies-repair-1",
+      "family": "graph_dependencies",
+      "split": "test",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "graph_dependencies-repair-1",
+      "family": "graph_dependencies",
+      "split": "test",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "graph_dependencies-repair-1",
+      "family": "graph_dependencies",
+      "split": "test",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "graph_dependencies-repair-1",
+      "family": "graph_dependencies",
+      "split": "test",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "graph_dependencies-repair-1",
+      "family": "graph_dependencies",
+      "split": "test",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "graph_dependencies-repair-1",
+      "family": "graph_dependencies",
+      "split": "test",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "graph_dependencies-repair-2",
+      "family": "graph_dependencies",
+      "split": "test",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "graph_dependencies-repair-2",
+      "family": "graph_dependencies",
+      "split": "test",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "graph_dependencies-repair-2",
+      "family": "graph_dependencies",
+      "split": "test",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "graph_dependencies-repair-2",
+      "family": "graph_dependencies",
+      "split": "test",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "graph_dependencies-repair-2",
+      "family": "graph_dependencies",
+      "split": "test",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "graph_dependencies-repair-2",
+      "family": "graph_dependencies",
+      "split": "test",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "graph_dependencies-repair-3",
+      "family": "graph_dependencies",
+      "split": "test",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "graph_dependencies-repair-3",
+      "family": "graph_dependencies",
+      "split": "test",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "graph_dependencies-repair-3",
+      "family": "graph_dependencies",
+      "split": "test",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "graph_dependencies-repair-3",
+      "family": "graph_dependencies",
+      "split": "test",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "graph_dependencies-repair-3",
+      "family": "graph_dependencies",
+      "split": "test",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "graph_dependencies-repair-3",
+      "family": "graph_dependencies",
+      "split": "test",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "interpolation-repair-1",
+      "family": "interpolation",
+      "split": "test",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "interpolation-repair-1",
+      "family": "interpolation",
+      "split": "test",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "interpolation-repair-1",
+      "family": "interpolation",
+      "split": "test",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "interpolation-repair-1",
+      "family": "interpolation",
+      "split": "test",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "interpolation-repair-1",
+      "family": "interpolation",
+      "split": "test",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "interpolation-repair-1",
+      "family": "interpolation",
+      "split": "test",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "interpolation-repair-2",
+      "family": "interpolation",
+      "split": "test",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "interpolation-repair-2",
+      "family": "interpolation",
+      "split": "test",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "interpolation-repair-2",
+      "family": "interpolation",
+      "split": "test",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "interpolation-repair-2",
+      "family": "interpolation",
+      "split": "test",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "interpolation-repair-2",
+      "family": "interpolation",
+      "split": "test",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "interpolation-repair-2",
+      "family": "interpolation",
+      "split": "test",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "interpolation-repair-3",
+      "family": "interpolation",
+      "split": "test",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "interpolation-repair-3",
+      "family": "interpolation",
+      "split": "test",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "interpolation-repair-3",
+      "family": "interpolation",
+      "split": "test",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "interpolation-repair-3",
+      "family": "interpolation",
+      "split": "test",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "interpolation-repair-3",
+      "family": "interpolation",
+      "split": "test",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "interpolation-repair-3",
+      "family": "interpolation",
+      "split": "test",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "tabular_join-repair-1",
+      "family": "tabular_join",
+      "split": "test",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "tabular_join-repair-1",
+      "family": "tabular_join",
+      "split": "test",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "tabular_join-repair-1",
+      "family": "tabular_join",
+      "split": "test",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "tabular_join-repair-1",
+      "family": "tabular_join",
+      "split": "test",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "tabular_join-repair-1",
+      "family": "tabular_join",
+      "split": "test",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "tabular_join-repair-1",
+      "family": "tabular_join",
+      "split": "test",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "tabular_join-repair-2",
+      "family": "tabular_join",
+      "split": "test",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "tabular_join-repair-2",
+      "family": "tabular_join",
+      "split": "test",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "tabular_join-repair-2",
+      "family": "tabular_join",
+      "split": "test",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "tabular_join-repair-2",
+      "family": "tabular_join",
+      "split": "test",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "tabular_join-repair-2",
+      "family": "tabular_join",
+      "split": "test",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "tabular_join-repair-2",
+      "family": "tabular_join",
+      "split": "test",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    },
+    {
+      "task_id": "tabular_join-repair-3",
+      "family": "tabular_join",
+      "split": "test",
+      "policy": "adaptive",
+      "seed": 17
+    },
+    {
+      "task_id": "tabular_join-repair-3",
+      "family": "tabular_join",
+      "split": "test",
+      "policy": "cheap_only",
+      "seed": 17
+    },
+    {
+      "task_id": "tabular_join-repair-3",
+      "family": "tabular_join",
+      "split": "test",
+      "policy": "strong_only",
+      "seed": 17
+    },
+    {
+      "task_id": "tabular_join-repair-3",
+      "family": "tabular_join",
+      "split": "test",
+      "policy": "supervised_cost",
+      "seed": 17
+    },
+    {
+      "task_id": "tabular_join-repair-3",
+      "family": "tabular_join",
+      "split": "test",
+      "policy": "static_router",
+      "seed": 17
+    },
+    {
+      "task_id": "tabular_join-repair-3",
+      "family": "tabular_join",
+      "split": "test",
+      "policy": "escalate_on_failure",
+      "seed": 17
+    }
+  ],
+  "planned_episodes": 162,
+  "maximum_model_calls": 6,
+  "maximum_decisions": 10,
+  "maximum_verifications": 2,
+  "maximum_tokens_per_episode": 100000,
+  "maximum_cost_per_episode_usd": 1.0,
+  "study_cost_cap_usd": 1.0,
+  "rate_limit_retries": 2,
+  "models": {
+    "cheap": "openai/gpt-oss-20b",
+    "strong": "openai/gpt-oss-120b"
+  },
+  "provider": "coreweave/fp4",
+  "fallbacks": false,
+  "temperature": 0.2,
+  "max_output_tokens": 4096,
+  "training": "Existing v0.2 train split only, completed graded training episodes from seeds17/29/43; validation/test never read for fitting.",
+  "verify": "All policies use the same deterministic verify-on-visible-green rule; not learned because historical action support is zero.",
+  "primary_estimands": [
+    "family-weighted task success on 6 fresh authored test families",
+    "family-weighted accounted API cost per attempted test episode"
+  ],
+  "secondary": [
+    "per-task and per-family paired differences",
+    "graded-only sensitivity explicitly conditional on provider availability",
+    "supplemental failures caught, verification calls/time, repaired after observed supplemental failure, final-grader disagreement",
+    "learned/fallback decision coverage",
+    "latency,tokens,tool calls,regressions,unnecessary-edit proxy"
+  ],
+  "analysis": "Descriptive pilot; report all six policies and all pairwise learned-baseline contrasts. No significance claims or population CI with six authored clusters. Validation and source-derived external track reported separately; no tuning or pooling.",
+  "missingness": "Provider/infrastructure failure remains in attempted denominator; unattempted budget-stop episodes remain missing, never fabricated failures or selective replacements.",
+  "limitations": [
+    "Single seed, authored miniature programs, correlated variants, author-correlated verifier/grader, historical observational support without logged propensities, no learned VERIFY, no fresh model training, hosted checkpoint not pinned beyond provider/model/quantization.",
+    "External track uses licensed source-derived artificial mutations and authored checks, not real upstream bug-fix issues or SWE-bench."
+  ]
+}
