@@ -1,6 +1,6 @@
 # Exposed-catalog replication and VERIFY ablation
 
-Prepared24September2026. This is a new finite experiment on previously inspected and published v0.3 tasks. It is not a fresh holdout, real-upstream-issue benchmark, a trained verification policy or a pooled extension of the old pilot. No model outcomes have been observed for this new run at protocol preparation.
+Prepared24September2026, before model calls. This is a finite experiment on previously inspected and published v0.3 tasks. It is not a fresh holdout, real-upstream-issue benchmark, a trained verification policy or a pooled extension of the old pilot. The run has now completed; [verified outcomes and limitations](../../artifacts/forgebench/exposed-replication-v1/RESULTS.md) are reported separately without changing the frozen protocol.
 
 ## Question and matrix
 

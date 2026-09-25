@@ -6,9 +6,10 @@
 
 | Research status | Evidence |
 | --- | --- |
-| Last completed benchmark | September 24, 2026 · [prospective v0.3 transfer pilot](artifacts/forgebench/v0.3-pilot1/report/pilot-report.md) |
+| Last completed benchmark | September 25, 2026 · [exposed-catalog replication / VERIFY ablation](artifacts/forgebench/exposed-replication-v1/RESULTS.md) |
 | Native explorer catalogs | v0.3 transfer pilot · 27 tasks / 9 families; separately preserved v0.2 · 50 scenarios / 10 families |
 | Latest pilot evaluation | Complete · 162/162 episodes, 24 new authored tasks + 3 licensed source-derived tasks, six policies |
+| Latest replication | 1,296/1,296 attempted, four provider failures retained; all 27 tasks were previously exposed |
 | Preserved v0.2 evaluation | Complete · 300/300 evaluation episodes and 180/180 training episodes |
 | Models in the v0.2 protocol | GPT-OSS-20B and GPT-OSS-120B through a pinned OpenRouter provider |
 | Stable public software | [v0.2.1](https://github.com/stelioszach03/forgerl/releases/tag/v0.2.1); new pilot evidence is published separately |
@@ -64,6 +65,12 @@ recorded study. The analysis-only terminal-label clarification is disclosed in
 the report and preserves every original all-action metric.
 
 The completed v0.2 held-out test summary recorded 24/30 strong-only successes, 27/30 cheap-only, 26/30 escalate-on-failure, 27/30 hand-written-router and 25/30 adaptive-router successes. These are descriptive results from two held-out families; provider failures and related task variants remain in the denominator, and the report makes no broad superiority claim.
+
+## Exposed-catalog replication and VERIFY ablation
+
+The [frozen follow-up](docs/forgebench/EXPOSED_REPLICATION_PROTOCOL.md) ran all 27 previously inspected v0.3 tasks over four requested seeds, six policies and VERIFY off/on, for 1,296 attempts. The [verified report](artifacts/forgebench/exposed-replication-v1/RESULTS.md) preserves four provider failures and $0.257867 in conservative model-use accounting. On the original primary slice, strong-only solved 131/144 attempts at $0.028803 total accounted cost, versus 128/144 at $0.036398 for fitted-Q adaptive routing. VERIFY on and off each solved 372/432 primary attempts overall. These findings **do not support a cost-quality advantage for the learned router or a broad VERIFY benefit on this exposed catalog**. They do not replace the separate prospective v0.3 pilot or establish new-task generalization.
+
+[Success-versus-cost figure](artifacts/forgebench/exposed-replication-v1/analysis/success-vs-cost.png) · [derived policy data](artifacts/forgebench/exposed-replication-v1/analysis/policy-summary.csv) · [offline analysis code](scripts/analyze_exposed_replication.py). Complete event trajectories remain private pending a separate release review; the published tables contain no prompts or patches.
 
 ## Stable v0.2 suite
 
